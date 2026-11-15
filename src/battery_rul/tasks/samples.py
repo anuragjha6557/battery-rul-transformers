@@ -155,6 +155,9 @@ def build_samples(
     df = prepared.cycles
     dataset = str(df["dataset"].iloc[0])
     eol_by_cell = eol.set_index("cell_id")["eol_cycle"]
+    theta_by_cell = (
+        eol.set_index("cell_id")["theta"] if "theta" in eol.columns else pd.Series(dtype=float)
+    )
     hist_channels = ("soh", *prepared.channels)
     task_a_now = tuple(c for c in prepared.channels if c in CHARGE_CHANNELS)
     L, task = spec.lookback, spec.task
@@ -216,6 +219,8 @@ def build_samples(
                     "origin_cycle": ci[pos],
                     "start_kind": kinds,
                     "eol_cycle": cell_eol,
+                    # per-cell SOH threshold for trajectory-crossing RUL (Toyota: 0.88 Ah / C_ref)
+                    "theta": float(theta_by_cell.get(cell, np.nan)),
                 }
             )
         )
