@@ -4,7 +4,7 @@ _Last updated: 2026-11-15 (Opus 5.5 lead)_
 
 ## State
 - **Phase 0 complete** (`8020ca4`): uv/Python 3.12 env (torch 2.15 + MPS, lightgbm 4.7, mlflow 3.18, optuna 5.0, gradio 6.32, pandera 0.36), package skeleton, typer CLI, Makefile, pre-commit, GitHub Actions CI, data contract (`data/schema.py`, `data/io.py`), checksummed downloader, ADR-0001..0003. Local gate green.
-  - Outstanding for the gate: **CI not yet run on GitHub** — needs the owner to run `! brew install gh && gh auth login`, then the lead creates `anuragjha/battery-rul` and pushes. ADR-0007 done (`8b1d038`): measured MPS-first for neural models.
+  - GitHub: public repo `anuragjha6557/battery-rul-transformers` (paper PDF stripped from history before first push; cited by DOI). ADR-0007 done (`8b1d038`): measured MPS-first for neural models.
 - **Phase 1 in progress**
   - NASA loader merged (`b574ccc`): 4 cells, 636 cycles, 2.08 M curve rows, build ≈ 5.5 s; 11 unit + 5 real-data tests.
   - CALCE loader merged (`fe825f4`): 4 cells, 3 911 cycles (880/970/1036/1025), 1.07 M curve rows, build ≈ 30 s (python-calamine); 22 unit + 5 real-data tests. Lead review fix: `ir_ohm` restricted to the charge window (leakage).

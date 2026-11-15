@@ -188,7 +188,7 @@ Decision rule for keeping an improvement: it must improve the primary metrics (R
 Owner key: **O** = Opus 5.5 (lead or Opus subagent), **S** = Sonnet 5.5 subagent. `∥` = tasks in a wave run in parallel (use `isolation: "worktree"` for code-writing agents; lead merges). Durations are laptop wall-clock with parallel agents.
 
 ### Phase 0 — Bootstrap (½ day) — O leads
-- Install `gh` (ask owner to run `! brew install gh && gh auth login`), `git init`, create `anuragjha/battery-rul` public repo.
+- Install `gh` (ask owner to run `! brew install gh && gh auth login`), `git init`, create `anuragjha6557/battery-rul-transformers` public repo.
 - `uv init`, pin 3.12, add deps: torch (CPU index for CI), numpy, pandas, polars, pyarrow, h5py, scipy, scikit-learn, lightgbm, optuna, mlflow, hydra-core, pandera, pydantic, typer, matplotlib, gradio, huggingface_hub, onnx + onnxruntime; dev: pytest, hypothesis, properscoring, ruff, mypy, pre-commit, nbstripout.
 - Skeleton from Section 4, `Makefile`, pre-commit (ruff), CI workflow (lint + unit tests), ADR-0001/0002/0003.
 - `scripts/bench_cpu_vs_mps.py`: time a 2-layer d=64 Transformer on 1k samples, CPU(1 thread)/CPU(all)/MPS → ADR-0007 (compute strategy).
@@ -234,7 +234,7 @@ Owner key: **O** = Opus 5.5 (lead or Opus subagent), **S** = Sonnet 5.5 subagent
 - **Gate:** every number in README maps to an MLflow run ID; `make bench` reproduces Table 1 from scratch.
 
 ### Phase 8 — Packaging & deployment (2 days) — S builds, O reviews
-- S: `serve/predictor.py` + input contract (CSV columns: `cycle_idx, capacity_ah[, charge_time_s, …]`; or raw curve long-format matching `data/schema.py`) with pydantic/pandera validation and clear error messages; **OOD score** (Mahalanobis distance on the feature vector + conformal interval width) that triggers a visible "outside training distribution — RUL unreliable" warning; `scripts/export_weights.py` → ONNX/TorchScript (no MPS code in the serving path) → HF Model repo `anuragjha/battery-rul-itransformer-v2`.
+- S: `serve/predictor.py` + input contract (CSV columns: `cycle_idx, capacity_ah[, charge_time_s, …]`; or raw curve long-format matching `data/schema.py`) with pydantic/pandera validation and clear error messages; **OOD score** (Mahalanobis distance on the feature vector + conformal interval width) that triggers a visible "outside training distribution — RUL unreliable" warning; `scripts/export_weights.py` → ONNX/TorchScript (no MPS code in the serving path) → HF Model repo `anuragjha6557/battery-rul-itransformer-v2`.
 - S: `app/gradio_app.py`: upload CSV or pick demo cell (one per dataset) → SOH estimate, forecast plot with 90 % band, RUL distribution (point + interval), EOL threshold slider, model selector (v2 vs LightGBM vs blend), OOD banner, "how to format your data" tab. Must run in ≤ 2 vCPU / 16 GB; cold start < 30 s. RUL for unseen chemistries/protocols is unreliable — the UI says so.
 - S: `deploy-space.yml` (push `app/` + weights ref to the Space on git tag), `pyproject` publishable; O: smoke-tests the live Space.
 - **Do this gate early in Phase 8 (free-tier risk):** a hello-world Gradio Space deploys from the owner's HF account.
