@@ -158,4 +158,4 @@ Any deviation from this protocol is appended here with the date, the reason and 
 
 | Date | Section | Deviation | Reason | Tables affected |
 |---|---|---|---|---|
-| | | | | |
+| 2026-11-15 (before any sweep) | §1 EOL, §2 Task C | Toyota EOL label = provider `cycle_life` (0.88 Ah = 80 % nominal); θ = 0.70 sensitivity N/A for Toyota | Our sustained rule censors 81/124 cells because tests stopped at EOL by design; where it resolves it matches the provider within 2 cycles (ADR-0005 amendment 1) | all Toyota RUL tables |

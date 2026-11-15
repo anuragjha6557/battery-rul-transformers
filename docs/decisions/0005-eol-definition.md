@@ -37,3 +37,16 @@ RUL labels depend on when a cell "reaches end of life", and the source paper nev
 - `battery_rul.tasks.rul` builds labels as `eol_masked(..., base=eol_sustained)` at θ ∈ {0.8, 0.7} and records the rule and θ in each run's MLflow params.
 - `configs/task/*.yaml` take the fixed starts above. `splits.loco.independent_fold_cells("calce")` returns all four cells.
 - **Interview point:** "The paper's CALCE RUL labels would move by up to 538 cycles depending on an undocumented smoothing choice, because of a tester artifact. We found it, flagged it, and made the rule explicit."
+
+## Amendment 1 (2026-11-15, before any sweep): Toyota uses the provider's cycle life
+**Finding.** With the Toyota tables loaded, the rule above censors **81/124** Toyota cells at θ = 0.80 and all 124 at θ = 0.70. Relaxing the end-of-record condition (a tail run of ≥ 2 cycles counts) does not help: still 81/124 at 0.80 and at Severson's own 0.88 Ah threshold.
+- The cause is experimental design, not non-crossing. Severson's team stopped each test at about 80 % of *nominal* capacity (0.88 Ah). Our SOH reference is the first-5-cycle mean, 1.043–1.096 Ah, so 0.80 SOH ≈ 0.86 Ah, below where most records end. At 0.88 Ah the records end within a cycle or two of the crossing, often with noise, so no sustained run exists.
+- Where the rule does resolve at 0.88 Ah, it reproduces the provider's `cycle_life` with **median difference 0 and max |difference| 2 cycles**.
+
+**Decision.** Toyota EOL label = `cells.reported_cycle_life`: Severson's cycles to 0.88 Ah (80 % of nominal), after the official continuation merge. Consequences:
+- No Toyota cell is censored, which matches the experimental design (every cleaned cell was cycled to EOL).
+- Toyota results stay directly comparable with Severson 2019 and every later paper on this dataset.
+- The θ = 0.70 sensitivity analysis does not apply to Toyota (the data stop near 80 %).
+- NASA and CALCE keep the rule above. The label source is recorded per run (`label_source ∈ {rule, provider}`).
+
+The trajectory-crossing RUL estimator (PROTOCOL §2, Task C) uses θ_cell = 0.88 Ah / C_ref,cell for Toyota, so that predicted crossings and labels share one definition.
