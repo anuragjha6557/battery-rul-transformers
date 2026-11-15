@@ -43,3 +43,6 @@ multirun/
 # Source paper (IEEE-copyrighted; kept locally, never published)
 docs/paper/*.pdf
 docs/paper/*.txt
+
+# tuning logs (results live in MLflow + configs/tuned)
+reports/tuning/
