@@ -40,7 +40,11 @@ class SampleSet:
         channel_names: Names of the C history channels.
         feature_names: Names of the F tabular features.
         meta: One row per sample with at least ``dataset``, ``cell_id``, ``origin_cycle``.
-            Bookkeeping only — never a model input (leakage rule 4).
+            Bookkeeping only — never a model input (leakage rule 4). **Sole exception:**
+            ``meta["theta"]``, the per-cell EOL threshold in SOH units. It is part of the
+            question asked (where "end of life" is), not data about the future. For Toyota it is
+            0.88 Ah / C_ref, with C_ref from the first 5 cycles (causal). Models that estimate
+            RUL by extrapolating to the threshold may read it.
     """
 
     task: TaskName
