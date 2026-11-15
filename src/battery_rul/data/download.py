@@ -70,19 +70,19 @@ TOYOTA_FILES: tuple[RemoteFile, ...] = (
     RemoteFile(
         _MATR.format("5c86c0b5fa2ede00015ddf66"),
         "2017-05-12_batchdata_updated_struct_errorcorrect.mat",
-        None,
+        "9d928ab978f0e3c70b31cb833a749fedd35094d01af76475d69b40aa3497f5ba",
         3600,
     ),
     RemoteFile(
         _MATR.format("5c86bf13fa2ede00015ddd82"),
         "2017-06-30_batchdata_updated_struct_errorcorrect.mat",
-        None,
+        "63ab200d09ecb237fee5ef3a5c5db76e3212e3206a0bd92f769e1427fed338b8",
         3600,
     ),
     RemoteFile(
         _MATR.format("5c86bd64fa2ede00015ddbb2"),
         "2018-04-12_batchdata_updated_struct_errorcorrect.mat",
-        None,
+        "62c30e413b63e6144720e016deed3661fac8468641794a5807b123fe84717998",
         3600,
     ),
 )
