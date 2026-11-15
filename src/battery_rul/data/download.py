@@ -48,14 +48,20 @@ NASA_CELL_SHA256: dict[str, str] = {
 }
 _NASA_INNER_ZIP = "5. Battery Data Set/1. BatteryAgingARC-FY08Q4.zip"
 
+_CALCE_SHA256 = {
+    35: "84d88cb98a43c02049f16c78806a78ec19084776ea5df8a4b7c2f8f7ba4589e5",
+    36: "2e674f58bb6dc005c73bef10e87edbbd97afd041dde77a1d461a3c4ecac1b027",
+    37: "8ed8aecbcbea2bcb17f455923a974be01ea21d7389210e1912d177de5b6af4a5",
+    38: "98787427c10478425efd4f54d823805724daff1d2fcbd822b3a2d7006a1051d8",
+}
 CALCE_FILES: tuple[RemoteFile, ...] = tuple(
     RemoteFile(
         url=f"https://web.calce.umd.edu/batteries/data/CS2_{n}.zip",
         filename=f"CS2_{n}.zip",
-        sha256=None,  # pinned after first verified download
+        sha256=digest,
         timeout_s=1800,  # the CALCE server is slow
     )
-    for n in (35, 36, 37, 38)
+    for n, digest in _CALCE_SHA256.items()
 )
 
 _MATR = "https://data.matr.io/1/api/v1/file/{}/download"
@@ -164,6 +170,11 @@ def download(dataset: str) -> list[Path]:
         dest_dir = RAW_DIR / name
         for remote in REGISTRY[name]:
             paths.append(fetch(remote, dest_dir))
+        if name == "calce":
+            for zpath in sorted(dest_dir.glob("CS2_*.zip")):
+                if not (dest_dir / zpath.stem).is_dir():
+                    with zipfile.ZipFile(zpath) as zf:
+                        zf.extractall(dest_dir)
         if name == "nasa":
             _extract_nasa(dest_dir / NASA_FILES[0].filename)
             for fname, digest in NASA_CELL_SHA256.items():

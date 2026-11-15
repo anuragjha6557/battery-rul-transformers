@@ -69,6 +69,7 @@ explicit = true
 line-length = 100
 target-version = "py312"
 src = ["src", "tests", "scripts"]
+extend-exclude = [".claude"]  # agent worktrees live under .claude/worktrees
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "N", "SIM", "NPY", "PD", "RUF"]

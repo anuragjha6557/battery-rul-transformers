@@ -35,3 +35,6 @@ multirun/
 
 # Secrets
 .env
+
+# Claude Code agent worktrees / local settings
+.claude/
