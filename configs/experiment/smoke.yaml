@@ -1,0 +1,18 @@
+# @package _global_
+# Smoke benchmark: the two level-0 baselines on every dataset (ADR-0003).
+# Run: battery-rul benchmark --config smoke
+defaults:
+  - /experiment_schema
+  - _self_
+
+name: smoke
+datasets: [nasa, calce, toyota]
+tasks: [forecast]
+models:
+  - name: persistence
+  - name: last_slope
+    params: {window: 10}
+seeds: [0]
+lookback: 32
+eval_origins: [start_points, all]
+allow_untuned: true

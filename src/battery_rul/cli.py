@@ -68,9 +68,35 @@ def build_data(dataset: str = typer.Argument("all", help="nasa | calce | toyota 
 
 
 @app.command()
-def benchmark(config: str = typer.Option(..., help="Experiment config name")) -> None:
-    """Run a benchmark experiment and log to MLflow."""
-    _not_yet("Phase 3")
+def benchmark(
+    config: str = typer.Option(..., help="Experiment config name (configs/experiment/<name>.yaml)"),
+    n_jobs: int = typer.Option(None, help="Parallel worker processes (default: from config)"),
+    override: list[str] = typer.Option([], "--override", "-o", help="Hydra override"),  # noqa: B008
+) -> None:
+    """Run a benchmark experiment and log to MLflow (resumable)."""
+    from battery_rul.train.config import load_experiment
+    from battery_rul.train.runner import run_experiment
+
+    cfg = load_experiment(config, list(override))
+    s = run_experiment(cfg, n_jobs=n_jobs)
+    console.print(
+        f"[green]{cfg.name}:[/] {s.n_units} units: {s.n_run} run, {s.n_resumed} resumed, "
+        f"{s.n_skipped} skipped (no samples), {s.n_unsupported} unsupported model/task pairs. "
+        f"parent run {s.parent_run_id}"
+    )
+
+
+@app.command()
+def report(
+    experiment: str = typer.Option(..., help="Experiment name"),
+    tracking_uri: str = typer.Option(None, help="MLflow tracking URI (default: env/sqlite)"),
+) -> None:
+    """Write reports/tables/<experiment>.{md,csv} from FINISHED MLflow runs."""
+    from battery_rul.eval.report import write_report
+    from battery_rul.train.config import default_tracking_uri
+
+    md, csv = write_report(experiment, tracking_uri or default_tracking_uri())
+    console.print(f"[green]wrote[/] {md} and {csv}")
 
 
 @app.command()
