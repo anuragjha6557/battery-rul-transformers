@@ -30,6 +30,8 @@ class Persistence:
     name: ClassVar[str] = "persistence"
     supported_tasks: ClassVar[frozenset[TaskName]] = frozenset({"forecast"})
     probabilistic: ClassVar[bool] = False
+    cross_fit: ClassVar[bool] = False  # nothing to fit -> no CV+ sub-models
+    tunable: ClassVar[bool] = False  # no free hyperparameters (PROTOCOL §6)
 
     def fit(self, train: SampleSet, val: SampleSet | None = None) -> FitInfo:
         return FitInfo(n_train=len(train), n_val=len(val) if val is not None else 0)
@@ -46,6 +48,8 @@ class LastSlope:
     name: ClassVar[str] = "last_slope"
     supported_tasks: ClassVar[frozenset[TaskName]] = frozenset({"forecast"})
     probabilistic: ClassVar[bool] = False
+    cross_fit: ClassVar[bool] = False
+    tunable: ClassVar[bool] = False
 
     def __init__(self, window: int = 10) -> None:
         if window < 2:
