@@ -1,0 +1,203 @@
+"""iTransformer (Liu et al., ICLR 2024) for battery prognostics: the source paper's method,
+re-implemented cleanly (the official MIT-licensed repo was used as a reference, not vendored).
+
+Inverted view: each *variate* (SOH, charge-phase channels, discharge history channels) is one
+token whose embedding is ``Linear(L -> d_model)`` of its whole lookback window. Self-attention
+then mixes **variates**, not time steps. This is the "multivariate correlation" thesis the paper
+relied on, and PatchTST (channel-independent) is its direct foil in the benchmark.
+
+Choices beyond the original, each documented as a deviation:
+1. **Instance normalisation keeps the level.** Each variate is normalised by its last valid
+   value (location) and masked std (scale), as in iTransformer's series stationarisation. The
+   location and log-scale are *also* fed to the token embedding (``Linear(L + 2 -> d)``),
+   because RUL depends on how far SOH is from the EOL threshold, which pure stationarisation
+   discards.
+2. **Learned variate embeddings.** Channels here have fixed meanings (unlike generic
+   multivariate benchmarks), so a per-variate identity embedding is added to each token.
+3. **Tabular summaries as tokens.** Each scalar feature in ``x_tab`` becomes one token
+   (``x * w_f + b_f``), so attention can relate trajectory summaries to variates.
+4. **Residual convention.** Forecasts are read from the SOH token. For soh/forecast tasks the
+   output is multiplied by the SOH instance scale, so a zero module equals persistence (shared
+   NeuralModel convention). For RUL the output is in the scaled-RUL target space.
+5. **Padding.** Positions before the first valid cycle are filled with that cycle's value. The
+   mask channel is *not* a token: it would encode history length, an age proxy for the first
+   L cycles (PROTOCOL §4 rule 4).
+
+Variants via ``channels``: ``"all"`` (MC, the paper's multi-channel model) and ``"soh"`` (SC,
+one variate token plus tabular tokens; the degenerate case the paper never reported).
+
+Parameter cap (PROTOCOL §6, ≤ 250 k): as in ``transformer.py``, only the FFN width shrinks, and
+only at the largest corner of the search space.
+"""
+
+from __future__ import annotations
+
+from typing import Any, Literal
+
+import torch
+from torch import nn
+
+from battery_rul.models.neural import NeuralModel
+from battery_rul.models.transformer import MAX_PARAMS, count_params
+
+Channels = Literal["all", "soh"]
+_ALLOWED_ARCH = {
+    "d_model",
+    "n_heads",
+    "n_layers",
+    "dropout",
+    "ff_mult",
+    "channels",
+    "use_tab",
+    "lookback",
+}
+_EPS = 1e-3
+
+
+def fill_and_normalise(x_hist: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    """Per-variate fill + instance normalisation.
+
+    Args:
+        x_hist: (B, L, V+1) with the validity mask as the last channel.
+    Returns:
+        z (B, V, L) normalised series, loc (B, V) last valid value, scale (B, V) masked std.
+    """
+    x, valid = x_hist[..., :-1], x_hist[..., -1:] > 0.5  # (B,L,V), (B,L,1)
+    first_idx = valid.to(x.dtype).argmax(dim=1, keepdim=True).expand(-1, 1, x.shape[2])
+    first = x.gather(1, first_idx)
+    filled = torch.where(valid, x, first)
+    n = x.shape[1]
+    last_idx = (n - 1 - valid.flip(1).to(x.dtype).argmax(dim=1, keepdim=True)).expand(
+        -1, 1, x.shape[2]
+    )
+    loc = filled.gather(1, last_idx)  # (B,1,V)
+    w = valid.to(x.dtype)
+    cnt = w.sum(dim=1, keepdim=True).clamp_min(1.0)
+    mean = (filled * w).sum(dim=1, keepdim=True) / cnt
+    var = (((filled - mean) ** 2) * w).sum(dim=1, keepdim=True) / cnt
+    scale = var.sqrt().clamp_min(_EPS)
+    z = (filled - loc) / scale
+    return z.transpose(1, 2), loc[:, 0], scale[:, 0]
+
+
+class _ITransformer(nn.Module):
+    def __init__(
+        self,
+        n_vars: int,
+        n_tab: int,
+        lookback: int,
+        n_h: int,
+        n_q: int,
+        d_model: int,
+        n_heads: int,
+        n_layers: int,
+        dropout: float,
+        ff: int,
+        denorm_soh: bool,
+    ) -> None:
+        super().__init__()
+        self.n_vars, self.n_tab, self.n_h, self.n_q = n_vars, n_tab, n_h, n_q
+        self.denorm_soh = denorm_soh
+        self.embed = nn.Linear(lookback + 2, d_model)
+        self.var_emb = nn.Parameter(torch.zeros(n_vars, d_model))
+        self.tab_w = nn.Parameter(torch.zeros(n_tab, d_model))
+        self.tab_b = nn.Parameter(torch.zeros(n_tab, d_model))
+        layer = nn.TransformerEncoderLayer(
+            d_model, n_heads, ff, dropout, batch_first=True, norm_first=True
+        )
+        self.encoder = nn.TransformerEncoder(
+            layer, n_layers, norm=nn.LayerNorm(d_model), enable_nested_tensor=False
+        )
+        self.head = nn.Linear(d_model, n_h * n_q)
+        nn.init.normal_(self.var_emb, std=0.02)
+        nn.init.normal_(self.tab_w, std=0.02)
+
+    def forward(self, x_hist: torch.Tensor, x_tab: torch.Tensor) -> torch.Tensor:
+        if x_hist.shape[2] - 1 != self.n_vars:  # SC variant: keep SOH (channel 0) + mask
+            x_hist = torch.cat([x_hist[..., : self.n_vars], x_hist[..., -1:]], dim=2)
+        z, loc, scale = fill_and_normalise(x_hist)
+        stats = torch.stack([loc, torch.log(scale)], dim=2)  # (B, V, 2)
+        tokens = self.embed(torch.cat([z, stats], dim=2)) + self.var_emb  # (B, V, d)
+        if self.n_tab:
+            tab_tokens = x_tab[..., None] * self.tab_w + self.tab_b  # (B, F, d)
+            tokens = torch.cat([tokens, tab_tokens], dim=1)
+        h = self.encoder(tokens)
+        out = self.head(h[:, 0]).view(-1, self.n_h, self.n_q)  # SOH token is variate 0
+        if self.denorm_soh:
+            out = out * scale[:, :1, None]
+        return out
+
+
+class ITransformer(NeuralModel):
+    """iTransformer; see the module docstring. ``channels="all"`` = MC, ``"soh"`` = SC."""
+
+    name = "itransformer"
+
+    def __init__(
+        self,
+        *,
+        d_model: int = 64,
+        n_heads: int = 4,
+        n_layers: int = 2,
+        dropout: float = 0.1,
+        ff_mult: int = 4,
+        channels: Channels = "all",
+        use_tab: bool = True,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(
+            d_model=d_model,
+            n_heads=n_heads,
+            n_layers=n_layers,
+            dropout=dropout,
+            ff_mult=ff_mult,
+            channels=channels,
+            use_tab=use_tab,
+            **kwargs,
+        )
+        extra = set(self.arch) - _ALLOWED_ARCH
+        if extra:
+            raise TypeError(f"unexpected architecture arguments {sorted(extra)}")
+        if d_model % n_heads:
+            raise ValueError("d_model must be divisible by n_heads")
+        if channels not in ("all", "soh"):
+            raise ValueError("channels must be 'all' or 'soh'")
+
+    def build_module(
+        self, n_channels: int, n_tab: int, lookback: int, n_h: int, n_q: int
+    ) -> nn.Module:
+        a = self.arch
+        n_vars = (n_channels - 1) if a["channels"] == "all" else 1  # minus the mask channel
+        n_tab_used = n_tab if a["use_tab"] else 0
+        denorm = getattr(self, "_task", "forecast") != "rul"
+        ff = int(a["ff_mult"]) * int(a["d_model"])
+        while True:
+            module = _ITransformer(
+                n_vars,
+                n_tab_used,
+                lookback,
+                n_h,
+                n_q,
+                int(a["d_model"]),
+                int(a["n_heads"]),
+                int(a["n_layers"]),
+                float(a["dropout"]),
+                ff,
+                denorm,
+            )
+            if count_params(module) <= MAX_PARAMS or ff <= 4:
+                return _TabGate(module, use_tab=bool(a["use_tab"]))
+            ff = max(4, ff * 3 // 4)
+
+
+class _TabGate(nn.Module):
+    """Drops x_tab when ``use_tab`` is False so the inner module sees F = 0."""
+
+    def __init__(self, inner: _ITransformer, use_tab: bool) -> None:
+        super().__init__()
+        self.inner, self.use_tab = inner, use_tab
+
+    def forward(self, x_hist: torch.Tensor, x_tab: torch.Tensor) -> torch.Tensor:
+        if not self.use_tab:
+            x_tab = x_tab[:, :0]
+        return self.inner(x_hist, x_tab)

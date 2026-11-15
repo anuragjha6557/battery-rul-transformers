@@ -43,6 +43,8 @@ _PATHS: dict[str, tuple[str, OmpFamily | None]] = {
     "lstm": ("battery_rul.models.recurrent:RecurrentModel", "torch"),  # params set cell=lstm
     "gru": ("battery_rul.models.recurrent:RecurrentModel", "torch"),  # params set cell=gru
     "transformer": ("battery_rul.models.transformer:TimeTransformer", "torch"),
+    "itransformer": ("battery_rul.models.itransformer:ITransformer", "torch"),  # channels=all
+    "itransformer_sc": ("battery_rul.models.itransformer:ITransformer", "torch"),  # channels=soh
 }
 
 
