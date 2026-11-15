@@ -1,0 +1,6 @@
+name: elasticnet
+params: {alpha: 1.0e-3, l1_ratio: 0.5, n_lags: 10, lookback: 32}
+search:
+  alpha: {type: float, low: 1.0e-5, high: 1.0, log: true}
+  l1_ratio: {type: float, low: 0.0, high: 1.0}
+  n_lags: {type: categorical, choices: [5, 10, 20]}
