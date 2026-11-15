@@ -19,6 +19,7 @@ is shared, so model comparisons differ only in architecture:
 from __future__ import annotations
 
 import copy
+from collections.abc import Callable
 from typing import Any, ClassVar
 
 import numpy as np
@@ -81,6 +82,7 @@ class NeuralModel:
         quantiles: tuple[float, ...] | None = DEFAULT_QUANTILES,
         grad_clip: float = 1.0,
         device: str = "auto",
+        epoch_callback: Callable[[int, float], None] | None = None,
         **arch: Any,
     ) -> None:
         if quantiles is not None and 0.5 not in quantiles:
@@ -89,6 +91,10 @@ class NeuralModel:
         self.max_epochs, self.patience, self.grad_clip = max_epochs, patience, grad_clip
         self.quantiles = tuple(sorted(quantiles)) if quantiles is not None else None
         self.device = resolve_device(device)  # type: ignore[arg-type]
+        #: Called as ``epoch_callback(epoch, val_loss)`` after each epoch's validation loss
+        #: (1-based epoch). Used by tuning for pruning; an exception raised here (e.g.
+        #: ``optuna.TrialPruned``) propagates out of ``fit``.
+        self.epoch_callback = epoch_callback
         self.arch = arch
         self.module: nn.Module | None = None
 
@@ -171,6 +177,8 @@ class NeuralModel:
             self.module.eval()
             with torch.no_grad():
                 v = float(self._loss(self.module(vxh, vxt), vy, vm))
+            if self.epoch_callback is not None:
+                self.epoch_callback(epoch, v)
             if v < best - 1e-7:
                 best, best_state, bad = v, copy.deepcopy(self.module.state_dict()), 0
             else:

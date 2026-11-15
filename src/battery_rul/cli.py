@@ -6,6 +6,8 @@ commands exit with a clear message rather than silently doing nothing.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import typer
 from rich.console import Console
 
@@ -84,6 +86,36 @@ def benchmark(
         f"{s.n_skipped} skipped (no samples), {s.n_unsupported} unsupported model/task pairs. "
         f"parent run {s.parent_run_id}"
     )
+
+
+@app.command()
+def tune(
+    model: str = typer.Option(..., help="Model config name (configs/model/<name>.yaml)"),
+    task: str = typer.Option(..., help="soh | forecast | rul"),
+    n_trials: int = typer.Option(50, help="Trials to add to the study (equal budget: 50)"),
+    n_jobs: int = typer.Option(4, help="Parallel worker processes sharing the study"),
+    train_stride: int = typer.Option(4, help="Keep every k-th training origin per cell"),
+    journal: str = typer.Option(
+        None, help="Optuna journal file (default: <project>/optuna/journal.log)"
+    ),
+) -> None:
+    """Tune a model on Toyota train (inner grouped 5-fold CV); resumes an existing study."""
+    from battery_rul.train.tune import TuningError, format_result
+    from battery_rul.train.tune import tune as _tune
+
+    try:
+        res = _tune(
+            model,
+            task,
+            n_trials=n_trials,
+            n_jobs=n_jobs,
+            train_stride=train_stride,
+            journal=Path(journal) if journal else None,
+        )
+    except TuningError as e:
+        console.print(f"[red]{e}[/]")
+        raise typer.Exit(code=1) from e
+    console.print(format_result(res))
 
 
 @app.command()

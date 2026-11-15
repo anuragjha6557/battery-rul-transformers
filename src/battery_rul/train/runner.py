@@ -58,7 +58,12 @@ from battery_rul.splits.loco import independent_fold_cells, loco_folds
 from battery_rul.splits.toyota import grouped_kfold, official_split
 from battery_rul.tasks.labels import eol_table, label_source
 from battery_rul.tasks.samples import PreparedCycles, TaskSpec, build_samples, prepare_cycles
-from battery_rul.train.config import ExperimentConfig, ModelConfig, horizons_for
+from battery_rul.train.config import (
+    ExperimentConfig,
+    ModelConfig,
+    horizons_for,
+    resolve_tuned_models,
+)
 from battery_rul.utils import (
     PROCESSED_DIR,
     PROJECT_ROOT,
@@ -569,6 +574,7 @@ def run_experiment(
 ) -> RunSummary:
     import mlflow
 
+    cfg = resolve_tuned_models(cfg)
     check_rule6(cfg)
     for t in cfg.tasks:
         if t not in VALID_TASKS:
@@ -588,6 +594,9 @@ def run_experiment(
         plans = plan_folds(ds, ctx.cells)
         for task in cfg.tasks:
             for m in cfg.models:
+                if m.tuned_task is not None and m.tuned_task != task:
+                    log.info("skip: %s tuned for %s, not %s", m.name, m.tuned_task, task)
+                    continue
                 probe = (
                     make_model(m.name, **{**model_ctor_params(m)})
                     if not accepts_kwarg(MODELS[m.name], "device")
