@@ -41,11 +41,13 @@ def seed_everything(seed: int) -> None:
         pass
 
 
-def resolve_device(name: DeviceName = "cpu") -> str:
+def resolve_device(name: DeviceName = "auto") -> str:
     """Return a torch device string.
 
-    CPU is the default (ADR-0007): for the small models in this project, many
-    single-threaded CPU processes beat one MPS process. MPS is opt-in.
+    ``"auto"`` (default) picks MPS when available, else CPU. Measured in ADR-0007:
+    MPS beats every CPU configuration for this project's model shapes (2.6x at the
+    smallest shape with 4 concurrent MPS processes, up to 13x at Toyota pre-training size).
+    CI and the HF Space have no MPS and fall back to CPU automatically.
     """
     if name == "cpu":
         return "cpu"

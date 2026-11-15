@@ -40,9 +40,10 @@ def test_seed_everything_is_reproducible() -> None:
     assert torch.equal(a[1], b[1])
 
 
-def test_resolve_device_defaults_to_cpu() -> None:
-    assert resolve_device() == "cpu"
-    assert resolve_device("auto") in {"cpu", "mps"}
+def test_resolve_device() -> None:
+    assert resolve_device("cpu") == "cpu"
+    expected = "mps" if torch.backends.mps.is_available() else "cpu"
+    assert resolve_device() == expected  # default is "auto" (ADR-0007)
 
 
 def test_config_hash_is_order_invariant_and_sensitive() -> None:

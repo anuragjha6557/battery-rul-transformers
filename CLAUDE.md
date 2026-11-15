@@ -18,7 +18,7 @@ Current state and next action: `docs/STATUS.md`. Decisions: `docs/decisions/` (A
 
 ## Environment
 - Python **3.12** via `uv` (`~/.local/bin/uv`). System Homebrew Python is 3.14 — do not use it.
-- PyTorch CPU-first; MPS is opt-in and benchmarked (see PLAN §8). Never put MPS code in the serving path.
+- PyTorch **MPS-first for neural models** (measured, ADR-0007: 4 concurrent MPS worker processes for sweeps; one MPS process for Toyota pre-training); classical models (LightGBM/GPR/sklearn) run on the remaining CPU cores concurrently. CI and the HF Space are CPU-only — never put MPS-specific code in the serving path; use `battery_rul.utils.resolve_device("auto")`.
 - MLflow local (`sqlite:///mlflow.db`, `mlruns/` gitignored). Hydra configs under `configs/`.
 - `git` present; `gh` CLI is **not installed** — ask the owner to run `! brew install gh && gh auth login` when a GitHub action is needed. No Docker.
 - Raw data lives in `data/raw/` (gitignored, checksummed by `src/battery_rul/data/download.py`). Toyota's download page is JS-rendered; if headless download fails, ask the owner to download the three `.mat` batches into `data/raw/toyota/` once.

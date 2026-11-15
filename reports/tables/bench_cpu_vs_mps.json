@@ -1,0 +1,60 @@
+{
+  "machine": "macOS-26.6-arm64-arm-64bit",
+  "processor": "arm",
+  "cpu_count": 12,
+  "torch": "2.15.0",
+  "mps_available": true,
+  "results_steps_per_second": [
+    {
+      "shape": {
+        "name": "small (NASA/CALCE)",
+        "d_model": 64,
+        "n_layers": 2,
+        "seq_len": 32,
+        "batch": 64,
+        "steps": 200
+      },
+      "cpu 1 proc x 1 thread": 104.81,
+      "cpu 1 proc x 12 threads": 79.97,
+      "cpu 5 procs x 2 threads": 395.41,
+      "cpu 10 procs x 1 thread": 656.69,
+      "mps 1 proc": 536.1,
+      "mps 2 procs": 848.85,
+      "mps 4 procs": 1687.23
+    },
+    {
+      "shape": {
+        "name": "medium",
+        "d_model": 128,
+        "n_layers": 2,
+        "seq_len": 64,
+        "batch": 128,
+        "steps": 60
+      },
+      "cpu 1 proc x 1 thread": 14.04,
+      "cpu 1 proc x 12 threads": 18.02,
+      "cpu 5 procs x 2 threads": 48.61,
+      "cpu 10 procs x 1 thread": 57.96,
+      "mps 1 proc": 90.05,
+      "mps 2 procs": 96.76,
+      "mps 4 procs": 105.63
+    },
+    {
+      "shape": {
+        "name": "large (Toyota pretrain)",
+        "d_model": 128,
+        "n_layers": 3,
+        "seq_len": 128,
+        "batch": 512,
+        "steps": 15
+      },
+      "cpu 1 proc x 1 thread": 0.85,
+      "cpu 1 proc x 12 threads": 1.23,
+      "cpu 5 procs x 2 threads": 0.85,
+      "cpu 10 procs x 1 thread": 0.45,
+      "mps 1 proc": 5.31,
+      "mps 2 procs": 5.65,
+      "mps 4 procs": 6.11
+    }
+  ]
+}

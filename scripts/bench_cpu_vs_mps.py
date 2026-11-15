@@ -1,14 +1,14 @@
 """Measure CPU vs MPS training throughput for the model sizes used in this project.
 
-Output feeds ADR-0007 (compute strategy). Run with:
+Output feeds ADR-0007 (compute strategy). Run on an otherwise idle machine:
 
-    uv run python scripts/bench_cpu_vs_mps.py
+    uv run python -u scripts/bench_cpu_vs_mps.py
 
-Each configuration trains a small Transformer encoder (the same shape family as
-the time-token Transformer / iTransformer baselines) for a fixed number of
-steps and reports steps/second. The comparison that matters for the
-benchmark is *aggregate* throughput: N parallel single-threaded CPU processes
-vs one MPS process.
+Each configuration trains a small Transformer encoder (the shape family of the
+time-token Transformer / iTransformer baselines) for a fixed number of steps
+and reports steps/second. The comparison that matters for the benchmark is
+*aggregate* throughput of N concurrent processes, because hyperparameter
+search and seed/fold sweeps are embarrassingly parallel.
 """
 
 from __future__ import annotations
@@ -33,15 +33,15 @@ class Shape:
     n_layers: int
     seq_len: int  # tokens (time steps for vanilla, variates for iTransformer)
     batch: int
+    steps: int  # timed steps (sized so each measurement takes seconds, not minutes)
 
 
 SHAPES = [
-    Shape("small (NASA/CALCE)", d_model=64, n_layers=2, seq_len=32, batch=64),
-    Shape("medium", d_model=128, n_layers=2, seq_len=64, batch=128),
-    Shape("large (Toyota pretrain)", d_model=128, n_layers=3, seq_len=128, batch=512),
+    Shape("small (NASA/CALCE)", d_model=64, n_layers=2, seq_len=32, batch=64, steps=200),
+    Shape("medium", d_model=128, n_layers=2, seq_len=64, batch=128, steps=60),
+    Shape("large (Toyota pretrain)", d_model=128, n_layers=3, seq_len=128, batch=512, steps=15),
 ]
-STEPS = 60
-WARMUP = 10
+WARMUP = 5
 
 
 def _make(shape: Shape, device: str) -> tuple[nn.Module, torch.optim.Optimizer]:
@@ -65,43 +65,64 @@ def run(shape: Shape, device: str, threads: int) -> float:
         loss.backward()
         opt.step()
 
+    def sync() -> None:
+        if device == "mps":
+            torch.mps.synchronize()
+
     for _ in range(WARMUP):
         step()
-    if device == "mps":
-        torch.mps.synchronize()
+    sync()
     t0 = time.perf_counter()
-    for _ in range(STEPS):
+    for _ in range(shape.steps):
         step()
-    if device == "mps":
-        torch.mps.synchronize()
-    return STEPS / (time.perf_counter() - t0)
+    sync()
+    return shape.steps / (time.perf_counter() - t0)
 
 
-def _worker(args: tuple[Shape, int]) -> float:
-    shape, threads = args
+def _worker(args: tuple[Shape, str, int]) -> float:
+    shape, device, threads = args
     os.environ["OMP_NUM_THREADS"] = str(threads)
-    return run(shape, "cpu", threads)
+    return run(shape, device, threads)
 
 
-def parallel_cpu(shape: Shape, n_procs: int, threads: int) -> float:
-    """Aggregate steps/second across n_procs concurrent CPU processes."""
+def aggregate(shape: Shape, device: str, n_procs: int, threads: int) -> float:
+    """Aggregate steps/second across n_procs concurrent processes."""
     with ProcessPoolExecutor(max_workers=n_procs) as ex:
-        return sum(ex.map(_worker, [(shape, threads)] * n_procs))
+        return sum(ex.map(_worker, [(shape, device, threads)] * n_procs))
 
 
 def main() -> None:
     n_cores = os.cpu_count() or 1
     mps_ok = torch.backends.mps.is_available()
+    configs: list[tuple[str, str, int, int]] = [
+        # (label, device, n_procs, threads_per_proc)
+        ("cpu 1 proc x 1 thread", "cpu", 1, 1),
+        (f"cpu 1 proc x {n_cores} threads", "cpu", 1, n_cores),
+        ("cpu 5 procs x 2 threads", "cpu", 5, 2),
+        ("cpu 10 procs x 1 thread", "cpu", 10, 1),
+    ]
+    if mps_ok:
+        configs += [
+            ("mps 1 proc", "mps", 1, 1),
+            ("mps 2 procs", "mps", 2, 1),
+            ("mps 4 procs", "mps", 4, 1),
+        ]
     rows = []
     for shape in SHAPES:
         row: dict[str, object] = {"shape": asdict(shape)}
-        row["cpu_1proc_1thread"] = run(shape, "cpu", 1)
-        row[f"cpu_1proc_{n_cores}threads"] = run(shape, "cpu", n_cores)
-        row["cpu_6proc_2threads_aggregate"] = parallel_cpu(shape, 6, 2)
-        row["cpu_10proc_1thread_aggregate"] = parallel_cpu(shape, 10, 1)
-        row["mps_1proc"] = run(shape, "mps", 1) if mps_ok else None
+        for label, device, n_procs, threads in configs:
+            t0 = time.perf_counter()
+            if n_procs == 1:
+                sps = run(shape, device, threads)
+            else:
+                sps = aggregate(shape, device, n_procs, threads)
+            row[label] = round(sps, 2)
+            print(
+                f"{shape.name:26s} {label:26s} {sps:9.2f} steps/s "
+                f"(wall {time.perf_counter() - t0:5.1f}s)",
+                flush=True,
+            )
         rows.append(row)
-        print(json.dumps(row, indent=2))
 
     out = {
         "machine": platform.platform(),
@@ -109,7 +130,6 @@ def main() -> None:
         "cpu_count": n_cores,
         "torch": torch.__version__,
         "mps_available": mps_ok,
-        "steps_per_config": STEPS,
         "results_steps_per_second": rows,
     }
     REPORTS_DIR.joinpath("tables").mkdir(parents=True, exist_ok=True)

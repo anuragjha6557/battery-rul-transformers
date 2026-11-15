@@ -31,7 +31,7 @@
 |---|---|---|
 | Hardware | Apple M4 Pro, 12 cores, 24 GB, 272 GB free. Everything runs locally. | Owner constraint. All models here are tiny (cells have 150–2 000 cycles); the bottleneck is *number of runs*, not run size → parallelize across cores. |
 | Python / env | `uv` (installed at `~/.local/bin/uv`), **pin Python 3.12** in `pyproject.toml` / `.python-version` | Homebrew default is 3.14; torch 2.9 only has *preview* 3.14 wheels and parts of the ecosystem (mlflow, lightgbm, gradio deps) lag. 3.12 is the safe, defensible choice. |
-| DL framework | PyTorch (MPS available on macOS 26). Benchmark CPU vs MPS in Phase 0; expect CPU-per-process + many parallel processes to win for these tiny models. | Kernel-launch overhead dominates MPS for d_model≤128, seq≤128. Measure, record in ADR. |
+| DL framework | PyTorch, **MPS-first for neural models** (measured in Phase 0, ADR-0007 — the original CPU-parallel assumption was wrong). | MPS beat every CPU configuration at all model sizes (2.6×–13× aggregate). |
 | Tracking | MLflow, local file store at `./mlruns` (gitignored) + `mlflow ui` | Owner choice; no cloud accounts needed. |
 | VCS / CI | GitHub (public repo), GitHub Actions: ruff + pytest on push; HF Space sync on tag. `gh` CLI must be installed (`brew install gh && gh auth login`). | Owner choice. |
 | Hosting | Hugging Face Spaces, **CPU Basic (2 vCPU / 16 GB, free — confirmed on huggingface.co/pricing 2026-11-15)**, Gradio SDK. Model weights in an HF Model repo. Fallback if free tier is unavailable at deploy time: Streamlit Community Cloud. | Owner choice. Forum reports (mid-2026) of free-tier restrictions exist → verify the Space builds in Phase 8 early, not last. |
@@ -249,7 +249,7 @@ Owner key: **O** = Opus 5.5 (lead or Opus subagent), **S** = Sonnet 5.5 subagent
 
 ## 8. Maximizing the M4 Pro
 
-- **Parallelism model:** one Optuna study per (model, task) backed by **`JournalStorage`** (file-based; more robust than SQLite under concurrent writers), TPE sampler + Hyperband pruner, **5–6 worker processes** each with `torch.set_num_threads(2)` and `OMP_NUM_THREADS=2` (leave headroom for the OS and subagents). Measured expectation: CPU-parallel beats a single MPS job for d_model ≤ 128, L ≤ 128, batch ≤ 256 (kernel-launch overhead dominates; MPS also lacks float64 and some ops). MPS is expected to win only for Toyota pre-training at batch ≥ 512, d_model ≥ 128 — and only one process touches MPS at a time. Confirm with `scripts/bench_cpu_vs_mps.py`, set `PYTORCH_ENABLE_MPS_FALLBACK=1`, record the crossover in ADR-0007.
+- **Parallelism model (measured, ADR-0007 — supersedes the original CPU-first assumption):** one Optuna study per (model, task) backed by **`JournalStorage`** (file-based; robust under concurrent writers), TPE sampler + Hyperband pruner. **Neural models: 4 concurrent MPS worker processes** (`torch.set_num_threads(1)` each) — 4 MPS processes gave 1 687 steps/s at the NASA/CALCE shape vs 657 for the best CPU configuration (10 procs). **Classical models (LightGBM/GPR/sklearn): 4–6 CPU worker processes × 2 threads**, running concurrently on the remaining cores. **Toyota pre-training: one MPS process** (GPU saturates; CPU-parallel collapses from memory-bandwidth contention at that size). fp32 only on MPS; metrics computed in float64 on CPU. `PYTORCH_ENABLE_MPS_FALLBACK=1`.
 - **Data loading:** keep datasets as in-memory tensors; **no DataLoader workers** (macOS uses spawn; fork overhead is pure loss at this size).
 - **Memory:** cap concurrent workers so RSS < 16 GB total (Toyota per-cycle features are small once extracted; raw `.mat` streaming via h5py peaks < 3 GB and runs once). LightGBM uses `num_threads=2` per trial.
 - **Data:** Parquet + polars for feature building; cached per-fold tensors in `data/processed/cache/` keyed by config hash so retuning doesn't rebuild features.
@@ -296,11 +296,11 @@ Owner key: **O** = Opus 5.5 (lead or Opus subagent), **S** = Sonnet 5.5 subagent
 | HF free CPU tier changed/removed | Deploy a hello-world Space in Phase 8 day 1; fallback Streamlit Community Cloud; app code stays framework-thin (`serve/predictor.py` is UI-agnostic). |
 | Results show Transformers ≈ linear/GBM on n=4 cells (**expected**) | This is a *finding*, not a failure: the honest conclusion becomes "the contribution is the features/protocol/UQ, not the architecture". Repo is framed as a benchmark; headline leans on the rigorous protocol, the Severson reproduction, calibrated UQ, and cross-chemistry transfer. Say so in README. |
 | Toyota charge-protocol confound | Toyota inputs are discharge-derived (standardized 4C); thesis reframed to "per-cycle curve features" (Section 2). |
-| Torch/MPS instability on macOS 26 | CPU path is the default; MPS is opt-in via config. |
+| Torch/MPS instability or non-determinism on macOS 26 | `device=auto` falls back to CPU; `PYTORCH_ENABLE_MPS_FALLBACK=1`; 5-seed reporting absorbs MPS non-determinism; smoke benchmark checks a CPU-vs-MPS run pair agrees within seed noise. |
 | Scope creep in Phase 6 | Pre-registered hypotheses + decision rule (6.5); time-box each ablation to its estimate ×1.5. |
 | CALCE parsing ambiguities | Data-quality report lists every manual rule; unit-test each. |
 
 ---
 
 ## 12. ADR list to produce (titles)
-0001 record decisions · 0002 toolchain (uv/3.12/torch-CPU-first/MLflow) · 0003 config system · 0004 evaluation protocol & splits · 0005 EOL definition & thresholds · 0006 equal-budget tuning · 0007 compute strategy (CPU-parallel vs MPS, measured) · 0008 baseline findings · 0009 feature set · 0010 direct vs recursive · 0011 UQ method · 0012 Toyota transfer · 0013 normalization · 0014 final model selection · 0015 deployment target & input contract.
+0001 record decisions · 0002 toolchain (uv/3.12/torch/MLflow) · 0003 config system · 0004 evaluation protocol & splits · 0005 EOL definition & thresholds · 0006 equal-budget tuning · 0007 compute strategy (MPS-first, measured) · 0008 baseline findings · 0009 feature set · 0010 direct vs recursive · 0011 UQ method · 0012 Toyota transfer · 0013 normalization · 0014 final model selection · 0015 deployment target & input contract.
