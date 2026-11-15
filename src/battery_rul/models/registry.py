@@ -15,11 +15,19 @@ from collections.abc import Callable
 from typing import Any
 
 from battery_rul.models.base import Model
+from battery_rul.models.extrapolate import GPRExtrap, ParamFit, PrevSOH
 from battery_rul.models.persistence import LastSlope, Persistence
 
+#: Keys are the ``name`` field of ``configs/model/*.yaml`` (one class may back several configs,
+#: e.g. ParamFit with ``kind`` linear / exp2 / power).
 MODELS: dict[str, Callable[..., Model]] = {
     Persistence.name: Persistence,
     LastSlope.name: LastSlope,
+    "prev_soh": PrevSOH,
+    "param_linear": ParamFit,
+    "param_exp2": ParamFit,
+    "param_power": ParamFit,
+    "gpr": GPRExtrap,
 }
 
 

@@ -249,3 +249,19 @@ def test_hydra_smoke_config_composes() -> None:
     assert c.seeds == [0, 1] and c.allow_untuned and c.eval_origins == ["start_points", "all"]
     assert [m.name for m in c.models] == ["persistence", "last_slope"]
     assert c.horizons["toyota"] == [1, 10, 50, 100, 200]
+
+
+def test_every_model_config_is_registered() -> None:
+    """Each configs/model/*.yaml names a registered model and its params construct it."""
+    from pathlib import Path
+
+    import yaml
+
+    from battery_rul.models.registry import MODELS, make_model
+
+    root = Path(__file__).resolve().parents[2] / "configs" / "model"
+    for path in sorted(root.glob("*.yaml")):
+        cfg = yaml.safe_load(path.read_text())
+        assert cfg["name"] in MODELS, f"{path.name}: {cfg['name']} not registered"
+        params = {k: v for k, v in (cfg.get("params") or {}).items() if k != "lookback"}
+        make_model(cfg["name"], **params)
