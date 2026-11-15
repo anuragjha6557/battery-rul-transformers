@@ -1,0 +1,49 @@
+UV ?= $(HOME)/.local/bin/uv
+export OMP_NUM_THREADS ?= 2
+export PYTORCH_ENABLE_MPS_FALLBACK = 1
+
+.PHONY: help env lint format typecheck test test-all cov data bench mlflow app clean
+
+help:  ## Show targets
+	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-12s %s\n", $$1, $$2}'
+
+env:  ## Create/refresh the Python 3.12 environment (all extras + dev)
+	$(UV) sync --all-extras
+	$(UV) run pre-commit install
+
+lint:  ## Ruff lint + format check
+	$(UV) run ruff check .
+	$(UV) run ruff format --check .
+
+format:  ## Auto-fix lint and formatting
+	$(UV) run ruff check --fix .
+	$(UV) run ruff format .
+
+typecheck:  ## mypy on src/
+	$(UV) run mypy
+
+test:  ## Fast unit tests (CI-identical; skips `data` and `slow` markers)
+	$(UV) run pytest
+
+test-all:  ## All tests incl. real-data and slow (needs data/raw)
+	$(UV) run pytest -m ""
+
+cov:  ## Unit tests with coverage report
+	$(UV) run pytest --cov --cov-report=term-missing
+
+data:  ## Download + build canonical parquet for all datasets
+	$(UV) run battery-rul download all
+	$(UV) run battery-rul build-data all
+
+bench:  ## Full benchmark (long; resumable)
+	$(UV) run battery-rul benchmark --config final
+
+mlflow:  ## Launch the MLflow UI on the local store
+	$(UV) run mlflow ui --backend-store-uri sqlite:///mlflow.db
+
+app:  ## Run the Gradio demo locally
+	$(UV) run python app/gradio_app.py
+
+clean:  ## Remove caches (keeps data and mlruns)
+	rm -rf .pytest_cache .ruff_cache .mypy_cache .hypothesis htmlcov .coverage
+	find . -name __pycache__ -type d -prune -exec rm -rf {} +
