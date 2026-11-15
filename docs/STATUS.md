@@ -4,13 +4,15 @@ _Last updated: 2026-11-15 (Opus 5.5 lead)_
 
 ## State
 - **Phase 0 complete** (`8020ca4`): uv/Python 3.12 env (torch 2.15 + MPS, lightgbm 4.7, mlflow 3.18, optuna 5.0, gradio 6.32, pandera 0.36), package skeleton, typer CLI, Makefile, pre-commit, GitHub Actions CI, data contract (`data/schema.py`, `data/io.py`), checksummed downloader, ADR-0001..0003. Local gate green.
-  - Outstanding for the gate: **CI not yet run on GitHub** — needs the owner to run `! brew install gh && gh auth login`, then the lead creates `anuragjha/battery-rul` and pushes. **ADR-0007 pending** — `scripts/bench_cpu_vs_mps.py` must be re-run on an idle machine (first run overlapped with loader agents).
+  - Outstanding for the gate: **CI not yet run on GitHub** — needs the owner to run `! brew install gh && gh auth login`, then the lead creates `anuragjha/battery-rul` and pushes. ADR-0007 done (`8b1d038`): measured MPS-first for neural models.
 - **Phase 1 in progress**
   - NASA loader merged (`b574ccc`): 4 cells, 636 cycles, 2.08 M curve rows, build ≈ 5.5 s; 11 unit + 5 real-data tests.
   - CALCE loader merged (`fe825f4`): 4 cells, 3 911 cycles (880/970/1036/1025), 1.07 M curve rows, build ≈ 30 s (python-calamine); 22 unit + 5 real-data tests. Lead review fix: `ir_ohm` restricted to the charge window (leakage).
   - `battery-rul build-data all` builds NASA + CALCE (`44af569`).
-  - Toyota loader: waiting for batch 1 `.mat` to finish downloading (headless download works — no manual step needed); agent launches when it lands.
-- Data on disk: NASA ✓, CALCE ✓, Toyota downloading (~1–1.5 MB/s, 3 files).
+  - Toyota loader: Sonnet agent running (all 3 batches downloaded, HDF5-verified, checksums pinned `58618f3`; downloader now resumes silently truncated transfers).
+- Data on disk: NASA ✓, CALCE ✓, Toyota ✓ (46/48/46 raw cells).
+- **Phase 2 in progress:** EDA agent running (`data/quality.py`, `tasks/eol.py`, `scripts/make_data_quality_report.py`).
+- **Phase 3 started early:** PROTOCOL.md v1.0 + ADR-0004/0006 committed (`26d2866`) — **owner review gate**; Model contract + persistence baselines (`eace9b0`); metrics/stats/splits agent running.
 
 ## Findings to carry forward (Phase 2 data-quality report / Phase 3 protocol)
 1. **B0005/06/07 were cycled on one rig with identical timestamps** (same rest schedule). Regeneration jumps co-occur at the same cycles (e.g. 20, 31, 48 after rests > 1e5 s; cycle 90 has no paired charge on all three). → LOCO among these three is **not independent on the time axis**; time/rest-derived features carry shared exogenous information. PROTOCOL.md / ADR-0004 must address this (options: report B0018 as the only fully independent NASA test cell; treat rest schedule as known exogenous input vs unknown future; or group-split). Strong interview point.
