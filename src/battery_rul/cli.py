@@ -44,7 +44,11 @@ def build_data(dataset: str = typer.Argument("all", help="nasa | calce | toyota 
     """Parse raw files into canonical cycles/curves parquet tables."""
     import importlib
 
-    builders = {"nasa": "battery_rul.data.nasa", "calce": "battery_rul.data.calce"}
+    builders = {
+        "nasa": "battery_rul.data.nasa",
+        "calce": "battery_rul.data.calce",
+        "toyota": "battery_rul.data.toyota",
+    }
     known = ("nasa", "calce", "toyota")
     if dataset not in (*known, "all"):
         console.print(f"[red]Unknown dataset {dataset!r}.[/]")

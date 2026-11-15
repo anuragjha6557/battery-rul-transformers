@@ -9,10 +9,11 @@ _Last updated: 2026-11-15 (Opus 5.5 lead)_
   - NASA loader merged (`b574ccc`): 4 cells, 636 cycles, 2.08 M curve rows, build ≈ 5.5 s; 11 unit + 5 real-data tests.
   - CALCE loader merged (`fe825f4`): 4 cells, 3 911 cycles (880/970/1036/1025), 1.07 M curve rows, build ≈ 30 s (python-calamine); 22 unit + 5 real-data tests. Lead review fix: `ir_ohm` restricted to the charge window (leakage).
   - `battery-rul build-data all` builds NASA + CALCE (`44af569`).
-  - Toyota loader: Sonnet agent running (all 3 batches downloaded, HDF5-verified, checksums pinned `58618f3`; downloader now resumes silently truncated transfers).
+  - Toyota loader merged (`dd3b70a`): 124 cells (41/43/40 official split), 100 456 cycles, 10.0 M curve rows; Severson cleaning verified step by step against the raw data.
+  - **Phase 1 gate passed:** `battery-rul build-data all` builds all three datasets in 65 s, peak RSS 5.3 GB; 133 unit tests + real-data tests green.
 - Data on disk: NASA ✓, CALCE ✓, Toyota ✓ (46/48/46 raw cells).
-- **Phase 2 in progress:** EDA agent running (`data/quality.py`, `tasks/eol.py`, `scripts/make_data_quality_report.py`).
-- **Phase 3 started early:** PROTOCOL.md v1.0 + ADR-0004/0006 committed (`26d2866`) — **owner review gate**; Model contract + persistence baselines (`eace9b0`); metrics/stats/splits agent running.
+- **Phase 2 done** (`b0db219`, ADR-0005 `40c95ad` + amendment `a66fe54`): `reports/data_quality.md`; EOL = masked+sustained(5) for NASA/CALCE, provider cycle life for Toyota; fixed starts NASA {30,50}, CALCE {200,400}, Toyota {100}. TODO: add Toyota to the data-quality report; flag 45 pause-inflated Toyota charge_time_s cycles (>4000 s).
+- **Phase 3 started early:** PROTOCOL.md v1.0 + ADR-0004/0006 committed (`26d2866`) — **owner review gate**; Model contract + persistence baselines (`eace9b0`); metrics/stats/splits merged (`97b9515`). Next: tasks/ (labels + windowing), features/, leakage tests, runner + MLflow, persistence end-to-end.
 
 ## Findings to carry forward (Phase 2 data-quality report / Phase 3 protocol)
 1. **B0005/06/07 were cycled on one rig with identical timestamps** (same rest schedule). Regeneration jumps co-occur at the same cycles (e.g. 20, 31, 48 after rests > 1e5 s; cycle 90 has no paired charge on all three). → LOCO among these three is **not independent on the time axis**; time/rest-derived features carry shared exogenous information. PROTOCOL.md / ADR-0004 must address this (options: report B0018 as the only fully independent NASA test cell; treat rest schedule as known exogenous input vs unknown future; or group-split). Strong interview point.
