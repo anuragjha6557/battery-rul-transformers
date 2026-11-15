@@ -3,353 +3,151 @@
 - Protocol version: 1.1
 - Git SHA: e10614fa79
 - Seeds: 1  |  unit runs: 12
-- Note: n = 4 cells per NASA/CALCE dataset, so the 95 % cluster-bootstrap CI is wide by construction. Toyota rows are per official test split (mean over seeds, no CI).
+- Note: n = 4 cells per NASA/CALCE dataset, so the 95 % cluster-bootstrap CI is wide by construction. Toyota rows are over test cells (test1 / test2 separately) with a cell-level bootstrap CI and a Holm-adjusted Wilcoxon p vs the best baseline. All metrics are computed per cell from the logged predictions.
 
-## Headline (forecast RMSE, %SOH, kind = overall)
+## Headline (kind = overall; RMSE in %SOH, RUL MAE in cycles)
 
 ### calce_forecast
 
-| split | policy | kind | metric | model | mean [95% CI] | indep. (B0018) | n_cells | n_seeds | run_group |
-|---|---|---|---|---|---|---|---|---|---|
-| loco | all | overall | rmse_h1 | lgbm | 1.939 [1.841, 2.036] |  | 4 | 1 | 34fee0f4 |
-| loco | all | overall | rmse_h1 | nlinear | 2.225 [2.107, 2.344] |  | 4 | 1 | ed116b64 |
-| loco | all | overall | rmse_h1 | persistence | 2.606 [2.429, 2.783] |  | 4 | 1 | 6e0d77d4 |
-| loco | all | overall | rmse_h10 | lgbm | 2.259 [2.187, 2.340] |  | 4 | 1 | 34fee0f4 |
-| loco | all | overall | rmse_h10 | nlinear | 2.643 [2.583, 2.703] |  | 4 | 1 | ed116b64 |
-| loco | all | overall | rmse_h10 | persistence | 3.071 [3.003, 3.139] |  | 4 | 1 | 6e0d77d4 |
-| loco | all | overall | rmse_h50 | lgbm | 2.863 [2.534, 3.188] |  | 4 | 1 | 34fee0f4 |
-| loco | all | overall | rmse_h50 | nlinear | 4.880 [4.717, 5.091] |  | 4 | 1 | ed116b64 |
-| loco | all | overall | rmse_h50 | persistence | 6.278 [5.955, 6.519] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | overall | rmse_h1 | lgbm | 0.426 [0.292, 0.597] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | overall | rmse_h1 | nlinear | 0.903 [0.822, 1.044] |  | 4 | 1 | ed116b64 |
-| loco | start_points | overall | rmse_h1 | persistence | 0.397 [0.177, 0.617] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | overall | rmse_h10 | lgbm | 1.067 [0.577, 1.644] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | overall | rmse_h10 | nlinear | 1.380 [0.894, 1.959] |  | 4 | 1 | ed116b64 |
-| loco | start_points | overall | rmse_h10 | persistence | 1.332 [1.082, 1.703] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | overall | rmse_h50 | lgbm | 1.625 [1.011, 2.239] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | overall | rmse_h50 | nlinear | 4.043 [3.278, 4.821] |  | 4 | 1 | ed116b64 |
-| loco | start_points | overall | rmse_h50 | persistence | 1.506 [1.020, 1.989] |  | 4 | 1 | 6e0d77d4 |
+| split | policy | kind | metric | model | mean [95% CI] | vs best baseline | indep. (B0018) | n_cells | n_seeds | run_group |
+|---|---|---|---|---|---|---|---|---|---|---|
+| loco | all | overall | rmse_h1 | lgbm | 1.939 [1.841, 2.036] | 4/4 cells, 4/4 cell-seeds (vs persistence) |  | 4 | 1 | 34fee0f4 |
+| loco | all | overall | rmse_h1 | nlinear | 2.225 [2.107, 2.344] | 4/4 cells, 4/4 cell-seeds (vs persistence) |  | 4 | 1 | ed116b64 |
+| loco | all | overall | rmse_h1 | persistence | 2.606 [2.429, 2.783] |  |  | 4 | 1 | 6e0d77d4 |
+| loco | all | overall | rmse_h10 | lgbm | 2.259 [2.187, 2.340] | 4/4 cells, 4/4 cell-seeds (vs persistence) |  | 4 | 1 | 34fee0f4 |
+| loco | all | overall | rmse_h10 | nlinear | 2.643 [2.583, 2.703] | 4/4 cells, 4/4 cell-seeds (vs persistence) |  | 4 | 1 | ed116b64 |
+| loco | all | overall | rmse_h10 | persistence | 3.071 [3.003, 3.139] |  |  | 4 | 1 | 6e0d77d4 |
+| loco | all | overall | rmse_h50 | lgbm | 2.863 [2.534, 3.188] | 4/4 cells, 4/4 cell-seeds (vs persistence) |  | 4 | 1 | 34fee0f4 |
+| loco | all | overall | rmse_h50 | nlinear | 4.880 [4.717, 5.091] | 4/4 cells, 4/4 cell-seeds (vs persistence) |  | 4 | 1 | ed116b64 |
+| loco | all | overall | rmse_h50 | persistence | 6.278 [5.955, 6.519] |  |  | 4 | 1 | 6e0d77d4 |
+| loco | start_points | overall | rmse_h1 | lgbm | 0.426 [0.292, 0.597] | 1/4 cells, 1/4 cell-seeds (vs persistence) |  | 4 | 1 | 34fee0f4 |
+| loco | start_points | overall | rmse_h1 | nlinear | 0.903 [0.822, 1.044] | 0/4 cells, 0/4 cell-seeds (vs persistence) |  | 4 | 1 | ed116b64 |
+| loco | start_points | overall | rmse_h1 | persistence | 0.397 [0.177, 0.617] |  |  | 4 | 1 | 6e0d77d4 |
+| loco | start_points | overall | rmse_h10 | lgbm | 1.067 [0.577, 1.644] | 3/4 cells, 3/4 cell-seeds (vs persistence) |  | 4 | 1 | 34fee0f4 |
+| loco | start_points | overall | rmse_h10 | nlinear | 1.380 [0.894, 1.959] | 2/4 cells, 2/4 cell-seeds (vs persistence) |  | 4 | 1 | ed116b64 |
+| loco | start_points | overall | rmse_h10 | persistence | 1.332 [1.082, 1.703] |  |  | 4 | 1 | 6e0d77d4 |
+| loco | start_points | overall | rmse_h50 | lgbm | 1.625 [1.011, 2.239] | 2/4 cells, 2/4 cell-seeds (vs persistence) |  | 4 | 1 | 34fee0f4 |
+| loco | start_points | overall | rmse_h50 | nlinear | 4.043 [3.278, 4.821] | 0/4 cells, 0/4 cell-seeds (vs persistence) |  | 4 | 1 | ed116b64 |
+| loco | start_points | overall | rmse_h50 | persistence | 1.506 [1.020, 1.989] |  |  | 4 | 1 | 6e0d77d4 |
+
+## Mean rank (dataset x task x split x policy x headline metric)
+
+| model | mean rank | conditions | missing |
+|---|---|---|---|
+| lgbm | 1.33 | 6 | 0 |
+| persistence | 2.17 | 6 | 0 |
+| nlinear | 2.50 | 6 | 0 |
 
 ## Full tables
 
-<details><summary>calce_forecast (315 rows)</summary>
+<details><summary>calce_forecast (105 rows)</summary>
 
-| split | policy | kind | metric | model | mean [95% CI] | indep. (B0018) | n_cells | n_seeds | run_group |
-|---|---|---|---|---|---|---|---|---|---|
-| loco | all | overall | mae_h1 | lgbm | 0.841 [0.826, 0.853] |  | 4 | 1 | 34fee0f4 |
-| loco | all | overall | mae_h1 | nlinear | 1.238 [1.179, 1.297] |  | 4 | 1 | ed116b64 |
-| loco | all | overall | mae_h1 | persistence | 0.913 [0.859, 0.975] |  | 4 | 1 | 6e0d77d4 |
-| loco | all | overall | mae_h10 | lgbm | 1.308 [1.222, 1.394] |  | 4 | 1 | 34fee0f4 |
-| loco | all | overall | mae_h10 | nlinear | 1.731 [1.678, 1.784] |  | 4 | 1 | ed116b64 |
-| loco | all | overall | mae_h10 | persistence | 1.767 [1.704, 1.845] |  | 4 | 1 | 6e0d77d4 |
-| loco | all | overall | mae_h100 | lgbm | 2.550 [2.121, 2.946] |  | 4 | 1 | 34fee0f4 |
-| loco | all | overall | mae_h100 | nlinear | 5.262 [5.139, 5.381] |  | 4 | 1 | ed116b64 |
-| loco | all | overall | mae_h100 | persistence | 7.588 [6.946, 8.340] |  | 4 | 1 | 6e0d77d4 |
-| loco | all | overall | mae_h25 | lgbm | 1.724 [1.512, 1.838] |  | 4 | 1 | 34fee0f4 |
-| loco | all | overall | mae_h25 | nlinear | 3.030 [2.894, 3.140] |  | 4 | 1 | ed116b64 |
-| loco | all | overall | mae_h25 | persistence | 2.763 [2.634, 2.892] |  | 4 | 1 | 6e0d77d4 |
-| loco | all | overall | mae_h50 | lgbm | 1.947 [1.643, 2.191] |  | 4 | 1 | 34fee0f4 |
-| loco | all | overall | mae_h50 | nlinear | 3.837 [3.705, 3.917] |  | 4 | 1 | ed116b64 |
-| loco | all | overall | mae_h50 | persistence | 4.401 [4.086, 4.672] |  | 4 | 1 | 6e0d77d4 |
-| loco | all | overall | rmse_h1 | lgbm | 1.939 [1.841, 2.036] |  | 4 | 1 | 34fee0f4 |
-| loco | all | overall | rmse_h1 | nlinear | 2.225 [2.107, 2.344] |  | 4 | 1 | ed116b64 |
-| loco | all | overall | rmse_h1 | persistence | 2.606 [2.429, 2.783] |  | 4 | 1 | 6e0d77d4 |
-| loco | all | overall | rmse_h10 | lgbm | 2.259 [2.187, 2.340] |  | 4 | 1 | 34fee0f4 |
-| loco | all | overall | rmse_h10 | nlinear | 2.643 [2.583, 2.703] |  | 4 | 1 | ed116b64 |
-| loco | all | overall | rmse_h10 | persistence | 3.071 [3.003, 3.139] |  | 4 | 1 | 6e0d77d4 |
-| loco | all | overall | rmse_h100 | lgbm | 3.469 [2.933, 4.063] |  | 4 | 1 | 34fee0f4 |
-| loco | all | overall | rmse_h100 | nlinear | 6.702 [6.411, 6.946] |  | 4 | 1 | ed116b64 |
-| loco | all | overall | rmse_h100 | persistence | 10.293 [9.591, 10.966] |  | 4 | 1 | 6e0d77d4 |
-| loco | all | overall | rmse_h25 | lgbm | 2.609 [2.444, 2.762] |  | 4 | 1 | 34fee0f4 |
-| loco | all | overall | rmse_h25 | nlinear | 3.850 [3.725, 4.041] |  | 4 | 1 | ed116b64 |
-| loco | all | overall | rmse_h25 | persistence | 4.180 [4.046, 4.314] |  | 4 | 1 | 6e0d77d4 |
-| loco | all | overall | rmse_h50 | lgbm | 2.863 [2.534, 3.188] |  | 4 | 1 | 34fee0f4 |
-| loco | all | overall | rmse_h50 | nlinear | 4.880 [4.717, 5.091] |  | 4 | 1 | ed116b64 |
-| loco | all | overall | rmse_h50 | persistence | 6.278 [5.955, 6.519] |  | 4 | 1 | 6e0d77d4 |
-| loco | all | overall | rmse_smooth_h1 | lgbm | 0.731 [0.700, 0.777] |  | 4 | 1 | 34fee0f4 |
-| loco | all | overall | rmse_smooth_h1 | nlinear | 1.266 [1.213, 1.319] |  | 4 | 1 | ed116b64 |
-| loco | all | overall | rmse_smooth_h1 | persistence | 1.852 [1.738, 1.966] |  | 4 | 1 | 6e0d77d4 |
-| loco | all | overall | rmse_smooth_h10 | lgbm | 1.366 [1.266, 1.466] |  | 4 | 1 | 34fee0f4 |
-| loco | all | overall | rmse_smooth_h10 | nlinear | 1.938 [1.865, 2.012] |  | 4 | 1 | ed116b64 |
-| loco | all | overall | rmse_smooth_h10 | persistence | 2.407 [2.342, 2.470] |  | 4 | 1 | 6e0d77d4 |
-| loco | all | overall | rmse_smooth_h100 | lgbm | 2.963 [2.474, 3.438] |  | 4 | 1 | 34fee0f4 |
-| loco | all | overall | rmse_smooth_h100 | nlinear | 6.445 [6.200, 6.625] |  | 4 | 1 | ed116b64 |
-| loco | all | overall | rmse_smooth_h100 | persistence | 9.949 [9.253, 10.647] |  | 4 | 1 | 6e0d77d4 |
-| loco | all | overall | rmse_smooth_h25 | lgbm | 1.910 [1.749, 2.038] |  | 4 | 1 | 34fee0f4 |
-| loco | all | overall | rmse_smooth_h25 | nlinear | 3.447 [3.348, 3.578] |  | 4 | 1 | ed116b64 |
-| loco | all | overall | rmse_smooth_h25 | persistence | 3.612 [3.459, 3.746] |  | 4 | 1 | 6e0d77d4 |
-| loco | all | overall | rmse_smooth_h50 | lgbm | 2.188 [1.784, 2.523] |  | 4 | 1 | 34fee0f4 |
-| loco | all | overall | rmse_smooth_h50 | nlinear | 4.557 [4.387, 4.733] |  | 4 | 1 | ed116b64 |
-| loco | all | overall | rmse_smooth_h50 | persistence | 5.834 [5.421, 6.137] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | fixed:200 | mae_h1 | lgbm | 0.206 [0.043, 0.380] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | fixed:200 | mae_h1 | nlinear | 0.968 [0.612, 1.287] |  | 4 | 1 | ed116b64 |
-| loco | start_points | fixed:200 | mae_h1 | persistence | 0.347 [0.209, 0.485] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | fixed:200 | mae_h10 | lgbm | 1.430 [0.364, 3.277] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | fixed:200 | mae_h10 | nlinear | 1.859 [0.748, 3.801] |  | 4 | 1 | ed116b64 |
-| loco | start_points | fixed:200 | mae_h10 | persistence | 1.344 [0.340, 2.774] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | fixed:200 | mae_h100 | lgbm | 1.322 [0.628, 2.100] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | fixed:200 | mae_h100 | nlinear | 3.871 [2.968, 5.352] |  | 4 | 1 | ed116b64 |
-| loco | start_points | fixed:200 | mae_h100 | persistence | 1.897 [1.120, 2.489] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | fixed:200 | mae_h25 | lgbm | 2.235 [1.871, 2.531] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | fixed:200 | mae_h25 | nlinear | 3.979 [3.621, 4.360] |  | 4 | 1 | ed116b64 |
-| loco | start_points | fixed:200 | mae_h25 | persistence | 0.840 [0.239, 1.441] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | fixed:200 | mae_h50 | lgbm | 1.685 [0.692, 2.276] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | fixed:200 | mae_h50 | nlinear | 3.937 [3.081, 4.594] |  | 4 | 1 | ed116b64 |
-| loco | start_points | fixed:200 | mae_h50 | persistence | 0.844 [0.319, 1.572] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | fixed:200 | rmse_h1 | lgbm | 0.206 [0.043, 0.380] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | fixed:200 | rmse_h1 | nlinear | 0.968 [0.612, 1.287] |  | 4 | 1 | ed116b64 |
-| loco | start_points | fixed:200 | rmse_h1 | persistence | 0.347 [0.209, 0.485] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | fixed:200 | rmse_h10 | lgbm | 1.430 [0.364, 3.277] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | fixed:200 | rmse_h10 | nlinear | 1.859 [0.748, 3.801] |  | 4 | 1 | ed116b64 |
-| loco | start_points | fixed:200 | rmse_h10 | persistence | 1.344 [0.340, 2.774] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | fixed:200 | rmse_h100 | lgbm | 1.322 [0.628, 2.100] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | fixed:200 | rmse_h100 | nlinear | 3.871 [2.968, 5.352] |  | 4 | 1 | ed116b64 |
-| loco | start_points | fixed:200 | rmse_h100 | persistence | 1.897 [1.120, 2.489] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | fixed:200 | rmse_h25 | lgbm | 2.235 [1.871, 2.531] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | fixed:200 | rmse_h25 | nlinear | 3.979 [3.621, 4.360] |  | 4 | 1 | ed116b64 |
-| loco | start_points | fixed:200 | rmse_h25 | persistence | 0.840 [0.239, 1.441] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | fixed:200 | rmse_h50 | lgbm | 1.685 [0.692, 2.276] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | fixed:200 | rmse_h50 | nlinear | 3.937 [3.081, 4.594] |  | 4 | 1 | ed116b64 |
-| loco | start_points | fixed:200 | rmse_h50 | persistence | 0.844 [0.319, 1.572] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | fixed:200 | rmse_smooth_h1 | lgbm | 0.173 [0.056, 0.247] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | fixed:200 | rmse_smooth_h1 | nlinear | 0.872 [0.593, 1.150] |  | 4 | 1 | ed116b64 |
-| loco | start_points | fixed:200 | rmse_smooth_h1 | persistence | 0.250 [0.072, 0.457] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | fixed:200 | rmse_smooth_h10 | lgbm | 1.445 [0.393, 3.282] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | fixed:200 | rmse_smooth_h10 | nlinear | 1.874 [0.774, 3.806] |  | 4 | 1 | ed116b64 |
-| loco | start_points | fixed:200 | rmse_smooth_h10 | persistence | 1.332 [0.330, 2.779] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | fixed:200 | rmse_smooth_h100 | lgbm | 1.156 [0.449, 2.100] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | fixed:200 | rmse_smooth_h100 | nlinear | 3.874 [2.797, 5.363] |  | 4 | 1 | ed116b64 |
-| loco | start_points | fixed:200 | rmse_smooth_h100 | persistence | 1.894 [1.093, 2.487] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | fixed:200 | rmse_smooth_h25 | lgbm | 2.243 [1.868, 2.579] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | fixed:200 | rmse_smooth_h25 | nlinear | 3.987 [3.601, 4.411] |  | 4 | 1 | ed116b64 |
-| loco | start_points | fixed:200 | rmse_smooth_h25 | persistence | 0.848 [0.232, 1.464] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | fixed:200 | rmse_smooth_h50 | lgbm | 1.486 [0.704, 2.155] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | fixed:200 | rmse_smooth_h50 | nlinear | 3.835 [3.474, 4.088] |  | 4 | 1 | ed116b64 |
-| loco | start_points | fixed:200 | rmse_smooth_h50 | persistence | 0.619 [0.228, 1.139] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | fixed:400 | mae_h1 | lgbm | 0.216 [0.046, 0.386] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | fixed:400 | mae_h1 | nlinear | 1.069 [0.931, 1.325] |  | 4 | 1 | ed116b64 |
-| loco | start_points | fixed:400 | mae_h1 | persistence | 0.080 [0.019, 0.194] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | fixed:400 | mae_h10 | lgbm | 0.786 [0.600, 0.972] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | fixed:400 | mae_h10 | nlinear | 1.040 [0.488, 1.550] |  | 4 | 1 | ed116b64 |
-| loco | start_points | fixed:400 | mae_h10 | persistence | 1.009 [0.324, 1.694] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | fixed:400 | mae_h100 | lgbm | 2.744 [1.965, 3.899] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | fixed:400 | mae_h100 | nlinear | 3.060 [1.735, 4.385] |  | 4 | 1 | ed116b64 |
-| loco | start_points | fixed:400 | mae_h100 | persistence | 3.346 [1.619, 5.072] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | fixed:400 | mae_h25 | lgbm | 0.873 [0.339, 1.790] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | fixed:400 | mae_h25 | nlinear | 3.222 [2.076, 3.967] |  | 4 | 1 | ed116b64 |
-| loco | start_points | fixed:400 | mae_h25 | persistence | 1.333 [0.586, 2.081] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | fixed:400 | mae_h50 | lgbm | 0.961 [0.218, 1.985] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | fixed:400 | mae_h50 | nlinear | 2.907 [2.065, 3.785] |  | 4 | 1 | ed116b64 |
-| loco | start_points | fixed:400 | mae_h50 | persistence | 1.656 [0.742, 2.680] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | fixed:400 | rmse_h1 | lgbm | 0.216 [0.046, 0.386] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | fixed:400 | rmse_h1 | nlinear | 1.069 [0.931, 1.325] |  | 4 | 1 | ed116b64 |
-| loco | start_points | fixed:400 | rmse_h1 | persistence | 0.080 [0.019, 0.194] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | fixed:400 | rmse_h10 | lgbm | 0.786 [0.600, 0.972] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | fixed:400 | rmse_h10 | nlinear | 1.040 [0.488, 1.550] |  | 4 | 1 | ed116b64 |
-| loco | start_points | fixed:400 | rmse_h10 | persistence | 1.009 [0.324, 1.694] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | fixed:400 | rmse_h100 | lgbm | 2.744 [1.965, 3.899] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | fixed:400 | rmse_h100 | nlinear | 3.060 [1.735, 4.385] |  | 4 | 1 | ed116b64 |
-| loco | start_points | fixed:400 | rmse_h100 | persistence | 3.346 [1.619, 5.072] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | fixed:400 | rmse_h25 | lgbm | 0.873 [0.339, 1.790] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | fixed:400 | rmse_h25 | nlinear | 3.222 [2.076, 3.967] |  | 4 | 1 | ed116b64 |
-| loco | start_points | fixed:400 | rmse_h25 | persistence | 1.333 [0.586, 2.081] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | fixed:400 | rmse_h50 | lgbm | 0.961 [0.218, 1.985] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | fixed:400 | rmse_h50 | nlinear | 2.907 [2.065, 3.785] |  | 4 | 1 | ed116b64 |
-| loco | start_points | fixed:400 | rmse_h50 | persistence | 1.656 [0.742, 2.680] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | fixed:400 | rmse_smooth_h1 | lgbm | 0.300 [0.115, 0.441] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | fixed:400 | rmse_smooth_h1 | nlinear | 0.948 [0.588, 1.325] |  | 4 | 1 | ed116b64 |
-| loco | start_points | fixed:400 | rmse_smooth_h1 | persistence | 0.076 [0.019, 0.181] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | fixed:400 | rmse_smooth_h10 | lgbm | 0.671 [0.350, 0.912] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | fixed:400 | rmse_smooth_h10 | nlinear | 0.925 [0.470, 1.380] |  | 4 | 1 | ed116b64 |
-| loco | start_points | fixed:400 | rmse_smooth_h10 | persistence | 0.894 [0.155, 1.633] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | fixed:400 | rmse_smooth_h100 | lgbm | 2.690 [1.965, 3.845] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | fixed:400 | rmse_smooth_h100 | nlinear | 3.005 [1.735, 4.276] |  | 4 | 1 | ed116b64 |
-| loco | start_points | fixed:400 | rmse_smooth_h100 | persistence | 3.400 [1.728, 5.072] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | fixed:400 | rmse_smooth_h25 | lgbm | 0.856 [0.295, 1.787] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | fixed:400 | rmse_smooth_h25 | nlinear | 3.239 [2.119, 3.968] |  | 4 | 1 | ed116b64 |
-| loco | start_points | fixed:400 | rmse_smooth_h25 | persistence | 1.316 [0.586, 2.047] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | fixed:400 | rmse_smooth_h50 | lgbm | 0.964 [0.223, 1.988] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | fixed:400 | rmse_smooth_h50 | nlinear | 2.910 [2.070, 3.785] |  | 4 | 1 | ed116b64 |
-| loco | start_points | fixed:400 | rmse_smooth_h50 | persistence | 1.654 [0.742, 2.677] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.3 | mae_h1 | lgbm | 0.688 [0.523, 0.836] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.3 | mae_h1 | nlinear | 0.796 [0.392, 1.201] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.3 | mae_h1 | persistence | 0.373 [0.089, 0.866] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.3 | mae_h10 | lgbm | 1.019 [0.311, 1.869] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.3 | mae_h10 | nlinear | 0.921 [0.376, 1.466] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.3 | mae_h10 | persistence | 0.952 [0.590, 1.315] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.3 | mae_h100 | lgbm | 2.526 [1.865, 3.205] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.3 | mae_h100 | nlinear | 5.860 [4.759, 7.437] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.3 | mae_h100 | persistence | 0.918 [0.565, 1.150] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.3 | mae_h25 | lgbm | 1.245 [0.323, 2.167] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.3 | mae_h25 | nlinear | 2.757 [2.655, 2.851] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.3 | mae_h25 | persistence | 0.865 [0.571, 1.180] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.3 | mae_h50 | lgbm | 2.370 [1.453, 4.071] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.3 | mae_h50 | nlinear | 5.586 [3.713, 7.760] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.3 | mae_h50 | persistence | 1.300 [0.353, 2.350] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.3 | rmse_h1 | lgbm | 0.688 [0.523, 0.836] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.3 | rmse_h1 | nlinear | 0.796 [0.392, 1.201] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.3 | rmse_h1 | persistence | 0.373 [0.089, 0.866] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.3 | rmse_h10 | lgbm | 1.019 [0.311, 1.869] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.3 | rmse_h10 | nlinear | 0.921 [0.376, 1.466] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.3 | rmse_h10 | persistence | 0.952 [0.590, 1.315] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.3 | rmse_h100 | lgbm | 2.526 [1.865, 3.205] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.3 | rmse_h100 | nlinear | 5.860 [4.759, 7.437] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.3 | rmse_h100 | persistence | 0.918 [0.565, 1.150] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.3 | rmse_h25 | lgbm | 1.245 [0.323, 2.167] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.3 | rmse_h25 | nlinear | 2.757 [2.655, 2.851] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.3 | rmse_h25 | persistence | 0.865 [0.571, 1.180] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.3 | rmse_h50 | lgbm | 2.370 [1.453, 4.071] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.3 | rmse_h50 | nlinear | 5.586 [3.713, 7.760] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.3 | rmse_h50 | persistence | 1.300 [0.353, 2.350] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.3 | rmse_smooth_h1 | lgbm | 0.481 [0.193, 0.750] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.3 | rmse_smooth_h1 | nlinear | 0.571 [0.303, 0.887] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.3 | rmse_smooth_h1 | persistence | 0.497 [0.110, 0.884] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.3 | rmse_smooth_h10 | lgbm | 0.976 [0.377, 1.804] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.3 | rmse_smooth_h10 | nlinear | 0.698 [0.281, 1.287] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.3 | rmse_smooth_h10 | persistence | 0.966 [0.603, 1.330] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.3 | rmse_smooth_h100 | lgbm | 2.238 [1.330, 3.146] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.3 | rmse_smooth_h100 | nlinear | 5.572 [4.508, 7.273] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.3 | rmse_smooth_h100 | persistence | 1.205 [0.704, 1.706] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.3 | rmse_smooth_h25 | lgbm | 1.483 [0.767, 2.167] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.3 | rmse_smooth_h25 | nlinear | 2.995 [2.766, 3.348] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.3 | rmse_smooth_h25 | persistence | 0.635 [0.209, 1.069] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.3 | rmse_smooth_h50 | lgbm | 2.370 [1.453, 4.070] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.3 | rmse_smooth_h50 | nlinear | 5.585 [3.712, 7.760] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.3 | rmse_smooth_h50 | persistence | 1.300 [0.352, 2.350] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.5 | mae_h1 | lgbm | 0.217 [0.059, 0.375] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.5 | mae_h1 | nlinear | 0.786 [0.574, 0.954] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.5 | mae_h1 | persistence | 0.524 [0.047, 1.016] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.5 | mae_h10 | lgbm | 0.362 [0.197, 0.622] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.5 | mae_h10 | nlinear | 0.496 [0.056, 0.936] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.5 | mae_h10 | persistence | 1.354 [0.510, 1.928] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.5 | mae_h100 | lgbm | 1.038 [0.756, 1.339] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.5 | mae_h100 | nlinear | 3.757 [1.993, 5.003] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.5 | mae_h100 | persistence | 2.842 [2.048, 3.830] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.5 | mae_h25 | lgbm | 0.928 [0.790, 1.065] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.5 | mae_h25 | nlinear | 1.997 [1.163, 2.544] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.5 | mae_h25 | persistence | 1.599 [0.788, 2.409] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.5 | mae_h50 | lgbm | 0.462 [0.138, 0.794] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.5 | mae_h50 | nlinear | 3.212 [2.497, 3.879] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.5 | mae_h50 | persistence | 1.521 [0.930, 2.368] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.5 | rmse_h1 | lgbm | 0.217 [0.059, 0.375] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.5 | rmse_h1 | nlinear | 0.786 [0.574, 0.954] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.5 | rmse_h1 | persistence | 0.524 [0.047, 1.016] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.5 | rmse_h10 | lgbm | 0.362 [0.197, 0.622] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.5 | rmse_h10 | nlinear | 0.496 [0.056, 0.936] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.5 | rmse_h10 | persistence | 1.354 [0.510, 1.928] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.5 | rmse_h100 | lgbm | 1.038 [0.756, 1.339] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.5 | rmse_h100 | nlinear | 3.757 [1.993, 5.003] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.5 | rmse_h100 | persistence | 2.842 [2.048, 3.830] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.5 | rmse_h25 | lgbm | 0.928 [0.790, 1.065] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.5 | rmse_h25 | nlinear | 1.997 [1.163, 2.544] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.5 | rmse_h25 | persistence | 1.599 [0.788, 2.409] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.5 | rmse_h50 | lgbm | 0.462 [0.138, 0.794] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.5 | rmse_h50 | nlinear | 3.212 [2.497, 3.879] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.5 | rmse_h50 | persistence | 1.521 [0.930, 2.368] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.5 | rmse_smooth_h1 | lgbm | 0.237 [0.099, 0.375] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.5 | rmse_smooth_h1 | nlinear | 0.806 [0.594, 0.958] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.5 | rmse_smooth_h1 | persistence | 0.504 [0.007, 1.001] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.5 | rmse_smooth_h10 | lgbm | 0.327 [0.142, 0.602] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.5 | rmse_smooth_h10 | nlinear | 0.546 [0.156, 0.936] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.5 | rmse_smooth_h10 | persistence | 1.262 [0.510, 1.837] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.5 | rmse_smooth_h100 | lgbm | 1.017 [0.704, 1.357] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.5 | rmse_smooth_h100 | nlinear | 3.799 [2.088, 5.024] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.5 | rmse_smooth_h100 | persistence | 2.800 [2.040, 3.735] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.5 | rmse_smooth_h25 | lgbm | 0.984 [0.903, 1.064] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.5 | rmse_smooth_h25 | nlinear | 2.041 [1.155, 2.571] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.5 | rmse_smooth_h25 | persistence | 1.542 [0.673, 2.411] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.5 | rmse_smooth_h50 | lgbm | 0.504 [0.174, 0.835] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.5 | rmse_smooth_h50 | nlinear | 3.321 [2.715, 3.928] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.5 | rmse_smooth_h50 | persistence | 1.412 [0.882, 2.089] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.7 | mae_h1 | lgbm | 0.403 [0.100, 0.813] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.7 | mae_h1 | nlinear | 0.585 [0.305, 0.851] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.7 | mae_h1 | persistence | 0.092 [0.023, 0.162] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.7 | mae_h10 | lgbm | 0.391 [0.119, 0.754] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.7 | mae_h10 | nlinear | 1.070 [0.481, 1.977] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.7 | mae_h10 | persistence | 0.717 [0.237, 1.507] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.7 | mae_h100 | lgbm | 2.575 [1.291, 3.859] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.7 | mae_h100 | nlinear | 3.588 [1.456, 6.029] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.7 | mae_h100 | persistence | 3.080 [1.373, 4.710] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.7 | mae_h25 | lgbm | 0.642 [0.150, 1.135] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.7 | mae_h25 | nlinear | 2.979 [2.062, 3.777] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.7 | mae_h25 | persistence | 0.714 [0.117, 1.649] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.7 | mae_h50 | lgbm | 1.056 [0.518, 1.594] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.7 | mae_h50 | nlinear | 3.620 [2.855, 4.385] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.7 | mae_h50 | persistence | 1.046 [0.194, 1.898] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.7 | rmse_h1 | lgbm | 0.403 [0.100, 0.813] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.7 | rmse_h1 | nlinear | 0.585 [0.305, 0.851] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.7 | rmse_h1 | persistence | 0.092 [0.023, 0.162] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.7 | rmse_h10 | lgbm | 0.391 [0.119, 0.754] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.7 | rmse_h10 | nlinear | 1.070 [0.481, 1.977] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.7 | rmse_h10 | persistence | 0.717 [0.237, 1.507] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.7 | rmse_h100 | lgbm | 2.575 [1.291, 3.859] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.7 | rmse_h100 | nlinear | 3.588 [1.456, 6.029] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.7 | rmse_h100 | persistence | 3.080 [1.373, 4.710] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.7 | rmse_h25 | lgbm | 0.642 [0.150, 1.135] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.7 | rmse_h25 | nlinear | 2.979 [2.062, 3.777] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.7 | rmse_h25 | persistence | 0.714 [0.117, 1.649] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.7 | rmse_h50 | lgbm | 1.056 [0.518, 1.594] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.7 | rmse_h50 | nlinear | 3.620 [2.855, 4.385] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.7 | rmse_h50 | persistence | 1.046 [0.194, 1.898] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.7 | rmse_smooth_h1 | lgbm | 0.415 [0.192, 0.659] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.7 | rmse_smooth_h1 | nlinear | 0.534 [0.365, 0.706] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.7 | rmse_smooth_h1 | persistence | 0.046 [0.004, 0.122] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.7 | rmse_smooth_h10 | lgbm | 0.300 [0.149, 0.546] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.7 | rmse_smooth_h10 | nlinear | 0.874 [0.340, 1.478] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.7 | rmse_smooth_h10 | persistence | 0.610 [0.172, 1.271] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.7 | rmse_smooth_h100 | lgbm | 2.490 [1.351, 3.629] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.7 | rmse_smooth_h100 | nlinear | 3.714 [1.562, 6.031] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.7 | rmse_smooth_h100 | persistence | 2.954 [1.401, 4.363] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.7 | rmse_smooth_h25 | lgbm | 0.622 [0.104, 1.140] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.7 | rmse_smooth_h25 | nlinear | 3.005 [2.133, 3.780] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.7 | rmse_smooth_h25 | persistence | 0.693 [0.117, 1.579] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | frac:0.7 | rmse_smooth_h50 | lgbm | 1.211 [0.469, 1.953] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | frac:0.7 | rmse_smooth_h50 | nlinear | 3.824 [2.904, 4.745] |  | 4 | 1 | ed116b64 |
-| loco | start_points | frac:0.7 | rmse_smooth_h50 | persistence | 1.007 [0.165, 1.849] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | overall | mae_h1 | lgbm | 0.346 [0.217, 0.538] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | overall | mae_h1 | nlinear | 0.841 [0.740, 0.995] |  | 4 | 1 | ed116b64 |
-| loco | start_points | overall | mae_h1 | persistence | 0.283 [0.120, 0.447] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | overall | mae_h10 | lgbm | 0.798 [0.487, 1.165] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | overall | mae_h10 | nlinear | 1.077 [0.742, 1.419] |  | 4 | 1 | ed116b64 |
-| loco | start_points | overall | mae_h10 | persistence | 1.075 [0.880, 1.318] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | overall | mae_h100 | lgbm | 2.041 [1.701, 2.382] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | overall | mae_h100 | nlinear | 4.027 [3.162, 5.025] |  | 4 | 1 | ed116b64 |
-| loco | start_points | overall | mae_h100 | persistence | 2.416 [1.580, 3.330] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | overall | mae_h25 | lgbm | 1.185 [0.837, 1.652] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | overall | mae_h25 | nlinear | 2.987 [2.670, 3.242] |  | 4 | 1 | ed116b64 |
-| loco | start_points | overall | mae_h25 | persistence | 1.070 [0.854, 1.230] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | overall | mae_h50 | lgbm | 1.307 [0.779, 1.731] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | overall | mae_h50 | nlinear | 3.853 [3.181, 4.524] |  | 4 | 1 | ed116b64 |
-| loco | start_points | overall | mae_h50 | persistence | 1.273 [0.861, 1.723] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | overall | rmse_h1 | lgbm | 0.426 [0.292, 0.597] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | overall | rmse_h1 | nlinear | 0.903 [0.822, 1.044] |  | 4 | 1 | ed116b64 |
-| loco | start_points | overall | rmse_h1 | persistence | 0.397 [0.177, 0.617] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | overall | rmse_h10 | lgbm | 1.067 [0.577, 1.644] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | overall | rmse_h10 | nlinear | 1.380 [0.894, 1.959] |  | 4 | 1 | ed116b64 |
-| loco | start_points | overall | rmse_h10 | persistence | 1.332 [1.082, 1.703] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | overall | rmse_h100 | lgbm | 2.297 [1.878, 2.716] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | overall | rmse_h100 | nlinear | 4.346 [3.399, 5.300] |  | 4 | 1 | ed116b64 |
-| loco | start_points | overall | rmse_h100 | persistence | 2.680 [1.781, 3.658] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | overall | rmse_h25 | lgbm | 1.392 [1.064, 1.789] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | overall | rmse_h25 | nlinear | 3.118 [2.803, 3.414] |  | 4 | 1 | ed116b64 |
-| loco | start_points | overall | rmse_h25 | persistence | 1.317 [1.143, 1.422] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | overall | rmse_h50 | lgbm | 1.625 [1.011, 2.239] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | overall | rmse_h50 | nlinear | 4.043 [3.278, 4.821] |  | 4 | 1 | ed116b64 |
-| loco | start_points | overall | rmse_h50 | persistence | 1.506 [1.020, 1.989] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | overall | rmse_smooth_h1 | lgbm | 0.397 [0.356, 0.438] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | overall | rmse_smooth_h1 | nlinear | 0.806 [0.707, 0.856] |  | 4 | 1 | ed116b64 |
-| loco | start_points | overall | rmse_smooth_h1 | persistence | 0.400 [0.168, 0.632] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | overall | rmse_smooth_h10 | lgbm | 1.039 [0.557, 1.607] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | overall | rmse_smooth_h10 | nlinear | 1.268 [0.806, 1.920] |  | 4 | 1 | ed116b64 |
-| loco | start_points | overall | rmse_smooth_h10 | persistence | 1.280 [1.056, 1.653] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | overall | rmse_smooth_h100 | lgbm | 2.194 [1.763, 2.626] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | overall | rmse_smooth_h100 | nlinear | 4.314 [3.525, 5.180] |  | 4 | 1 | ed116b64 |
-| loco | start_points | overall | rmse_smooth_h100 | persistence | 2.693 [1.868, 3.548] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | overall | rmse_smooth_h25 | lgbm | 1.435 [1.146, 1.811] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | overall | rmse_smooth_h25 | nlinear | 3.186 [2.956, 3.437] |  | 4 | 1 | ed116b64 |
-| loco | start_points | overall | rmse_smooth_h25 | persistence | 1.283 [1.119, 1.399] |  | 4 | 1 | 6e0d77d4 |
-| loco | start_points | overall | rmse_smooth_h50 | lgbm | 1.602 [1.023, 2.230] |  | 4 | 1 | 34fee0f4 |
-| loco | start_points | overall | rmse_smooth_h50 | nlinear | 4.070 [3.310, 4.904] |  | 4 | 1 | ed116b64 |
-| loco | start_points | overall | rmse_smooth_h50 | persistence | 1.422 [0.962, 1.889] |  | 4 | 1 | 6e0d77d4 |
+| split | policy | kind | metric | model | mean [95% CI] | vs best baseline | indep. (B0018) | n_cells | n_seeds | run_group |
+|---|---|---|---|---|---|---|---|---|---|---|
+| loco | all | overall | rmse_h1 | lgbm | 1.939 [1.841, 2.036] | 4/4 cells, 4/4 cell-seeds (vs persistence) |  | 4 | 1 | 34fee0f4 |
+| loco | all | overall | rmse_h1 | nlinear | 2.225 [2.107, 2.344] | 4/4 cells, 4/4 cell-seeds (vs persistence) |  | 4 | 1 | ed116b64 |
+| loco | all | overall | rmse_h1 | persistence | 2.606 [2.429, 2.783] |  |  | 4 | 1 | 6e0d77d4 |
+| loco | all | overall | rmse_h10 | lgbm | 2.259 [2.187, 2.340] | 4/4 cells, 4/4 cell-seeds (vs persistence) |  | 4 | 1 | 34fee0f4 |
+| loco | all | overall | rmse_h10 | nlinear | 2.643 [2.583, 2.703] | 4/4 cells, 4/4 cell-seeds (vs persistence) |  | 4 | 1 | ed116b64 |
+| loco | all | overall | rmse_h10 | persistence | 3.071 [3.003, 3.139] |  |  | 4 | 1 | 6e0d77d4 |
+| loco | all | overall | rmse_h100 | lgbm | 3.469 [2.933, 4.063] | 4/4 cells, 4/4 cell-seeds (vs persistence) |  | 4 | 1 | 34fee0f4 |
+| loco | all | overall | rmse_h100 | nlinear | 6.702 [6.411, 6.946] | 4/4 cells, 4/4 cell-seeds (vs persistence) |  | 4 | 1 | ed116b64 |
+| loco | all | overall | rmse_h100 | persistence | 10.293 [9.591, 10.966] |  |  | 4 | 1 | 6e0d77d4 |
+| loco | all | overall | rmse_h25 | lgbm | 2.609 [2.444, 2.762] | 4/4 cells, 4/4 cell-seeds (vs persistence) |  | 4 | 1 | 34fee0f4 |
+| loco | all | overall | rmse_h25 | nlinear | 3.850 [3.725, 4.041] | 4/4 cells, 4/4 cell-seeds (vs persistence) |  | 4 | 1 | ed116b64 |
+| loco | all | overall | rmse_h25 | persistence | 4.180 [4.046, 4.314] |  |  | 4 | 1 | 6e0d77d4 |
+| loco | all | overall | rmse_h50 | lgbm | 2.863 [2.534, 3.188] | 4/4 cells, 4/4 cell-seeds (vs persistence) |  | 4 | 1 | 34fee0f4 |
+| loco | all | overall | rmse_h50 | nlinear | 4.880 [4.717, 5.091] | 4/4 cells, 4/4 cell-seeds (vs persistence) |  | 4 | 1 | ed116b64 |
+| loco | all | overall | rmse_h50 | persistence | 6.278 [5.955, 6.519] |  |  | 4 | 1 | 6e0d77d4 |
+| loco | start_points | fixed:200 | rmse_h1 | lgbm | 0.206 [0.043, 0.380] | 2/4 cells, 2/4 cell-seeds (vs persistence) |  | 4 | 1 | 34fee0f4 |
+| loco | start_points | fixed:200 | rmse_h1 | nlinear | 0.968 [0.612, 1.287] | 0/4 cells, 0/4 cell-seeds (vs persistence) |  | 4 | 1 | ed116b64 |
+| loco | start_points | fixed:200 | rmse_h1 | persistence | 0.347 [0.209, 0.485] |  |  | 4 | 1 | 6e0d77d4 |
+| loco | start_points | fixed:200 | rmse_h10 | lgbm | 1.430 [0.364, 3.277] | 1/4 cells, 1/4 cell-seeds (vs persistence) |  | 4 | 1 | 34fee0f4 |
+| loco | start_points | fixed:200 | rmse_h10 | nlinear | 1.859 [0.748, 3.801] | 1/4 cells, 1/4 cell-seeds (vs persistence) |  | 4 | 1 | ed116b64 |
+| loco | start_points | fixed:200 | rmse_h10 | persistence | 1.344 [0.340, 2.774] |  |  | 4 | 1 | 6e0d77d4 |
+| loco | start_points | fixed:200 | rmse_h100 | lgbm | 1.322 [0.628, 2.100] | 3/4 cells, 3/4 cell-seeds (vs persistence) |  | 4 | 1 | 34fee0f4 |
+| loco | start_points | fixed:200 | rmse_h100 | nlinear | 3.871 [2.968, 5.352] | 0/4 cells, 0/4 cell-seeds (vs persistence) |  | 4 | 1 | ed116b64 |
+| loco | start_points | fixed:200 | rmse_h100 | persistence | 1.897 [1.120, 2.489] |  |  | 4 | 1 | 6e0d77d4 |
+| loco | start_points | fixed:200 | rmse_h25 | lgbm | 2.235 [1.871, 2.531] | 0/4 cells, 0/4 cell-seeds (vs persistence) |  | 4 | 1 | 34fee0f4 |
+| loco | start_points | fixed:200 | rmse_h25 | nlinear | 3.979 [3.621, 4.360] | 0/4 cells, 0/4 cell-seeds (vs persistence) |  | 4 | 1 | ed116b64 |
+| loco | start_points | fixed:200 | rmse_h25 | persistence | 0.840 [0.239, 1.441] |  |  | 4 | 1 | 6e0d77d4 |
+| loco | start_points | fixed:200 | rmse_h50 | lgbm | 1.685 [0.692, 2.276] | 1/4 cells, 1/4 cell-seeds (vs persistence) |  | 4 | 1 | 34fee0f4 |
+| loco | start_points | fixed:200 | rmse_h50 | nlinear | 3.937 [3.081, 4.594] | 0/4 cells, 0/4 cell-seeds (vs persistence) |  | 4 | 1 | ed116b64 |
+| loco | start_points | fixed:200 | rmse_h50 | persistence | 0.844 [0.319, 1.572] |  |  | 4 | 1 | 6e0d77d4 |
+| loco | start_points | fixed:400 | rmse_h1 | lgbm | 0.216 [0.046, 0.386] | 2/4 cells, 2/4 cell-seeds (vs persistence) |  | 4 | 1 | 34fee0f4 |
+| loco | start_points | fixed:400 | rmse_h1 | nlinear | 1.069 [0.931, 1.325] | 0/4 cells, 0/4 cell-seeds (vs persistence) |  | 4 | 1 | ed116b64 |
+| loco | start_points | fixed:400 | rmse_h1 | persistence | 0.080 [0.019, 0.194] |  |  | 4 | 1 | 6e0d77d4 |
+| loco | start_points | fixed:400 | rmse_h10 | lgbm | 0.786 [0.600, 0.972] | 3/4 cells, 3/4 cell-seeds (vs persistence) |  | 4 | 1 | 34fee0f4 |
+| loco | start_points | fixed:400 | rmse_h10 | nlinear | 1.040 [0.488, 1.550] | 2/4 cells, 2/4 cell-seeds (vs persistence) |  | 4 | 1 | ed116b64 |
+| loco | start_points | fixed:400 | rmse_h10 | persistence | 1.009 [0.324, 1.694] |  |  | 4 | 1 | 6e0d77d4 |
+| loco | start_points | fixed:400 | rmse_h100 | lgbm | 2.744 [1.965, 3.899] | 2/4 cells, 2/4 cell-seeds (vs persistence) |  | 4 | 1 | 34fee0f4 |
+| loco | start_points | fixed:400 | rmse_h100 | nlinear | 3.060 [1.735, 4.385] | 2/4 cells, 2/4 cell-seeds (vs persistence) |  | 4 | 1 | ed116b64 |
+| loco | start_points | fixed:400 | rmse_h100 | persistence | 3.346 [1.619, 5.072] |  |  | 4 | 1 | 6e0d77d4 |
+| loco | start_points | fixed:400 | rmse_h25 | lgbm | 0.873 [0.339, 1.790] | 2/4 cells, 2/4 cell-seeds (vs persistence) |  | 4 | 1 | 34fee0f4 |
+| loco | start_points | fixed:400 | rmse_h25 | nlinear | 3.222 [2.076, 3.967] | 1/4 cells, 1/4 cell-seeds (vs persistence) |  | 4 | 1 | ed116b64 |
+| loco | start_points | fixed:400 | rmse_h25 | persistence | 1.333 [0.586, 2.081] |  |  | 4 | 1 | 6e0d77d4 |
+| loco | start_points | fixed:400 | rmse_h50 | lgbm | 0.961 [0.218, 1.985] | 3/4 cells, 3/4 cell-seeds (vs persistence) |  | 4 | 1 | 34fee0f4 |
+| loco | start_points | fixed:400 | rmse_h50 | nlinear | 2.907 [2.065, 3.785] | 1/4 cells, 1/4 cell-seeds (vs persistence) |  | 4 | 1 | ed116b64 |
+| loco | start_points | fixed:400 | rmse_h50 | persistence | 1.656 [0.742, 2.680] |  |  | 4 | 1 | 6e0d77d4 |
+| loco | start_points | frac:0.3 | rmse_h1 | lgbm | 0.688 [0.523, 0.836] | 1/4 cells, 1/4 cell-seeds (vs persistence) |  | 4 | 1 | 34fee0f4 |
+| loco | start_points | frac:0.3 | rmse_h1 | nlinear | 0.796 [0.392, 1.201] | 1/4 cells, 1/4 cell-seeds (vs persistence) |  | 4 | 1 | ed116b64 |
+| loco | start_points | frac:0.3 | rmse_h1 | persistence | 0.373 [0.089, 0.866] |  |  | 4 | 1 | 6e0d77d4 |
+| loco | start_points | frac:0.3 | rmse_h10 | lgbm | 1.019 [0.311, 1.869] | 3/4 cells, 3/4 cell-seeds (vs persistence) |  | 4 | 1 | 34fee0f4 |
+| loco | start_points | frac:0.3 | rmse_h10 | nlinear | 0.921 [0.376, 1.466] | 2/4 cells, 2/4 cell-seeds (vs persistence) |  | 4 | 1 | ed116b64 |
+| loco | start_points | frac:0.3 | rmse_h10 | persistence | 0.952 [0.590, 1.315] |  |  | 4 | 1 | 6e0d77d4 |
+| loco | start_points | frac:0.3 | rmse_h100 | lgbm | 2.526 [1.865, 3.205] | 0/4 cells, 0/4 cell-seeds (vs persistence) |  | 4 | 1 | 34fee0f4 |
+| loco | start_points | frac:0.3 | rmse_h100 | nlinear | 5.860 [4.759, 7.437] | 0/4 cells, 0/4 cell-seeds (vs persistence) |  | 4 | 1 | ed116b64 |
+| loco | start_points | frac:0.3 | rmse_h100 | persistence | 0.918 [0.565, 1.150] |  |  | 4 | 1 | 6e0d77d4 |
+| loco | start_points | frac:0.3 | rmse_h25 | lgbm | 1.245 [0.323, 2.167] | 2/4 cells, 2/4 cell-seeds (vs persistence) |  | 4 | 1 | 34fee0f4 |
+| loco | start_points | frac:0.3 | rmse_h25 | nlinear | 2.757 [2.655, 2.851] | 0/4 cells, 0/4 cell-seeds (vs persistence) |  | 4 | 1 | ed116b64 |
+| loco | start_points | frac:0.3 | rmse_h25 | persistence | 0.865 [0.571, 1.180] |  |  | 4 | 1 | 6e0d77d4 |
+| loco | start_points | frac:0.3 | rmse_h50 | lgbm | 2.370 [1.453, 4.071] | 1/4 cells, 1/4 cell-seeds (vs persistence) |  | 4 | 1 | 34fee0f4 |
+| loco | start_points | frac:0.3 | rmse_h50 | nlinear | 5.586 [3.713, 7.760] | 0/4 cells, 0/4 cell-seeds (vs persistence) |  | 4 | 1 | ed116b64 |
+| loco | start_points | frac:0.3 | rmse_h50 | persistence | 1.300 [0.353, 2.350] |  |  | 4 | 1 | 6e0d77d4 |
+| loco | start_points | frac:0.5 | rmse_h1 | lgbm | 0.217 [0.059, 0.375] | 2/4 cells, 2/4 cell-seeds (vs persistence) |  | 4 | 1 | 34fee0f4 |
+| loco | start_points | frac:0.5 | rmse_h1 | nlinear | 0.786 [0.574, 0.954] | 1/4 cells, 1/4 cell-seeds (vs persistence) |  | 4 | 1 | ed116b64 |
+| loco | start_points | frac:0.5 | rmse_h1 | persistence | 0.524 [0.047, 1.016] |  |  | 4 | 1 | 6e0d77d4 |
+| loco | start_points | frac:0.5 | rmse_h10 | lgbm | 0.362 [0.197, 0.622] | 3/4 cells, 3/4 cell-seeds (vs persistence) |  | 4 | 1 | 34fee0f4 |
+| loco | start_points | frac:0.5 | rmse_h10 | nlinear | 0.496 [0.056, 0.936] | 4/4 cells, 4/4 cell-seeds (vs persistence) |  | 4 | 1 | ed116b64 |
+| loco | start_points | frac:0.5 | rmse_h10 | persistence | 1.354 [0.510, 1.928] |  |  | 4 | 1 | 6e0d77d4 |
+| loco | start_points | frac:0.5 | rmse_h100 | lgbm | 1.038 [0.756, 1.339] | 4/4 cells, 4/4 cell-seeds (vs persistence) |  | 4 | 1 | 34fee0f4 |
+| loco | start_points | frac:0.5 | rmse_h100 | nlinear | 3.757 [1.993, 5.003] | 1/4 cells, 1/4 cell-seeds (vs persistence) |  | 4 | 1 | ed116b64 |
+| loco | start_points | frac:0.5 | rmse_h100 | persistence | 2.842 [2.048, 3.830] |  |  | 4 | 1 | 6e0d77d4 |
+| loco | start_points | frac:0.5 | rmse_h25 | lgbm | 0.928 [0.790, 1.065] | 3/4 cells, 3/4 cell-seeds (vs persistence) |  | 4 | 1 | 34fee0f4 |
+| loco | start_points | frac:0.5 | rmse_h25 | nlinear | 1.997 [1.163, 2.544] | 1/4 cells, 1/4 cell-seeds (vs persistence) |  | 4 | 1 | ed116b64 |
+| loco | start_points | frac:0.5 | rmse_h25 | persistence | 1.599 [0.788, 2.409] |  |  | 4 | 1 | 6e0d77d4 |
+| loco | start_points | frac:0.5 | rmse_h50 | lgbm | 0.462 [0.138, 0.794] | 3/4 cells, 3/4 cell-seeds (vs persistence) |  | 4 | 1 | 34fee0f4 |
+| loco | start_points | frac:0.5 | rmse_h50 | nlinear | 3.212 [2.497, 3.879] | 1/4 cells, 1/4 cell-seeds (vs persistence) |  | 4 | 1 | ed116b64 |
+| loco | start_points | frac:0.5 | rmse_h50 | persistence | 1.521 [0.930, 2.368] |  |  | 4 | 1 | 6e0d77d4 |
+| loco | start_points | frac:0.7 | rmse_h1 | lgbm | 0.403 [0.100, 0.813] | 1/4 cells, 1/4 cell-seeds (vs persistence) |  | 4 | 1 | 34fee0f4 |
+| loco | start_points | frac:0.7 | rmse_h1 | nlinear | 0.585 [0.305, 0.851] | 0/4 cells, 0/4 cell-seeds (vs persistence) |  | 4 | 1 | ed116b64 |
+| loco | start_points | frac:0.7 | rmse_h1 | persistence | 0.092 [0.023, 0.162] |  |  | 4 | 1 | 6e0d77d4 |
+| loco | start_points | frac:0.7 | rmse_h10 | lgbm | 0.391 [0.119, 0.754] | 3/4 cells, 3/4 cell-seeds (vs persistence) |  | 4 | 1 | 34fee0f4 |
+| loco | start_points | frac:0.7 | rmse_h10 | nlinear | 1.070 [0.481, 1.977] | 2/4 cells, 2/4 cell-seeds (vs persistence) |  | 4 | 1 | ed116b64 |
+| loco | start_points | frac:0.7 | rmse_h10 | persistence | 0.717 [0.237, 1.507] |  |  | 4 | 1 | 6e0d77d4 |
+| loco | start_points | frac:0.7 | rmse_h100 | lgbm | 2.575 [1.291, 3.859] | 3/4 cells, 3/4 cell-seeds (vs persistence) |  | 4 | 1 | 34fee0f4 |
+| loco | start_points | frac:0.7 | rmse_h100 | nlinear | 3.588 [1.456, 6.029] | 2/4 cells, 2/4 cell-seeds (vs persistence) |  | 4 | 1 | ed116b64 |
+| loco | start_points | frac:0.7 | rmse_h100 | persistence | 3.080 [1.373, 4.710] |  |  | 4 | 1 | 6e0d77d4 |
+| loco | start_points | frac:0.7 | rmse_h25 | lgbm | 0.642 [0.150, 1.135] | 2/4 cells, 2/4 cell-seeds (vs persistence) |  | 4 | 1 | 34fee0f4 |
+| loco | start_points | frac:0.7 | rmse_h25 | nlinear | 2.979 [2.062, 3.777] | 1/4 cells, 1/4 cell-seeds (vs persistence) |  | 4 | 1 | ed116b64 |
+| loco | start_points | frac:0.7 | rmse_h25 | persistence | 0.714 [0.117, 1.649] |  |  | 4 | 1 | 6e0d77d4 |
+| loco | start_points | frac:0.7 | rmse_h50 | lgbm | 1.056 [0.518, 1.594] | 2/4 cells, 2/4 cell-seeds (vs persistence) |  | 4 | 1 | 34fee0f4 |
+| loco | start_points | frac:0.7 | rmse_h50 | nlinear | 3.620 [2.855, 4.385] | 0/4 cells, 0/4 cell-seeds (vs persistence) |  | 4 | 1 | ed116b64 |
+| loco | start_points | frac:0.7 | rmse_h50 | persistence | 1.046 [0.194, 1.898] |  |  | 4 | 1 | 6e0d77d4 |
+| loco | start_points | overall | rmse_h1 | lgbm | 0.426 [0.292, 0.597] | 1/4 cells, 1/4 cell-seeds (vs persistence) |  | 4 | 1 | 34fee0f4 |
+| loco | start_points | overall | rmse_h1 | nlinear | 0.903 [0.822, 1.044] | 0/4 cells, 0/4 cell-seeds (vs persistence) |  | 4 | 1 | ed116b64 |
+| loco | start_points | overall | rmse_h1 | persistence | 0.397 [0.177, 0.617] |  |  | 4 | 1 | 6e0d77d4 |
+| loco | start_points | overall | rmse_h10 | lgbm | 1.067 [0.577, 1.644] | 3/4 cells, 3/4 cell-seeds (vs persistence) |  | 4 | 1 | 34fee0f4 |
+| loco | start_points | overall | rmse_h10 | nlinear | 1.380 [0.894, 1.959] | 2/4 cells, 2/4 cell-seeds (vs persistence) |  | 4 | 1 | ed116b64 |
+| loco | start_points | overall | rmse_h10 | persistence | 1.332 [1.082, 1.703] |  |  | 4 | 1 | 6e0d77d4 |
+| loco | start_points | overall | rmse_h100 | lgbm | 2.297 [1.878, 2.716] | 3/4 cells, 3/4 cell-seeds (vs persistence) |  | 4 | 1 | 34fee0f4 |
+| loco | start_points | overall | rmse_h100 | nlinear | 4.346 [3.399, 5.300] | 1/4 cells, 1/4 cell-seeds (vs persistence) |  | 4 | 1 | ed116b64 |
+| loco | start_points | overall | rmse_h100 | persistence | 2.680 [1.781, 3.658] |  |  | 4 | 1 | 6e0d77d4 |
+| loco | start_points | overall | rmse_h25 | lgbm | 1.392 [1.064, 1.789] | 2/4 cells, 2/4 cell-seeds (vs persistence) |  | 4 | 1 | 34fee0f4 |
+| loco | start_points | overall | rmse_h25 | nlinear | 3.118 [2.803, 3.414] | 0/4 cells, 0/4 cell-seeds (vs persistence) |  | 4 | 1 | ed116b64 |
+| loco | start_points | overall | rmse_h25 | persistence | 1.317 [1.143, 1.422] |  |  | 4 | 1 | 6e0d77d4 |
+| loco | start_points | overall | rmse_h50 | lgbm | 1.625 [1.011, 2.239] | 2/4 cells, 2/4 cell-seeds (vs persistence) |  | 4 | 1 | 34fee0f4 |
+| loco | start_points | overall | rmse_h50 | nlinear | 4.043 [3.278, 4.821] | 0/4 cells, 0/4 cell-seeds (vs persistence) |  | 4 | 1 | ed116b64 |
+| loco | start_points | overall | rmse_h50 | persistence | 1.506 [1.020, 1.989] |  |  | 4 | 1 | 6e0d77d4 |
 
 </details>

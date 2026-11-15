@@ -5,7 +5,7 @@ types at runtime.
 """
 
 import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any
 
@@ -32,11 +32,18 @@ def default_horizons() -> dict[str, list[int]]:
 
 @dataclass
 class ModelConfig:
-    name: str = MISSING
+    #: Model registry name. May be left empty when ``tuned`` is set (filled from the tuned file).
+    name: str = ""
     params: dict[str, Any] = field(default_factory=dict)
     #: MLflow run ID (or run-group ID) of the tuning run that produced ``params``.
     #: Required for tunable models (PROTOCOL §4 rule 6).
     tuned_from: str | None = None
+    #: Reference to ``configs/tuned/<tuned>.yaml`` (written by ``battery-rul tune``), e.g.
+    #: ``"lgbm__forecast"``. Resolved by :func:`resolve_tuned_models`: the file supplies
+    #: ``name``, ``params`` and ``tuned_from``; explicit ``params`` here override file params.
+    tuned: str | None = None
+    #: Task the tuned file was tuned for (set by resolution); the runner runs the model only there.
+    tuned_task: str | None = None
 
 
 @dataclass
@@ -84,3 +91,62 @@ def load_experiment(
 
 def horizons_for(cfg: ExperimentConfig, dataset: str) -> tuple[int, ...]:
     return tuple(int(h) for h in cfg.horizons[dataset])
+
+
+def tuned_path(tuned: str, config_dir: Path | None = None) -> Path:
+    return (config_dir or CONFIG_DIR) / "tuned" / f"{tuned}.yaml"
+
+
+def resolve_tuned_models(cfg: ExperimentConfig, config_dir: Path | None = None) -> ExperimentConfig:
+    """Return ``cfg`` with every ``ModelConfig(tuned=...)`` expanded from its tuned file.
+
+    A tuned entry applies only to its own task (``<model>__<task>``; ADR-0006: one study per
+    (model, task)): the runner skips it for other tasks. A tunable model that appears *only*
+    through tuned entries must have one for every task of the experiment, otherwise this raises.
+    Idempotent; models without ``tuned`` pass through unchanged.
+    """
+    models: list[ModelConfig] = []
+    for m in cfg.models:
+        if m.tuned is None:
+            models.append(m)
+            continue
+        path = tuned_path(m.tuned, config_dir)
+        if not path.exists():
+            raise FileNotFoundError(f"tuned config {m.tuned!r} not found at {path}")
+        raw = OmegaConf.to_container(OmegaConf.load(path), resolve=True)
+        assert isinstance(raw, dict)
+        task = str(raw.get("task") or m.tuned.rpartition("__")[2])
+        if m.name and m.name != raw["name"]:
+            raise ValueError(f"model name {m.name!r} conflicts with tuned file ({raw['name']!r})")
+        models.append(
+            ModelConfig(
+                name=str(raw["name"]),
+                params={**dict(raw.get("params") or {}), **m.params},
+                tuned_from=m.tuned_from or str(raw["tuned_from"]),
+                tuned=m.tuned,
+                tuned_task=task,
+            )
+        )
+    _check_tuned_coverage(cfg, models)
+    return replace(cfg, models=models)
+
+
+def _check_tuned_coverage(cfg: ExperimentConfig, models: list[ModelConfig]) -> None:
+    from battery_rul.models.registry import MODELS, model_trait
+
+    for name in sorted({m.name for m in models}):
+        entries = [m for m in models if m.name == name]
+        if not all(m.tuned_task for m in entries) or name not in MODELS:
+            continue  # also listed untuned (rule 6 handles it) or unknown
+        if not model_trait(MODELS[name], "tunable"):
+            continue
+        supported = getattr(MODELS[name], "supported_tasks", None)
+        covered = {m.tuned_task for m in entries}
+        missing = [
+            t for t in cfg.tasks if t not in covered and (supported is None or t in supported)
+        ]
+        if missing:
+            raise ValueError(
+                f"model {name!r} appears only via tuned entries but has none for task(s) "
+                f"{missing}; add `tuned: {name}__<task>` entries or drop those tasks"
+            )

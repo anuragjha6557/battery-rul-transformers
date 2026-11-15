@@ -18,6 +18,7 @@ data/processed/
 mlruns/
 mlflow.db
 optuna_journal.log
+optuna/
 outputs/
 multirun/
 *.pt
