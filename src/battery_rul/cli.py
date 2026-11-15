@@ -42,7 +42,19 @@ def download(dataset: str = typer.Argument("all", help="nasa | calce | toyota | 
 @app.command("build-data")
 def build_data(dataset: str = typer.Argument("all", help="nasa | calce | toyota | all")) -> None:
     """Parse raw files into canonical cycles/curves parquet tables."""
-    _not_yet("Phase 1")
+    if dataset not in ("nasa", "calce", "toyota", "all"):
+        console.print(f"[red]Unknown dataset {dataset!r}.[/]")
+        raise typer.Exit(code=1)
+    if dataset in ("nasa", "all"):
+        from battery_rul.data import nasa
+
+        tables = nasa.build()
+        console.print(
+            f"[green]nasa:[/] {len(tables.cells)} cells, {len(tables.cycles)} cycles, "
+            f"{len(tables.curves)} curve rows"
+        )
+    if dataset in ("calce", "toyota"):
+        _not_yet("Phase 1")
 
 
 @app.command()
