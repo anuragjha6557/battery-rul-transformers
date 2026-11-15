@@ -1,4 +1,6 @@
 name: transformer
+# Note: at the d_model=128 x n_layers=3 corner the FFN width is shrunk (ff_mult < 4) so the
+# model respects the shared 250k-parameter cap (PROTOCOL §6); the effective width is logged.
 params:
   d_model: 64
   n_heads: 4

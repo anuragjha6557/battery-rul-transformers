@@ -16,8 +16,11 @@ from typing import Any
 
 from battery_rul.models.base import Model
 from battery_rul.models.extrapolate import GPRExtrap, ParamFit, PrevSOH
+from battery_rul.models.linear import DLinear, NLinear, RLinear
 from battery_rul.models.persistence import LastSlope, Persistence
+from battery_rul.models.recurrent import RecurrentModel
 from battery_rul.models.tabular import ElasticNetModel, LGBMModel
+from battery_rul.models.transformer import TimeTransformer
 
 #: Keys are the ``name`` field of ``configs/model/*.yaml`` (one class may back several configs,
 #: e.g. ParamFit with ``kind`` linear / exp2 / power).
@@ -31,6 +34,12 @@ MODELS: dict[str, Callable[..., Model]] = {
     "gpr": GPRExtrap,
     "elasticnet": ElasticNetModel,
     "lgbm": LGBMModel,
+    "nlinear": NLinear,
+    "dlinear": DLinear,
+    "rlinear": RLinear,
+    "lstm": RecurrentModel,  # config params set cell=lstm
+    "gru": RecurrentModel,  # config params set cell=gru
+    "transformer": TimeTransformer,
 }
 
 
