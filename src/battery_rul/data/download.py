@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import shutil
+import urllib.error
 import urllib.request
 import zipfile
 from dataclasses import dataclass
@@ -116,11 +117,17 @@ def fetch(remote: RemoteFile, dest_dir: Path) -> Path:
     """Download one file (skip if present and valid). Returns the local path."""
     dest_dir.mkdir(parents=True, exist_ok=True)
     dest = dest_dir / remote.filename
-    if dest.exists() and _verify(dest, remote.sha256):
-        console.print(f"[green]ok[/] {dest.relative_to(RAW_DIR.parent)} (cached)")
-        return dest
-
     tmp = dest.with_suffix(dest.suffix + ".part")
+    if dest.exists():
+        if remote.sha256 is not None:
+            if _verify(dest, remote.sha256):
+                console.print(f"[green]ok[/] {dest.name} (cached, checksum verified)")
+                return dest
+            dest.unlink()  # corrupt or truncated: start over
+        else:
+            # Unpinned: completeness can't be proven by hash, so treat the file as a partial
+            # download and let the Range request below either finish it or confirm (416).
+            dest.replace(tmp)
     # Servers (data.matr.io in particular) can drop long transfers while the client still
     # exits cleanly, leaving a silently truncated file. Resume with HTTP Range requests and
     # only accept the file once its size matches the server-reported total.
@@ -156,7 +163,13 @@ def _download_range(
     if offset:
         headers["Range"] = f"bytes={offset}-"
     req = urllib.request.Request(remote.url, headers=headers)
-    with urllib.request.urlopen(req, timeout=remote.timeout_s) as resp:
+    try:
+        resp_cm = urllib.request.urlopen(req, timeout=remote.timeout_s)
+    except urllib.error.HTTPError as err:
+        if err.code == 416 and offset:  # range starts at EOF: the file is already complete
+            return offset
+        raise
+    with resp_cm as resp:
         length = int(resp.headers.get("Content-Length") or 0) or None
         if offset and resp.status != 206:  # server ignored Range: restart from scratch
             offset = 0

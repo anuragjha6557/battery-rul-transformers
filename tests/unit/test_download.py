@@ -74,3 +74,27 @@ def test_cached_valid_file_is_not_redownloaded(
     monkeypatch.setattr(dl.urllib.request, "urlopen", boom)
     monkeypatch.setattr(dl, "RAW_DIR", tmp_path)
     assert dl.fetch(_remote(hashlib.sha256(PAYLOAD).hexdigest()), tmp_path).exists()
+
+
+def test_unpinned_truncated_file_is_completed_not_trusted(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """An existing file without a pinned checksum must be resumed, never accepted as-is."""
+    (tmp_path / "f.bin").write_bytes(PAYLOAD[:50_000])  # silently truncated earlier
+    urlopen, calls = _fake_server(drop_after=None)
+    monkeypatch.setattr(dl.urllib.request, "urlopen", urlopen)
+    out = dl.fetch(_remote(None), tmp_path)
+    assert out.read_bytes() == PAYLOAD
+    assert calls["n"] == 1
+
+
+def test_unpinned_complete_file_confirmed_by_416(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    (tmp_path / "f.bin").write_bytes(PAYLOAD)
+
+    def urlopen(req: Any, timeout: int) -> None:
+        raise dl.urllib.error.HTTPError(req.full_url, 416, "Range Not Satisfiable", {}, None)  # type: ignore[arg-type]
+
+    monkeypatch.setattr(dl.urllib.request, "urlopen", urlopen)
+    assert dl.fetch(_remote(None), tmp_path).read_bytes() == PAYLOAD
