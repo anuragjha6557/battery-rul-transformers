@@ -7,7 +7,8 @@ _Last updated: 2026-11-15 (Opus 5.5 lead)_
   - Outstanding for the gate: **CI not yet run on GitHub** — needs the owner to run `! brew install gh && gh auth login`, then the lead creates `anuragjha/battery-rul` and pushes. **ADR-0007 pending** — `scripts/bench_cpu_vs_mps.py` must be re-run on an idle machine (first run overlapped with loader agents).
 - **Phase 1 in progress**
   - NASA loader merged (`b574ccc`): 4 cells, 636 cycles, 2.08 M curve rows, build ≈ 5.5 s; 11 unit + 5 real-data tests.
-  - CALCE loader: Sonnet agent running in a worktree (data extracted at `data/raw/calce/CS2_3x/`, checksums pinned).
+  - CALCE loader merged (`fe825f4`): 4 cells, 3 911 cycles (880/970/1036/1025), 1.07 M curve rows, build ≈ 30 s (python-calamine); 22 unit + 5 real-data tests. Lead review fix: `ir_ohm` restricted to the charge window (leakage).
+  - `battery-rul build-data all` builds NASA + CALCE (`44af569`).
   - Toyota loader: waiting for batch 1 `.mat` to finish downloading (headless download works — no manual step needed); agent launches when it lands.
 - Data on disk: NASA ✓, CALCE ✓, Toyota downloading (~1–1.5 MB/s, 3 files).
 
@@ -16,10 +17,13 @@ _Last updated: 2026-11-15 (Opus 5.5 lead)_
 2. NASA discharge records stop above the cut-off voltage (median last V ≈ 3.3–3.5 V); `Capacity` is consistent with ∫|I|dt (≤ 1.7 %), but discharge_time/energy are from truncated records.
 3. NASA cycle 1 charge is a short top-up (≈ 0.008 Ah); cycle 31 (B0005/6/7) and 56/46 (B0018) are partial charges; first 1–3 charge samples have a current spike (−4 A). Decide flag/exclude rules in ADR-0005.
 4. NASA SOH min: B0005 0.699, B0006 0.572, B0007 0.744, B0018 0.729 → at the 70 % threshold B0007 and B0018 are **censored**; at 80 % all four cross.
-5. CALCE: file order must come from first `Date_Time` (filenames sort wrong; filename date ≠ session start). No temperature channel; `Internal_Resistance(Ohm)` is logged.
+5. CALCE: file order must come from first `Date_Time` (filenames sort wrong; filename date ≠ session start). No temperature channel; `Internal_Resistance(Ohm)` is logged. Duplicate workbooks (`CS2_35_2_4_11` = `2_10_11`, same for CS2_38) dropped.
+6. **CALCE "regeneration" is mostly an equipment artifact.** In ~3 % of cycles (25–31 per cell) the Arbin CV step ends after one sample → discharge delivers 0.13–0.16 Ah less. Flag: `cv_time_s < 300 s`. These dips dominate cycle-to-cycle jumps; real session-boundary recovery is small (+0.006–0.012 Ah mean). Consequence: raw first-crossing of 80 % SOH is cycle 69–311 vs 501–603 with an 11-cycle rolling median → **the EOL rule (ADR-0005) changes CALCE RUL labels by hundreds of cycles.** The paper never mentions this. Strong interview point.
+7. CALCE cells were cycled far past EOL (min SOH 0.12–0.22); 80 % SOH ≈ cycles 500–600, 70 % ≈ 650–800 (smoothed).
+8. **Feature-availability rule (enforce in `tasks/` + leakage tests):** per-cycle quantities measured during discharge k (`discharge_time_s`, `discharge_energy_wh`, `discharge_temp_max_c`, discharge curves) are ≈ the target `capacity_k` itself. For Task A (estimate SOH_k) only charge-phase features of cycle k (+ history < k) are allowed; for Tasks B/C anything at cycles ≤ T_p. CALCE `ir_ohm` was changed in review to use the charge window only for this reason (NASA `ir_ohm` already uses the latest EIS *before* the charge).
 
 ## Next actions
-1. Review/merge CALCE loader; wire `build-data calce` in `cli.py`.
+1. ~~Review/merge CALCE loader~~ done.
 2. Launch Toyota loader agent when batch 1 is complete; wire `build-data toyota`.
 3. Re-run `scripts/bench_cpu_vs_mps.py` on an idle machine → ADR-0007.
 4. Phase 1 gate: `make data` builds all three; schema tests pass; counts NASA 4, CALCE 4, Toyota ≈ 124.
@@ -32,7 +36,7 @@ _Last updated: 2026-11-15 (Opus 5.5 lead)_
 | Phase | Status | Gate evidence |
 |---|---|---|
 | 0 Bootstrap | done locally; CI-on-GitHub + ADR-0007 pending | `make lint test typecheck` green (`8020ca4`) |
-| 1 Data | in progress (NASA ✓, CALCE running, Toyota queued) | NASA: 168/168/168/132 cycles |
+| 1 Data | in progress (NASA ✓, CALCE ✓, Toyota queued) | NASA 168/168/168/132; CALCE 880/970/1036/1025 cycles |
 | 2 EDA | not started | |
 | 3 Eval harness | not started | |
 | 4 Baselines | not started | |
