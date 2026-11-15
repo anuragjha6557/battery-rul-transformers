@@ -24,6 +24,11 @@ Current state and next action: `docs/STATUS.md`. Decisions: `docs/decisions/` (A
 - Raw data lives in `data/raw/` (gitignored, checksummed by `src/battery_rul/data/download.py`). Toyota's download page is JS-rendered; if headless download fails, ask the owner to download the three `.mat` batches into `data/raw/toyota/` once.
 - Scratch files go in the session scratchpad, not the repo.
 
+## Hard-won rules (do not relearn these)
+- **OpenMP isolation (macOS):** torch and LightGBM load different `libomp` copies that cannot share a process in either import order. Never import `lightgbm` or `torch` at module top-level outside their model modules. Model classes load lazily via `models/registry.py`, which records each model's OpenMP family, and the runner isolates mixed experiments in per-unit worker processes. LightGBM tests live in `tests/lgbm/` and run in a separate pytest process (`make test` does both). Linux CI is unaffected, so a green CI does not prove macOS is fine.
+- **Gate exit codes:** run gates as `set -o pipefail; make lint test typecheck ...`, or check `$?` before committing. A `| grep` once hid a failing gate and a broken commit was pushed.
+- **Worktrees:** don't `git worktree remove` an agent's worktree until its final hand-back message has arrived; an agent may still be finishing.
+
 ## Workflow rules
 - Work phase by phase per `docs/PLAN.md §7`; do not start a phase before the previous gate passes. Update `docs/STATUS.md` at every gate and after every merged wave.
 - `make lint test` must pass before every commit. Commit messages: conventional (`feat(data): …`, `test(eval): …`, `docs(adr): …`). Branch per phase (`phase-1-data`), squash-merge to `main`. Never commit data, `mlruns/`, weights, or notebooks with outputs.
