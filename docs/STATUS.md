@@ -38,7 +38,7 @@ _Last updated: 2026-11-15 (Opus 5.5 lead)_
 ## Phase log
 | Phase | Status | Gate evidence |
 |---|---|---|
-| 0 Bootstrap | done locally; CI-on-GitHub + ADR-0007 pending | `make lint test typecheck` green (`8020ca4`) |
+| 0 Bootstrap | done | CI green on GitHub (run 43755416295); ADR-0007 measured |
 | 1 Data | in progress (NASA ✓, CALCE ✓, Toyota queued) | NASA 168/168/168/132; CALCE 880/970/1036/1025 cycles |
 | 2 EDA | not started | |
 | 3 Eval harness | not started | |
