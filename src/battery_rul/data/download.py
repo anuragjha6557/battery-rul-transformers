@@ -121,28 +121,64 @@ def fetch(remote: RemoteFile, dest_dir: Path) -> Path:
         return dest
 
     tmp = dest.with_suffix(dest.suffix + ".part")
-    req = urllib.request.Request(remote.url, headers={"User-Agent": "battery-rul/0.1"})
-    with (
-        urllib.request.urlopen(req, timeout=remote.timeout_s) as resp,
-        tmp.open("wb") as out,
-        Progress(
-            "[progress.description]{task.description}",
-            BarColumn(),
-            DownloadColumn(),
-            TransferSpeedColumn(),
-            console=console,
-        ) as progress,
-    ):
-        total = int(resp.headers.get("Content-Length") or 0) or None
-        task = progress.add_task(remote.filename, total=total)
-        for chunk in iter(lambda: resp.read(_CHUNK), b""):
-            out.write(chunk)
-            progress.advance(task, len(chunk))
+    # Servers (data.matr.io in particular) can drop long transfers while the client still
+    # exits cleanly, leaving a silently truncated file. Resume with HTTP Range requests and
+    # only accept the file once its size matches the server-reported total.
+    expected_total: int | None = None
+    for attempt in range(1, _MAX_ATTEMPTS + 1):
+        have = tmp.stat().st_size if tmp.exists() else 0
+        if expected_total is not None and have >= expected_total:
+            break
+        expected_total = _download_range(remote, tmp, have, expected_total)
+        if expected_total is None or tmp.stat().st_size >= expected_total:
+            break
+        console.print(
+            f"[yellow]short transfer[/] {remote.filename}: "
+            f"{tmp.stat().st_size}/{expected_total} bytes, resuming (attempt {attempt})"
+        )
+    else:
+        raise RuntimeError(f"Could not complete {remote.url} after {_MAX_ATTEMPTS} attempts")
     if not _verify(tmp, remote.sha256):
         tmp.unlink(missing_ok=True)
         raise RuntimeError(f"Checksum mismatch for {remote.url}")
     tmp.replace(dest)
     return dest
+
+
+_MAX_ATTEMPTS = 30
+
+
+def _download_range(
+    remote: RemoteFile, tmp: Path, offset: int, known_total: int | None
+) -> int | None:
+    """Append bytes from ``offset`` to ``tmp``. Returns the full file size if the server said."""
+    headers = {"User-Agent": "battery-rul/0.1"}
+    if offset:
+        headers["Range"] = f"bytes={offset}-"
+    req = urllib.request.Request(remote.url, headers=headers)
+    with urllib.request.urlopen(req, timeout=remote.timeout_s) as resp:
+        length = int(resp.headers.get("Content-Length") or 0) or None
+        if offset and resp.status != 206:  # server ignored Range: restart from scratch
+            offset = 0
+        total = known_total or ((offset + length) if length is not None else None)
+        with (
+            tmp.open("ab" if offset else "wb") as out,
+            Progress(
+                "[progress.description]{task.description}",
+                BarColumn(),
+                DownloadColumn(),
+                TransferSpeedColumn(),
+                console=console,
+            ) as progress,
+        ):
+            task = progress.add_task(remote.filename, total=total, completed=offset)
+            try:
+                for chunk in iter(lambda: resp.read(_CHUNK), b""):
+                    out.write(chunk)
+                    progress.advance(task, len(chunk))
+            except (TimeoutError, ConnectionError, OSError) as exc:  # resumable
+                console.print(f"[yellow]connection dropped[/] {remote.filename}: {exc}")
+    return total
 
 
 def _extract_nasa(outer_zip: Path) -> None:
