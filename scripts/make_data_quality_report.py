@@ -5,8 +5,8 @@ Deterministic and re-runnable (no RNG). Every number in the report is computed h
 
     BATTERY_RUL_DATA_DIR=/path/to/data uv run python scripts/make_data_quality_report.py
 
-To add Toyota later, append ``"toyota"`` to ``DATASETS`` (and, if wanted, to
-``REPRESENTATIVE_CELL``); nothing else is dataset-specific.
+NASA and CALCE (``RULE_DATASETS``) get per-cell tables and figures; Toyota (124 cells, provider
+EOL labels, discharge-only curves) gets aggregate tables and its own figures.
 """
 
 from __future__ import annotations
@@ -37,7 +37,8 @@ from battery_rul.tasks.eol import (
 from battery_rul.utils import PROCESSED_DIR, REPORTS_DIR
 
 # ----------------------------------------------------------------------------- configuration
-DATASETS = ["nasa", "calce"]  # add "toyota" here once its processed tables exist
+DATASETS = ["nasa", "calce", "toyota"]
+RULE_DATASETS = ["nasa", "calce"]  # rule-labelled datasets with per-cell treatment
 REPRESENTATIVE_CELL = {"nasa": "B0005", "calce": "CS2_35"}
 SHARED_RIG = {"nasa": ["B0005", "B0006", "B0007"]}  # cells cycled together (same timestamps)
 THRESHOLDS = (0.8, 0.7)
@@ -204,7 +205,7 @@ def eol_tables(cyc: pd.DataFrame) -> tuple[dict[float, pd.DataFrame], pd.DataFra
     long_rows: list[dict[str, Any]] = []
     for thr in THRESHOLDS:
         rows = []
-        for ds in DATASETS:
+        for ds in RULE_DATASETS:
             for cell, g in cell_groups(cyc, ds):
                 res = eol_all_rules(g, thr)
                 sp, sp_txt, hi = spread_of(res)
@@ -233,7 +234,7 @@ def eol_tables(cyc: pd.DataFrame) -> tuple[dict[float, pd.DataFrame], pd.DataFra
 # ----------------------------------------------------------------------------- tables
 def overview_table(cyc: pd.DataFrame) -> pd.DataFrame:
     rows = []
-    for ds in DATASETS:
+    for ds in RULE_DATASETS:
         for cell, g in cell_groups(cyc, ds):
             row: dict[str, Any] = {
                 "dataset": ds,
@@ -288,12 +289,14 @@ def spearman(a: pd.Series, b: pd.Series) -> float:
     return float(spearmanr(a[ok], b[ok]).statistic)
 
 
-def feature_table(cyc: pd.DataFrame, features: list[str]) -> pd.DataFrame:
+def feature_table(
+    cyc: pd.DataFrame, features: list[str], datasets: list[str] | None = None
+) -> pd.DataFrame:
     """Spearman rho (per-cell, mean [min, max] over cells) of each feature with SOH."""
     rows = []
     for feat in features:
         row: dict[str, Any] = {"feature": feat}
-        for ds in DATASETS:
+        for ds in datasets or RULE_DATASETS:
             for label, only_clean in (("all cycles", False), ("masked cycles dropped", True)):
                 rhos = []
                 for _, g in cell_groups(cyc, ds):
@@ -427,10 +430,10 @@ def fig_shared_rig(cyc: pd.DataFrame, ds: str, cells: list[str], fname: str) -> 
 
 def fig_regen_vs_rest(cyc: pd.DataFrame, fname: str) -> tuple[str, dict[str, dict[str, float]]]:
     fig, axes = plt.subplots(
-        1, len(DATASETS), figsize=(5.4 * len(DATASETS), 4.2), sharey=True, squeeze=False
+        1, len(RULE_DATASETS), figsize=(5.4 * len(RULE_DATASETS), 4.2), sharey=True, squeeze=False
     )
     stats: dict[str, dict[str, float]] = {}
-    for ax, ds in zip(axes[0], DATASETS, strict=True):
+    for ax, ds in zip(axes[0], RULE_DATASETS, strict=True):
         d = cyc[(cyc["dataset"] == ds) & cyc["d_soh"].notna() & (cyc["rest_before_s"] > 0)].copy()
         x = np.log10(d["rest_before_s"])
         ax.scatter(
@@ -501,10 +504,14 @@ def ica_curve(g: pd.DataFrame) -> tuple[np.ndarray, np.ndarray] | None:
 
 def fig_charge_curves(fname: str, steps: dict[str, int]) -> tuple[str, dict[str, list[int]]]:
     fig, axes = plt.subplots(
-        len(DATASETS), 2, figsize=(11, 3.9 * len(DATASETS)), squeeze=False, constrained_layout=True
+        len(RULE_DATASETS),
+        2,
+        figsize=(11, 3.9 * len(RULE_DATASETS)),
+        squeeze=False,
+        constrained_layout=True,
     )
     used: dict[str, list[int]] = {}
-    for r, ds in enumerate(DATASETS):
+    for r, ds in enumerate(RULE_DATASETS):
         cell = REPRESENTATIVE_CELL[ds]
         c = pd.read_parquet(
             PROCESSED_DIR / ds / "curves.parquet",
@@ -591,17 +598,139 @@ def first_charge_spike(ds: str = "nasa") -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+# ----------------------------------------------------------------------------- toyota
+SPLIT_ORDER = ["train", "test1", "test2"]
+
+
+def toyota_cells(cells: pd.DataFrame) -> pd.DataFrame:
+    return cells[cells["dataset"] == "toyota"].set_index("cell_id")
+
+
+def fig_toyota_soh(cyc: pd.DataFrame, cells: pd.DataFrame, fname: str) -> str:
+    tc = toyota_cells(cells)
+    d = cyc[cyc["dataset"] == "toyota"]
+    batches = sorted(tc["batch"].unique())
+    fig, axes = plt.subplots(1, len(batches), figsize=(4.4 * len(batches), 3.8), sharey=True)
+    for ax, b in zip(np.atleast_1d(axes), batches, strict=True):
+        ids = tc.index[tc["batch"] == b]
+        sub = d[d["cell_id"].isin(ids)]
+        for _, g in sub.groupby("cell_id"):
+            ax.plot(g["cycle_idx"], g["soh"], color=CAT[0], lw=0.8, alpha=0.3)
+        med = sub.groupby("cycle_idx")["soh"].median()
+        n_at = sub.groupby("cycle_idx")["cell_id"].nunique()
+        med = med[n_at >= max(3, len(ids) // 2)]
+        ax.plot(med.index, med.to_numpy(), color=TITLE, lw=1.8)
+        ax.axhline(0.8, color=TXT, lw=1.0, ls="--", alpha=0.8)
+        ax.set_title(f"batch {b} ({len(ids)} cells)")
+        ax.set_xlabel("cycle")
+    np.atleast_1d(axes)[0].set_ylabel("SOH")
+    handles = [
+        Line2D([], [], color=CAT[0], lw=1.2, alpha=0.5, label="cell"),
+        Line2D([], [], color=TITLE, lw=1.8, label="batch median"),
+        Line2D([], [], color=TXT, lw=1, ls="--", label="80 %"),
+    ]
+    fig.legend(handles=handles, loc="lower center", ncol=3, bbox_to_anchor=(0.5, -0.06))
+    fig.suptitle("TOYOTA: SOH vs cycle by batch", color=TITLE, fontsize=11)
+    fig.tight_layout(rect=(0, 0.02, 1, 0.97))
+    return save(fig, fname)
+
+
+def fig_toyota_cycle_life(cells: pd.DataFrame, fname: str) -> str:
+    tc = toyota_cells(cells)
+    fig, ax = plt.subplots(figsize=(7.5, 3.8))
+    bins = np.linspace(tc["reported_cycle_life"].min(), tc["reported_cycle_life"].max(), 26)
+    vals = [tc.loc[tc["split"] == sp, "reported_cycle_life"] for sp in SPLIT_ORDER]
+    ax.hist(
+        vals,
+        bins=bins,
+        color=CAT[: len(vals)],
+        label=[f"{sp} (n={len(v)})" for sp, v in zip(SPLIT_ORDER, vals, strict=True)],
+    )
+    ax.set_xlabel("reported cycle life (cycles to 0.88 Ah)")
+    ax.set_ylabel("cells")
+    ax.set_title("TOYOTA: cycle life by split")
+    ax.legend()
+    return save(fig, fname)
+
+
+def toyota_tables(cyc: pd.DataFrame, cells: pd.DataFrame) -> dict[str, pd.DataFrame]:
+    tc = toyota_cells(cells)
+    life = (
+        tc.groupby("split")["reported_cycle_life"]
+        .agg(["count", "median", "min", "max"])
+        .reindex(SPLIT_ORDER)
+    )
+    life_df = pd.DataFrame(
+        {
+            "split": life.index,
+            "n": life["count"].astype(int).to_numpy(),
+            "median": life["median"].map(lambda x: f"{x:.0f}").to_numpy(),
+            "min": life["min"].astype(int).to_numpy(),
+            "max": life["max"].astype(int).to_numpy(),
+        }
+    )
+    d = cyc[cyc["dataset"] == "toyota"]
+    per_cell = d.groupby("cell_id").size()
+    cell_rows = []
+    for b in sorted(tc["batch"].unique()):
+        ids = tc.index[tc["batch"] == b]
+        row: dict[str, Any] = {
+            "batch": b,
+            "cells": len(ids),
+            "median cycles recorded": f"{per_cell.reindex(ids).median():.0f}",
+            "median reported life": f"{tc.loc[ids, 'reported_cycle_life'].median():.0f}",
+        }
+        for col in FLAG_COLS:
+            row[col.removeprefix("flag_")] = int(d.loc[d["cell_id"].isin(ids), col].sum())
+        cell_rows.append(row)
+    rule_rows = []
+    for thr in THRESHOLDS:
+        n_cens = 0
+        diffs: list[int] = []
+        for cell, g in d.groupby("cell_id"):
+            r = eol_masked(
+                g["cycle_idx"].to_numpy(),
+                g["soh"].to_numpy(),
+                thr,
+                g["mask"].to_numpy(),
+                base=eol_sustained,
+            )
+            if r.censored or r.eol_cycle is None:
+                n_cens += 1
+            else:
+                diffs.append(int(r.eol_cycle) - int(tc.loc[cell, "reported_cycle_life"]))
+        arr = np.array(diffs)
+        rule_rows.append(
+            {
+                "threshold (SOH vs first-5-cycle mean)": f"{thr:.0%}",
+                "cells": len(tc),
+                "censored (masked + sustained)": n_cens,
+                "resolved": len(diffs),
+                "median (rule - provider)": "n/a" if arr.size == 0 else f"{np.median(arr):.0f}",
+                "min / max (rule - provider)": "n/a"
+                if arr.size == 0
+                else f"{arr.min()} / {arr.max()}",
+            }
+        )
+    return {
+        "life": life_df,
+        "batch": pd.DataFrame(cell_rows),
+        "rule": pd.DataFrame(rule_rows),
+        "features": feature_table(cyc, TASK_A_FEATURES, ["toyota"]),
+    }
+
+
 # ----------------------------------------------------------------------------- main
 def main() -> None:
     set_style()
-    _, cyc = load_all()
+    cells_all, cyc = load_all()
     eol_tabs, eol_long = eol_tables(cyc)
     overview = overview_table(cyc)
     fx = flag_effect_table(cyc)
 
     figs: dict[str, str] = {}
     truncated: dict[str, bool] = {}
-    for ds in DATASETS:
+    for ds in RULE_DATASETS:
         figs[f"soh_{ds}"], truncated[ds] = fig_soh_panels(cyc, ds, eol_long, f"soh_{ds}.png")
     for ds, rig in SHARED_RIG.items():
         figs[f"rig_{ds}"] = fig_shared_rig(cyc, ds, rig, f"shared_rig_{ds}.png")
@@ -610,6 +739,9 @@ def main() -> None:
 
     task_a = feature_table(cyc, TASK_A_FEATURES)
     forbidden = feature_table(cyc, DISCHARGE_FEATURES)
+    toy = toyota_tables(cyc, cells_all)
+    figs["toy_soh"] = fig_toyota_soh(cyc, cells_all, "soh_toyota.png")
+    figs["toy_life"] = fig_toyota_cycle_life(cells_all, "cycle_life_toyota.png")
 
     md: list[str] = []
     w = md.append
@@ -653,10 +785,21 @@ def main() -> None:
                         f"|capacity change| > {q.JUMP_FACTOR:.0f} x centered {q.JUMP_WINDOW}-cycle rolling-median |change|",
                         "informational",
                     ],
+                    [
+                        "charge_pause",
+                        f"charge_time_s > {q.CHARGE_PAUSE_FACTOR:.0f} x the cell's median charge_time_s (paused/interrupted charge)",
+                        "informational + input cleaning (not an EOL mask)",
+                    ],
                 ],
                 columns=["flag", "rule", "type"],
             )
         )
+    )
+    w(
+        "\nCausality (ADR-0005 section 6): "
+        + ", ".join(c.removeprefix("flag_") for c in q.NON_CAUSAL_FLAGS)
+        + " use a centred rolling window (future cycles) and must not be model inputs as-is; "
+        "charge_pause uses a whole-cell median, so a deployed model must recompute it causally.\n"
     )
     w(
         "\nLabel mask used for the `masked` EOL rule: "
@@ -665,7 +808,7 @@ def main() -> None:
     )
 
     # ------------------------------------------------ per dataset
-    for ds in DATASETS:
+    for ds in RULE_DATASETS:
         w(f"## {ds.upper()}\n")
         w("### Per-cell overview and flag counts\n")
         w(md_table(overview[overview["dataset"] == ds].drop(columns="dataset")) + "\n")
@@ -750,6 +893,41 @@ def main() -> None:
                     f"- {oc} (separate rig/schedule): cycles with rest > {LONG_REST_RIG_S:.0e} s: {lcs}.\n"
                 )
 
+    # ------------------------------------------------ toyota
+    w("## TOYOTA\n")
+    w(
+        "124 LFP/graphite A123 cells (Severson 2019). **EOL label = provider "
+        "`cells.reported_cycle_life`** (label source `provider`, ADR-0005 Amendment 1): cycles "
+        "to 0.88 Ah, 80 % of nominal. Per-cell EOL tables are omitted (one label per cell, no "
+        "rule). Shared-rig and ICA figures are skipped: the curves are discharge-only and the "
+        "charge protocol differs per cell (it is the experimental variable), so charge-curve "
+        "shape is confounded with the protocol and cannot be read as ageing.\n"
+    )
+    w("### Cycle life by split\n")
+    w(md_table(toy["life"]) + "\n")
+    w(f"![cycle life by split]({figs['toy_life']})\n")
+    w("### Per-batch overview and flag counts\n")
+    w(md_table(toy["batch"]) + "\n")
+    w("### Provider label vs the masked + sustained rule\n")
+    w(
+        "The rule applied to our SOH (reference = mean of first 5 cycles, 1.04 to 1.10 Ah) "
+        "censors most cells because the tests stop near 0.88 Ah, about 80 % of *nominal*, which "
+        "is below 80 % of our reference. That is the reason for the amendment.\n"
+    )
+    w(md_table(toy["rule"]) + "\n")
+    w("### SOH trajectories\n")
+    w(f"![SOH toyota]({figs['toy_soh']})\n")
+    w(
+        "_Thin lines: every cell; black: per-cycle batch median (drawn where at least half "
+        "of the batch is still alive); dashed: 80 % SOH._\n"
+    )
+    w("### Feature preview (charge-phase features vs SOH)\n")
+    w(
+        "Spearman rho per cell, mean over cells with [min, max]. Charge features are "
+        "protocol-dependent in Toyota, so read them within a protocol.\n"
+    )
+    w(md_table(toy["features"]) + "\n")
+
     # ------------------------------------------------ cross dataset
     w("## Cross-dataset\n")
     w("### Flag prevalence\n")
@@ -773,7 +951,7 @@ def main() -> None:
     rows = []
     for thr in THRESHOLDS:
         t = eol_tabs[thr]
-        for ds in DATASETS:
+        for ds in RULE_DATASETS:
             s = t[t["dataset"] == ds]
             sp = s["_spread"].dropna()
             rows.append(
@@ -939,7 +1117,7 @@ def recommendation_text(
     out: list[str] = []
     for thr in THRESHOLDS:
         t = eol_tabs[thr]
-        for ds in DATASETS:
+        for ds in RULE_DATASETS:
             s = t[t["dataset"] == ds]
             both = s[(s["sustained"] != "censored") & (s["raw"] != "censored")]
             raw_gap = (both["sustained"].astype(int) - both["raw"].astype(int)).abs()

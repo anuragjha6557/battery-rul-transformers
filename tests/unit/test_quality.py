@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from battery_rul.data.quality import FLAG_COLS, flag_anomalies
+from battery_rul.data.quality import FLAG_COLS, NON_CAUSAL_FLAGS, flag_anomalies
 
 
 def _cycles(n: int = 60, cell: str = "X1") -> pd.DataFrame:
@@ -73,3 +73,22 @@ def test_nan_features_do_not_flag() -> None:
     df[["cv_time_s", "rest_before_s", "charge_throughput_ah"]] = np.nan
     out = flag_anomalies(df)
     assert not out[["flag_skipped_cv", "flag_long_rest", "flag_partial_charge"]].to_numpy().any()
+
+
+def test_charge_pause_flag() -> None:
+    df = _cycles()
+    df.loc[7, "charge_time_s"] = 3.5 * 8000.0  # paused charge
+    df.loc[8, "charge_time_s"] = 2.5 * 8000.0  # long but below 3x
+    out = flag_anomalies(df)
+    assert out["flag_charge_pause"].to_numpy().nonzero()[0].tolist() == [7]
+    assert "charge_pause" in out.loc[7, "flag_reasons"]
+    assert "flag_charge_pause" in FLAG_COLS
+
+
+def test_non_causal_flags_membership() -> None:
+    assert set(NON_CAUSAL_FLAGS) == {
+        "flag_partial_charge",
+        "flag_capacity_jump",
+        "flag_charge_pause",  # whole-cell median reads future cycles
+    }
+    assert set(NON_CAUSAL_FLAGS) <= set(FLAG_COLS)

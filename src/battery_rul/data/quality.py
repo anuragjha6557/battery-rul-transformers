@@ -20,6 +20,15 @@ Thresholds below were chosen by inspecting NASA (B0005/06/07/18) and CALCE (CS2_
 - ``capacity_jump``: the spec's "|d capacity| > 4 x cell-median |d|" flagged 17 % of CALCE
   cycles because |d| is heteroscedastic (noise grows with age). The reference is therefore a
   centered 25-cycle rolling median of |d| with factor 6 (informational only).
+- ``charge_pause``: charge_time_s > 3 x the cell's median. Toyota has 45 cycles above 4000 s
+  (median ~1730 s) from paused or interrupted charges; at 1.5x, 2x, 3x and 4x NASA and CALCE
+  have 0 hits (their charge time is protocol-fixed or shrinks with age) and Toyota has 45, 45,
+  45, 44, so the data are bimodal and 3 sits in an empty region. Informational and an
+  input-cleaning flag (the charge-time feature is corrupt on those cycles); not an EOL mask.
+  It uses the whole-cell median (a trajectory-level reference, not a centred window).
+
+Causality (ADR-0005 section 6): ``NON_CAUSAL_FLAGS`` lists the flags computed with a *centred*
+rolling window, which looks at future cycles. They must not be model inputs as-is.
 """
 
 from __future__ import annotations
@@ -44,13 +53,22 @@ JUMP_WINDOW: Final = 25
 #: Floor on the local scale, as a fraction of the cell's global median |change|.
 JUMP_SCALE_FLOOR: Final = 0.25
 
+#: charge_time_s above this multiple of the cell's median is a paused/interrupted charge.
+CHARGE_PAUSE_FACTOR: Final = 3.0
+
 FLAG_COLS: Final = (
     "flag_no_paired_charge",
     "flag_partial_charge",
     "flag_skipped_cv",
     "flag_long_rest",
     "flag_capacity_jump",
+    "flag_charge_pause",
 )
+
+#: Flags that use a centred rolling window (future cycles): never model inputs as-is.
+# Centred windows (partial_charge, capacity_jump) or a whole-cell median (charge_pause) read
+# future cycles: fine for labels and reports, never as model inputs as-is.
+NON_CAUSAL_FLAGS: Final = ("flag_partial_charge", "flag_capacity_jump", "flag_charge_pause")
 
 
 def _flags_one_cell(g: pd.DataFrame) -> pd.DataFrame:
@@ -74,6 +92,8 @@ def _flags_one_cell(g: pd.DataFrame) -> pd.DataFrame:
     scale = d.rolling(JUMP_WINDOW, center=True, min_periods=3).median()
     scale = scale.clip(lower=JUMP_SCALE_FLOOR * d.median())
     out["flag_capacity_jump"] = (d > JUMP_FACTOR * scale).fillna(False)
+    med = g["charge_time_s"].median()
+    out["flag_charge_pause"] = (g["charge_time_s"] > CHARGE_PAUSE_FACTOR * med).fillna(False)
     return out.astype(bool)
 
 
