@@ -38,3 +38,10 @@ Each model's search space is committed in `configs/model/<name>.yaml` before its
 - All studies are re-run from scratch under the new space. The stored search-space hash makes a mixed resume impossible.
 
 **Budget check.** Measured study cost on Toyota: about 22 s for 50 ElasticNet trials and about 52 s for 50 NLinear trials with 4 workers. Tuning all models on all three tasks is therefore affordable, so no task-scoping deviation is needed.
+
+**Clarification (2026-11-15, during the sweep).** The boundary-hit rule applies to *open-ended* scales a search range truncates: learning rate, regularisation strengths, tree counts, widths. It does **not** apply to parameters whose range is their full natural domain:
+- `l1_ratio ∈ [0, 1]`
+- `dropout ≥ 0`
+- `subsample` and `colsample_bytree ≤ 1`
+
+A hit there is a finding, not a truncation. The first instance was ElasticNet forecast, best `l1_ratio = 0.98`, i.e. near-pure lasso; it is reported but triggers no re-sweep.

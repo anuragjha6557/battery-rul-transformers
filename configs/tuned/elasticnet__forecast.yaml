@@ -1,0 +1,10 @@
+name: elasticnet
+task: forecast
+params:
+  alpha: 4.306125562029643e-05
+  l1_ratio: 0.9803196614247096
+  n_lags: 5
+  lookback: 32
+tuned_from: 8babdf48b42e435483ae9d635e4a3775
+search_hash: 15ac2ea2c80c
+best_value: 0.6484608248223893
