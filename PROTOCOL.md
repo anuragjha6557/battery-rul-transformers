@@ -1,7 +1,7 @@
 # Evaluation protocol
 
-**Status:** v1.0, frozen before any model sweep (2026-11-15). Changes after this point need an ADR and a version bump, and must be called out in the results report.
-**Decision record:** [ADR-0004](docs/decisions/0004-evaluation-protocol.md). EOL labelling is [ADR-0005](docs/decisions/0005-eol-definition.md); it is finalised from the Phase-2 data-quality report and fills in the items marked **[ADR-0005]** below.
+**Status:** v1.1, frozen before any model sweep (2026-11-15). v1.1 fills in the items v1.0 left to ADR-0005; no rule changed. Changes after this point need an ADR and a version bump, and must be called out in the results report.
+**Decision record:** [ADR-0004](docs/decisions/0004-evaluation-protocol.md). EOL labelling is [ADR-0005](docs/decisions/0005-eol-definition.md); it was finalised from the Phase-2 data-quality report and its decisions are inlined below.
 
 The source paper's numbers are not reproduced or trusted. This protocol is designed to remove the specific weaknesses identified in `docs/PLAN.md §1`:
 - same-cycle features scored as "forecasting"
@@ -20,7 +20,7 @@ The source paper's numbers are not reproduced or trusted. This protocol is desig
 | `k` | `cycle_idx`: the equivalent full-cycle count of a cell (1-based) |
 | `SOH_k` | `capacity_k / mean(capacity of the cell's first 5 cycles)`, computed in `data.schema.add_soh` |
 | `θ` | EOL threshold on SOH. **Primary θ = 0.80** for every dataset; **sensitivity θ = 0.70** |
-| `EOL` | Cycle at which the cell reaches θ under the labelling rule **[ADR-0005]**. Labels may use the full trajectory in hindsight; **inputs never may**. |
+| `EOL` | Cycle at which the cell reaches θ under the labelling rule: `masked` + `sustained(n=5)`, first of 5 consecutive non-artifact cycles below θ; runs cut off by end of record count as censored (ADR-0005). Labels may use the full trajectory in hindsight; **inputs never may**. |
 | `RUL_k` | `EOL − k` (cycles). Undefined (censored) if the cell never reaches θ |
 | `T_p` | Prediction start ("now"). Everything at cycles ≤ T_p is observable; nothing after it is |
 
@@ -59,14 +59,14 @@ Never mix tasks in one table. Every model declares which tasks it supports.
 - **Target:** the `RUL_{T_p}` distribution (median plus quantiles).
 - **Inputs:** same as Task B.
 - **Two estimators** (each model declares which it supports):
-  - *trajectory crossing:* first cycle at which the predicted SOH trajectory (median, plus each quantile trajectory for intervals) crosses θ, using the same rule as the labels **[ADR-0005]**
+  - *trajectory crossing:* first cycle at which the predicted SOH trajectory (median, plus each quantile trajectory for intervals) crosses θ, using the same rule as the labels (sustained, n=5, ADR-0005)
   - *direct head:* a model that regresses `RUL_{T_p}` and its quantiles directly
 - If a predicted trajectory never crosses θ within the model's maximum horizon, the prediction is right-censored at that horizon. It is scored as `pred = T_p + H_max` with a censor flag, never silently dropped.
 
 ### Prediction start points (Tasks B, C)
 Two families, both reported:
 1. **Fixed-cycle starts.** The *deployable* setting, and the headline: the cycle count is known in the field, the eventual life is not.
-   - The values are dataset-specific constants, each below the earliest EOL in that dataset at θ = 0.8 **[ADR-0005]**.
+   - The values are dataset-specific constants, each below the earliest EOL in that dataset at θ = 0.8: **NASA {30, 50}**, **CALCE {200, 400}**, **Toyota {100}** (ADR-0005).
    - They are chosen from the data-quality report *before* any model is run and fixed in `configs/task/*.yaml`.
 2. **Fraction-of-life starts** λ ∈ {0.3, 0.5, 0.7}, with T_p = round(λ · EOL).
    - These are literature-comparable and match the α-λ metric.
@@ -85,7 +85,7 @@ Only uncensored cells take fraction-of-life starts.
 - **NASA shared-rig caveat.** B0005, B0006 and B0007 were cycled on one rig with identical timestamps and rest schedule, so their regeneration events co-occur at the same `cycle_idx`. Consequences:
   - B0018 is the **only rig-independent NASA test cell**. Every NASA table reports the B0018 fold separately ("independent fold") next to the 4-fold LOCO mean.
   - Absolute `cycle_idx` is **not a model input** for NASA, CALCE or Toyota. Otherwise a model could learn "rig-mates jump at cycle 48". Models see age only through quantities a deployed system also has (window position relative to T_p, cumulative throughput). `tests/test_leakage.py` asserts this. An ablation that adds absolute `cycle_idx` quantifies what memorisation would have bought.
-- **CALCE.** Session schedules of CS2_36/37/38 start on the same dates; the shared-schedule analysis in `reports/data_quality.md` decides whether the same caveat applies. **[ADR-0005]**
+- **CALCE.** No shared-rig caveat: long rests coincide only at start-up (cycles 2–4, 54) and cross-cell ΔSOH correlation is ρ ∈ [−0.08, 0.12] (vs 0.55–0.69 for NASA rig-mates). All four CALCE folds count as independent (ADR-0005).
 
 ### Toyota/MIT/Stanford (Severson 2019)
 - The **official split** is primary, for literature comparability: train (41 cells), primary test (43), secondary test (batch 3, 40), using the published cleaning.

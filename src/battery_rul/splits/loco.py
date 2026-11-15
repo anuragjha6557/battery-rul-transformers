@@ -48,8 +48,8 @@ def independent_fold_cells(dataset: str, cell_ids: Sequence[str] | None = None) 
     """Cells whose test fold is rig-independent and reported separately (PROTOCOL §3).
 
     NASA: ``("B0018",)`` (B0005/6/7 share one rig). Other datasets: every cell, so
-    ``cell_ids`` must be supplied.
-    TODO: CALCE may need a restricted set; decided by ADR-0005 / the data-quality report.
+    ``cell_ids`` must be supplied. CALCE cells were checked and do not share a schedule
+    (cross-cell dSOH rho in [-0.08, 0.12]; ADR-0005).
     """
     if dataset not in DATASETS:
         raise ValueError(f"unknown dataset {dataset!r}; expected one of {DATASETS}")
