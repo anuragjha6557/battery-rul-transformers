@@ -6,7 +6,7 @@
 
 ## 1. Context
 
-**Source paper:** *iTransformer Network Based Approach for Accurate Remaining Useful Life Prediction in Lithium-Ion Batteries* (Jha, Dorkar, Biswas, Emadi — IEEE ITEC 2024). The owner is the first author. PDF: `docs/paper/jha2024_itransformer_rul.pdf`. Extracted text (for agents): `docs/paper/jha2024_itransformer_rul.txt` (re-extract with `swift scripts/pdftext.swift <pdf>` if needed — no PDF libs are installed system-wide).
+**Source paper:** *iTransformer Network Based Approach for Accurate Remaining Useful Life Prediction in Lithium-Ion Batteries* (Jha, Dorkar, Biswas, Emadi — IEEE ITEC 2024). The owner is the first author. PDF: `docs/paper/jha2024_itransformer_rul.pdf` (local only, gitignored — IEEE copyright; cite DOI 10.1109/ITEC60657.2024.10598898). Extracted text (for agents): `docs/paper/jha2024_itransformer_rul.txt` (re-extract with `swift scripts/pdftext.swift <pdf>` if needed — no PDF libs are installed system-wide).
 
 **What the paper did:** Capacity (SOH) trajectory forecasting on NASA PCoE cells B0005/06/07/18 (2 Ah, EOL = 1.4 Ah) and CALCE CS2_35/36/37/38 (1.1 Ah LiCoO2). Two input modes: *single-channel* (capacity history, lookback window L, recursive one-step-ahead rollout) and *multi-channel* (capacity + 10-point uniformly resampled charging V/I/T curves for NASA, resistance for CALCE). Min-max normalization; 3-fold CV across the 4 cells; grid search over window ∈{16,32,64,128}, hidden ∈{16,32,64,128}, LR ∈{1e-3…5e-1}; dropout 0.1; Adam. Models: LSTM, vanilla Transformer, iTransformer. Metrics RMSE/MAE/RE. Claimed iTransformer RMSE gains of 44.6 % (NASA) and 29 % (CALCE).
 

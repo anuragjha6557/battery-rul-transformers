@@ -38,3 +38,7 @@ multirun/
 
 # Claude Code agent worktrees / local settings
 .claude/
+
+# Source paper (IEEE-copyrighted; kept locally, never published)
+docs/paper/*.pdf
+docs/paper/*.txt
