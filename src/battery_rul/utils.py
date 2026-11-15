@@ -12,7 +12,8 @@ from typing import Any, Literal
 import numpy as np
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-DATA_DIR = PROJECT_ROOT / "data"
+# Override with BATTERY_RUL_DATA_DIR to share one data/ across git worktrees (data is gitignored).
+DATA_DIR = Path(os.environ.get("BATTERY_RUL_DATA_DIR", PROJECT_ROOT / "data")).resolve()
 RAW_DIR = DATA_DIR / "raw"
 PROCESSED_DIR = DATA_DIR / "processed"
 REPORTS_DIR = PROJECT_ROOT / "reports"
