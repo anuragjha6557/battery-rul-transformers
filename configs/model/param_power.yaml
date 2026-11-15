@@ -1,0 +1,3 @@
+name: param_power
+params: {kind: power, lookback: 512}
+search: {}

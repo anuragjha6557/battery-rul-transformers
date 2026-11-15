@@ -1,0 +1,3 @@
+name: param_exp2
+params: {kind: exp2, lookback: 512}
+search: {}
