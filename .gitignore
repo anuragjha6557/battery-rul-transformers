@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+dist/
+build/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.hypothesis/
+.coverage
+htmlcov/
+
+# Data & experiment artifacts (never committed; rebuilt by `make data`)
+data/raw/
+data/processed/
+mlruns/
+mlflow.db
+optuna_journal.log
+outputs/
+multirun/
+*.pt
+*.pth
+*.onnx
+*.ckpt
+
+# Notebooks
+.ipynb_checkpoints/
+
+# OS / editors
+.DS_Store
+.vscode/
+.idea/
+
+# Secrets
+.env
