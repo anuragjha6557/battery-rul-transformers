@@ -37,5 +37,8 @@ jobs:
       - name: Unit tests (synthetic data only)
         run: uv run pytest --cov --cov-report=term-missing
 
+      - name: LightGBM unit tests (separate process, mirrors macOS OpenMP isolation)
+        run: uv run pytest -o addopts="-ra --strict-markers -m 'not data and not slow'" tests/lgbm
+
       - name: CLI smoke test
         run: uv run battery-rul --help

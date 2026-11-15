@@ -92,10 +92,13 @@ check_untyped_defs = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-ra --strict-markers -m 'not data and not slow'"
+# tests/lgbm runs in its own pytest process (Makefile/CI): LightGBM and torch load different
+# OpenMP runtimes that cannot share a macOS process, and collection imports every test module.
+addopts = "-ra --strict-markers -m 'not data and not slow' --ignore=tests/lgbm"
 markers = [
     "data: requires real datasets in data/raw (skipped in CI)",
     "slow: long-running integration tests (skipped by default)",
+    "lightgbm: imports LightGBM; run in a separate pytest process (OpenMP isolation on macOS)",
 ]
 
 [tool.coverage.run]

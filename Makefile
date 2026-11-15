@@ -22,11 +22,13 @@ format:  ## Auto-fix lint and formatting
 typecheck:  ## mypy on src/
 	$(UV) run mypy
 
-test:  ## Fast unit tests (CI-identical; skips `data` and `slow` markers)
+test:  ## Fast unit tests (CI-identical). LightGBM tests run in a second process (OpenMP isolation)
 	$(UV) run pytest
+	$(UV) run pytest -o addopts="-ra --strict-markers -m 'not data and not slow'" tests/lgbm
 
 test-all:  ## All tests incl. real-data and slow (needs data/raw)
 	$(UV) run pytest -m ""
+	$(UV) run pytest -o addopts="-ra --strict-markers" tests/lgbm
 
 cov:  ## Unit tests with coverage report
 	$(UV) run pytest --cov --cov-report=term-missing

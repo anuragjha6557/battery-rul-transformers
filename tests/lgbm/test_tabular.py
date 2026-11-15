@@ -18,6 +18,10 @@ from battery_rul.models.tabular import (
 
 L, H = 12, (1, 5)
 
+# Runs in its own pytest process (Makefile/CI): LightGBM and torch load different OpenMP
+# runtimes that cannot coexist in one macOS process (models/registry.py).
+pytestmark = pytest.mark.lightgbm
+
 
 def _samples(n: int = 120, task: str = "forecast", seed: int = 0, nan_lags: bool = False):
     rng = np.random.default_rng(seed)

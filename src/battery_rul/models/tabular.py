@@ -18,15 +18,17 @@ Both models share one design matrix and one target convention (mirroring ``neura
 
 from __future__ import annotations
 
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
-import lightgbm as lgb
 import numpy as np
 import pandas as pd
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import ElasticNet
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
+
+if TYPE_CHECKING:  # lightgbm is imported lazily: see models/registry.py (OpenMP isolation)
+    import lightgbm as lgb
 
 from battery_rul.models.base import (
     DEFAULT_QUANTILES,
@@ -292,6 +294,8 @@ class LGBMModel(TabularModel):
         xv: np.ndarray | None,
         yv: np.ndarray | None,
     ) -> dict[str, Any]:
+        import lightgbm as lgb  # lazy: OpenMP isolation (models/registry.py)
+
         if len(y) == 0:
             self.point_[h] = _Const(0.0)
             self.quantile_[h] = [_Const(0.0) for _ in self.levels]
@@ -328,6 +332,8 @@ class LGBMModel(TabularModel):
 
     def feature_importances(self) -> pd.DataFrame:
         """Gain importance of the L2 point model per horizon, normalised to sum to 1."""
+        import lightgbm as lgb
+
         rows = []
         for h, m in self.point_.items():
             if isinstance(m, lgb.LGBMRegressor):

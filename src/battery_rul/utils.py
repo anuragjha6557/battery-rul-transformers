@@ -6,6 +6,7 @@ import hashlib
 import json
 import os
 import random
+import sys
 from pathlib import Path
 from typing import Any, Literal
 
@@ -31,14 +32,13 @@ def seed_everything(seed: int) -> None:
     # from it. Our own code must take an explicit np.random.Generator instead.
     np.random.seed(seed)  # noqa: NPY002
     os.environ["PYTHONHASHSEED"] = str(seed)
-    try:
-        import torch
-
+    # Seed torch only if this process already uses it: importing torch here would load its
+    # OpenMP runtime into LightGBM worker processes (see models/registry.py).
+    torch = sys.modules.get("torch")
+    if torch is not None:
         torch.manual_seed(seed)
         if torch.backends.mps.is_available():
             torch.mps.manual_seed(seed)
-    except ImportError:  # pragma: no cover - torch is a hard dependency
-        pass
 
 
 def resolve_device(name: DeviceName = "auto") -> str:

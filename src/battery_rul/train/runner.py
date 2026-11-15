@@ -20,7 +20,9 @@ from __future__ import annotations
 
 import logging
 import multiprocessing as mp
+import os
 import subprocess
+import sys
 import tempfile
 import time
 import traceback
@@ -45,7 +47,13 @@ from battery_rul.eval.metrics import (
     rul_errors,
 )
 from battery_rul.models.base import FitInfo, Model, Prediction, SampleSet
-from battery_rul.models.registry import MODELS, accepts_kwarg, make_model, model_trait
+from battery_rul.models.registry import (
+    MODELS,
+    accepts_kwarg,
+    make_model,
+    model_trait,
+    omp_family,
+)
 from battery_rul.splits.loco import independent_fold_cells, loco_folds
 from battery_rul.splits.toyota import grouped_kfold, official_split
 from battery_rul.tasks.labels import eol_table, label_source
@@ -422,9 +430,13 @@ def _execute_unit(unit: UnitSpec, cfg: ExperimentConfig, processed_dir: str) -> 
 
 
 def _worker_init() -> None:
-    import torch
-
-    torch.set_num_threads(1)
+    # Limit threads via the environment *before* any OpenMP runtime loads; importing torch here
+    # would put torch's libomp into LightGBM workers (see models/registry.py).
+    for var in ("OMP_NUM_THREADS", "MKL_NUM_THREADS", "VECLIB_MAXIMUM_THREADS"):
+        os.environ[var] = "1"
+    torch = sys.modules.get("torch")
+    if torch is not None:
+        torch.set_num_threads(1)
 
 
 # --------------------------------------------------------------------------------------
@@ -621,9 +633,17 @@ def run_experiment(
             else:
                 n_run += 1
 
-        if n_jobs > 1 and len(units) > 1:
+        # OpenMP isolation (models/registry.py): if the experiment mixes torch and LightGBM
+        # models, every unit runs in a fresh worker process (max_tasks_per_child=1), even with
+        # n_jobs=1, so the two runtimes never share a process.
+        families = {omp_family(u.model.name) for u in units} - {None}
+        isolate = len(families) > 1
+        if (n_jobs > 1 and len(units) > 1) or isolate:
             with ProcessPoolExecutor(
-                max_workers=n_jobs, mp_context=mp.get_context("spawn"), initializer=_worker_init
+                max_workers=max(1, n_jobs),
+                mp_context=mp.get_context("spawn"),
+                initializer=_worker_init,
+                max_tasks_per_child=1 if isolate else None,
             ) as ex:
                 futs = [ex.submit(execute_unit, u, cfg, pdir) for u in units]
                 for f in as_completed(futs):
