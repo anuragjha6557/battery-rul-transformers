@@ -28,3 +28,13 @@ Each model's search space is committed in `configs/model/<name>.yaml` before its
 - Every results table can state "equal budget: 50 trials each".
 - A model whose best trial sits on a search-space boundary gets flagged in the report (boundary-hit check in `train/tune.py`). In that case the space is widened for **all** models, not just that one.
 - Toyota-chosen configs may be sub-optimal for NASA/CALCE. That is the accepted price of not selecting on 4 cells, and the nested-LOCO sanity check (`PROTOCOL.md §3`) shows how large it is.
+
+## Amendment 1 (2026-11-15, before the real sweep): wider learning-rate range, gentler pruning
+**Trigger.** The boundary-hit check fired on the first real study: NLinear's best lr was 1.15e-4, within 3 % of the lower bound (1e-4) in log space. The same study pruned 88 % of trials on early-epoch validation loss.
+
+**Decision.**
+- The lr search range for **every** neural model becomes log-uniform **[1e-5, 1e-2]**, applied to all model configs at once as this ADR requires. The range changes for all models, never for one.
+- Hyperband uses `min_resource=20` epochs (the early-stopping patience), so no trial is pruned before early stopping could have acted.
+- All studies are re-run from scratch under the new space. The stored search-space hash makes a mixed resume impossible.
+
+**Budget check.** Measured study cost on Toyota: about 22 s for 50 ElasticNet trials and about 52 s for 50 NLinear trials with 4 workers. Tuning all models on all three tasks is therefore affordable, so no task-scoping deviation is needed.

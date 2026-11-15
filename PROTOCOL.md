@@ -123,7 +123,7 @@ Four conditions, all evaluated on the NASA/CALCE LOCO test cells:
 ## 6. Tuning budget (equal for every model, ADR-0006)
 - Optuna TPE sampler with a Hyperband pruner.
 - **Trials:** 50 per (model, task) on Toyota train with inner grouped 5-fold CV.
-- **Learning rate:** log-uniform in [1e-4, 1e-2]. Other search spaces are declared per model in `configs/model/*.yaml` before the sweep.
+- **Learning rate:** log-uniform in [1e-5, 1e-2] (widened from [1e-4, 1e-2] by ADR-0006 amendment 1). Other search spaces are declared per model in `configs/model/*.yaml` before the sweep.
 - **Model size:** capped by a shared parameter budget (≤ 250 k parameters for NASA/CALCE-transferred configs).
 - **Early stopping:** the same rule for every model (patience 20 epochs on inner-validation loss, at most 300 epochs).
 - **Untuned models:** those with no free hyperparameters (persistence, parametric fits, GPR with marginal-likelihood kernel fitting) are reported as-is.
@@ -159,3 +159,4 @@ Any deviation from this protocol is appended here with the date, the reason and 
 | Date | Section | Deviation | Reason | Tables affected |
 |---|---|---|---|---|
 | 2026-11-15 (before any sweep) | §1 EOL, §2 Task C | Toyota EOL label = provider `cycle_life` (0.88 Ah = 80 % nominal); θ = 0.70 sensitivity N/A for Toyota | Our sustained rule censors 81/124 cells because tests stopped at EOL by design; where it resolves it matches the provider within 2 cycles (ADR-0005 amendment 1) | all Toyota RUL tables |
+| 2026-11-15 (before any sweep) | §6 | lr range [1e-4, 1e-2] → [1e-5, 1e-2] for all neural models; Hyperband min_resource = 20 epochs | Boundary-hit rule fired on the first study (NLinear best lr within 3 % of the lower bound); 88 % early pruning (ADR-0006 amendment 1) | all tuned-model tables |
