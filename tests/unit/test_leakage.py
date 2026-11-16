@@ -16,6 +16,7 @@ from battery_rul.tasks.samples import (
     CHARGE_CHANNELS,
     TaskSpec,
     build_samples,
+    is_charge_channel,
     prepare_cycles,
 )
 
@@ -154,3 +155,79 @@ def _imports(path: Path) -> set[str]:
 def test_rule5_feature_code_never_imports_label_code(path: Path) -> None:
     banned = {"battery_rul.tasks.labels", "battery_rul.tasks.eol", "battery_rul.data.quality"}
     assert not (_imports(path) & banned), f"{path.name} imports hindsight label/flag code"
+
+
+# mc_curve (physics-informed curve features) ---------------------------------------------------
+def _curve_cycles(seed: int = 0) -> pd.DataFrame:
+    """Cycles plus synthetic chg_* (charge-curve) and dis_* (discharge-curve) columns."""
+    df = _cycles(seed)
+    rng = np.random.default_rng(seed + 1)
+    k = df["cycle_idx"].to_numpy(dtype=float)
+    df["chg_ica_peak_v"] = 4.0 - 0.0005 * k + 0.001 * rng.standard_normal(len(df))
+    df["chg_dq_var"] = 0.001 * k + 0.0001 * rng.standard_normal(len(df))
+    df.loc[df["cycle_idx"].isin(NAN_AT), "chg_dq_var"] = np.nan
+    df["dis_ica_peak_v"] = 3.2 - 0.0004 * k + 0.001 * rng.standard_normal(len(df))
+    df["dis_dq_var"] = 0.002 * k + 0.0001 * rng.standard_normal(len(df))
+    return df
+
+
+def _curve_inputs(cycles: pd.DataFrame, task: str):
+    prep = prepare_cycles(cycles, TRAIN, "mc_curve")
+    spec = TaskSpec(task=task, lookback=8, horizons=(1, 5), feature_set="mc_curve")  # type: ignore[arg-type]
+    return build_samples(prep, TEST, EOL, spec)
+
+
+def test_mc_curve_task_a_now_has_chg_but_never_dis() -> None:
+    s = _curve_inputs(_curve_cycles(), "soh")
+    now = [f.removeprefix("now_") for f in s.feature_names if f.startswith("now_")]
+    assert {"chg_ica_peak_v", "chg_dq_var"} <= set(now)
+    assert not [c for c in now if c.startswith("dis_")]
+    assert all(is_charge_channel(c) for c in now)
+    assert {"dis_ica_peak_v", "dis_dq_var"} <= set(s.channel_names)  # history only
+
+
+@pytest.mark.parametrize("k", [10, 30])
+def test_mc_curve_task_a_ignores_target_cycle_discharge_curve(k: int) -> None:
+    clean = _curve_inputs(_curve_cycles(), "soh")
+    bad = _curve_cycles()
+    row = (bad["cell_id"] == "C3") & (bad["cycle_idx"] == k)
+    for col in ("dis_ica_peak_v", "dis_dq_var", "capacity_ah", "soh"):
+        bad.loc[row, col] = bad.loc[row, col] * 0.5 + 1.0
+    pert = _curve_inputs(bad, "soh")
+    i = int(np.flatnonzero(clean.meta["origin_cycle"].to_numpy() == k)[0])
+    np.testing.assert_array_equal(clean.x_hist[i], pert.x_hist[i])
+    np.testing.assert_array_equal(clean.x_tab[i], pert.x_tab[i])
+
+
+def test_mc_curve_task_a_uses_current_cycle_charge_curve() -> None:
+    """Positive control: the chg_* value of cycle k IS an input (so the test above can bite)."""
+    clean = _curve_inputs(_curve_cycles(), "soh")
+    bad = _curve_cycles()
+    row = (bad["cell_id"] == "C3") & (bad["cycle_idx"] == 30)
+    bad.loc[row, "chg_ica_peak_v"] += 0.5
+    pert = _curve_inputs(bad, "soh")
+    i = int(np.flatnonzero(clean.meta["origin_cycle"].to_numpy() == 30)[0])
+    assert not np.array_equal(clean.x_tab[i], pert.x_tab[i])
+
+
+@pytest.mark.parametrize("task", ["soh", "forecast", "rul"])
+@pytest.mark.parametrize("k", [10, 25, 39])
+def test_mc_curve_rule2_no_future_inputs(task: str, k: int) -> None:
+    clean = _curve_inputs(_curve_cycles(), task)
+    bad = _curve_cycles()
+    future = (bad["cell_id"] == "C3") & (bad["cycle_idx"] > k)
+    num = bad.select_dtypes("number").columns.drop("cycle_idx")
+    bad.loc[future, num] = bad.loc[future, num] * -7.0 + 3.0
+    pert = _curve_inputs(bad, task)
+    sel_c = (clean.meta["origin_cycle"] <= k).to_numpy()
+    sel_p = (pert.meta["origin_cycle"] <= k).to_numpy()
+    assert sel_c.sum() > 0 and sel_c.sum() == sel_p.sum()
+    np.testing.assert_array_equal(clean.x_hist[sel_c], pert.x_hist[sel_p])
+    np.testing.assert_array_equal(clean.x_tab[sel_c], pert.x_tab[sel_p])
+
+
+def test_mc_curve_requires_curve_columns_and_mc_ignores_them() -> None:
+    with pytest.raises(ValueError, match="curve features"):
+        prepare_cycles(_cycles(), TRAIN, "mc_curve")
+    a = prepare_cycles(_curve_cycles(), TRAIN, "mc")
+    assert not [c for c in a.channels if c.startswith(("chg_", "dis_"))]

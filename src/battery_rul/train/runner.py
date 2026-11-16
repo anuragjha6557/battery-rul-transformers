@@ -46,6 +46,7 @@ from battery_rul.eval.metrics import (
     rmse_pct,
     rul_errors,
 )
+from battery_rul.features.curves import load_curve_features
 from battery_rul.models.base import FitInfo, Model, Prediction, SampleSet
 from battery_rul.models.registry import (
     MODELS,
@@ -57,7 +58,13 @@ from battery_rul.models.registry import (
 from battery_rul.splits.loco import independent_fold_cells, loco_folds
 from battery_rul.splits.toyota import grouped_kfold, official_split
 from battery_rul.tasks.labels import eol_table, label_source
-from battery_rul.tasks.samples import PreparedCycles, TaskSpec, build_samples, prepare_cycles
+from battery_rul.tasks.samples import (
+    PreparedCycles,
+    TaskSpec,
+    build_samples,
+    merge_curve_features,
+    prepare_cycles,
+)
 from battery_rul.train.config import (
     ExperimentConfig,
     ModelConfig,
@@ -233,10 +240,14 @@ def fold_data(
 ) -> FoldData:
     horizons = horizons_for(cfg, dataset)
     base = (processed_dir, dataset, plan.name, cfg.feature_set, cfg.theta)
-    prepared: PreparedCycles = _PREPARED.get(
-        base,
-        lambda: prepare_cycles(ctx.cycles, plan.train, cfg.feature_set),  # type: ignore[arg-type]
-    )
+
+    def prep() -> PreparedCycles:
+        cyc = ctx.cycles
+        if cfg.feature_set == "mc_curve":
+            cyc = merge_curve_features(cyc, load_curve_features(dataset, Path(processed_dir)))
+        return prepare_cycles(cyc, plan.train, cfg.feature_set)  # type: ignore[arg-type]
+
+    prepared: PreparedCycles = _PREPARED.get(base, prep)
 
     def build() -> FoldData:
         spec = TaskSpec(

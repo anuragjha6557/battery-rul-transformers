@@ -69,6 +69,25 @@ def build_data(dataset: str = typer.Argument("all", help="nasa | calce | toyota 
         )
 
 
+@app.command("build-features")
+def build_features(
+    dataset: str = typer.Argument("all", help="nasa | calce | toyota | all"),
+) -> None:
+    """Compute cached per-cycle curve features (ICA, dQ(V)) into curve_features.parquet."""
+    import time
+
+    from battery_rul.features.curves import build_curve_features
+
+    known = ("nasa", "calce", "toyota")
+    if dataset not in (*known, "all"):
+        console.print(f"[red]Unknown dataset {dataset!r}.[/]")
+        raise typer.Exit(code=1)
+    for name in known if dataset == "all" else (dataset,):
+        t0 = time.perf_counter()
+        f = build_curve_features(name)
+        console.print(f"[green]{name}:[/] {len(f)} cycles in {time.perf_counter() - t0:.1f}s")
+
+
 @app.command()
 def benchmark(
     config: str = typer.Option(..., help="Experiment config name (configs/experiment/<name>.yaml)"),
