@@ -1,0 +1,17 @@
+# @package _global_
+# Phase 6A pilot: probabilistic models on CALCE, then `battery-rul calibrate --experiment cqr_pilot`.
+# Run: battery-rul benchmark --config cqr_pilot --n-jobs 2
+defaults:
+  - /experiment_schema
+  - _self_
+
+name: cqr_pilot
+datasets: [calce]
+tasks: [forecast]
+models:
+  - name: gpr
+  - name: nlinear
+seeds: [0]
+lookback: 32
+eval_origins: [start_points, all]
+allow_untuned: true

@@ -151,6 +151,24 @@ def report(
 
 
 @app.command()
+def calibrate(
+    experiment: str = typer.Option(..., help="Experiment name"),
+    alpha: float = typer.Option(0.1, help="Miscoverage level (0.1 -> 90 % interval)"),
+    tracking_uri: str = typer.Option(None, help="MLflow tracking URI (default: env/sqlite)"),
+) -> None:
+    """CQR-calibrate finished unit runs (idempotent); logs raw/ and cal/ metrics on each run."""
+    from battery_rul.train.config import default_tracking_uri
+    from battery_rul.uq.calibrate import calibrate_experiment
+
+    s = calibrate_experiment(experiment, tracking_uri or default_tracking_uri(), alpha)
+    console.print(
+        f"[green]{experiment}:[/] {s.n_calibrated} calibrated, {s.n_raw_only} raw-only "
+        f"(no inner-val), {s.n_already} already done, {s.n_skipped} skipped, "
+        f"{s.n_failed} failed (alpha={alpha:g})"
+    )
+
+
+@app.command()
 def predict(csv_path: str = typer.Argument(..., help="Cycle-level CSV to score")) -> None:
     """Predict SOH trajectory and RUL distribution for an uploaded cell."""
     _not_yet("Phase 8")

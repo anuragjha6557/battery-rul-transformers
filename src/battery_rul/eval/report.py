@@ -346,6 +346,203 @@ def _fmt_rank(df: pd.DataFrame) -> str:
     return "\n".join(lines)
 
 
+# --------------------------------------------------------------------------------------
+# Calibration (PROTOCOL §5): raw vs CQR-calibrated interval metrics, reliability diagrams
+# --------------------------------------------------------------------------------------
+CAL_PALETTE = ("#2a78d6", "#eb6834", "#1baf7a")
+CAL_COLS = ["raw_picp", "cal_picp", "raw_mpiw", "cal_mpiw", "raw_iscore", "cal_iscore"]
+
+
+def calibration_long(runs: pd.DataFrame) -> pd.DataFrame:
+    """Per-cell raw/calibrated PICP, MPIW, interval score from ``calibrated_predictions``.
+
+    Rows: ``(dataset, task, model, seed, run_id, split, policy, kind, cell, horizon)`` with
+    columns ``raw_picp, cal_picp, raw_mpiw, cal_mpiw, raw_iscore, cal_iscore`` (MPIW and interval
+    score in %SOH for soh/forecast, cycles for rul).
+    """
+    import mlflow
+
+    from battery_rul.uq.metrics_uq import interval_table, scale_for
+
+    parts = []
+    keys = ["split", "policy", "kind", "cell", "horizon"]
+    for _, r in runs.iterrows():
+        try:
+            path = mlflow.artifacts.download_artifacts(
+                run_id=r["run_id"], artifact_path="calibrated_predictions.parquet"
+            )
+        except Exception:
+            continue
+        cp = pd.read_parquet(path)
+        task, alpha = str(r["params.task"]), float(cp["alpha"].iloc[0])
+        sc = scale_for(task)
+        tabs = {}
+        if cp["lo"].notna().any():
+            tabs["raw"] = interval_table(cp, "lo", "hi", alpha, sc)
+        if cp["lo_cal"].notna().any():
+            tabs["cal"] = interval_table(cp, "lo_cal", "hi_cal", alpha, sc)
+        if not tabs:
+            continue
+        merged: pd.DataFrame | None = None
+        for tag, t in tabs.items():
+            t = t[[*keys, "picp", "mpiw", "iscore"]].rename(
+                columns={m: f"{tag}_{m}" for m in ("picp", "mpiw", "iscore")}
+            )
+            merged = t if merged is None else merged.merge(t, on=keys, how="outer")
+        assert merged is not None
+        for c in CAL_COLS:
+            if c not in merged:
+                merged[c] = np.nan
+        parts.append(
+            merged.assign(
+                dataset=r["params.dataset"],
+                task=task,
+                model=r["params.model"],
+                seed=int(r["params.seed"]),
+                run_id=r["run_id"],
+            )
+        )
+    return pd.concat(parts, ignore_index=True) if parts else pd.DataFrame()
+
+
+def calibration_table(long: pd.DataFrame) -> pd.DataFrame:
+    """Mean over seeds per cell, then mean + 95 % cluster-bootstrap CI over cells.
+
+    One row per ``(dataset, task, split, policy, kind, horizon, model)``; CI columns are
+    ``<metric>_lo/_hi`` (NaN with < 2 cells).
+    """
+    if long.empty:
+        return pd.DataFrame()
+    rows = []
+    gk = ["dataset", "task", "split", "policy", "kind", "horizon", "model"]
+    for key, g in long.groupby(gk, sort=True):
+        row: dict[str, object] = dict(zip(gk, key, strict=True))
+        row["n_cells"] = g["cell"].nunique()
+        for c in CAL_COLS:
+            pc = g.groupby("cell")[c].mean().dropna()
+            row[c] = float(pc.mean()) if len(pc) else np.nan
+            lo = hi = np.nan
+            if len(pc) >= 2:
+                ci = cluster_bootstrap_ci({str(k): [v] for k, v in pc.items()})
+                lo, hi = ci.lo, ci.hi
+            row[f"{c}_lo"], row[f"{c}_hi"] = lo, hi
+        row["run_ids"] = ",".join(sorted(g["run_id"].unique()))
+        rows.append(row)
+    return pd.DataFrame(rows)
+
+
+def _ci(m: float, lo: float, hi: float) -> str:
+    if np.isnan(m):
+        return "-"
+    return f"{m:.3f}" if np.isnan(lo) else f"{m:.3f} [{lo:.3f}, {hi:.3f}]"
+
+
+def _fmt_cal(df: pd.DataFrame) -> str:
+    cols = ["dataset", "task", "policy", "horizon", "model", "PICP raw", "PICP cal"]
+    cols += ["MPIW raw", "MPIW cal", "cells"]
+    lines = ["| " + " | ".join(cols) + " |", "|" + "---|" * len(cols)]
+    for d in df.to_dict("records"):
+        cells = [
+            d["dataset"], d["task"], d["policy"], d["horizon"], d["model"],
+            _ci(d["raw_picp"], d["raw_picp_lo"], d["raw_picp_hi"]),
+            _ci(d["cal_picp"], d["cal_picp_lo"], d["cal_picp_hi"]),
+            _ci(d["raw_mpiw"], d["raw_mpiw_lo"], d["raw_mpiw_hi"]),
+            _ci(d["cal_mpiw"], d["cal_mpiw_lo"], d["cal_mpiw_hi"]),
+            d["n_cells"],
+        ]  # fmt: skip
+        lines.append("| " + " | ".join(str(c) for c in cells) + " |")
+    return "\n".join(lines)
+
+
+def reliability_long(runs: pd.DataFrame) -> pd.DataFrame:
+    """Per-run reliability rows (``calibration_reliability.parquet``) with run identifiers."""
+    import mlflow
+
+    parts = []
+    for _, r in runs.iterrows():
+        try:
+            path = mlflow.artifacts.download_artifacts(
+                run_id=r["run_id"], artifact_path="calibration_reliability.parquet"
+            )
+        except Exception:
+            continue
+        parts.append(
+            pd.read_parquet(path).assign(
+                dataset=r["params.dataset"], task=r["params.task"], model=r["params.model"]
+            )
+        )
+    return pd.concat(parts, ignore_index=True) if parts else pd.DataFrame()
+
+
+def plot_reliability(rel: pd.DataFrame, out_dir: Path, experiment: str) -> list[Path]:
+    """One PNG per dataset: empirical vs nominal coverage, raw (dashed) and calibrated (solid).
+
+    Pooled over tasks, horizons, cells and seeds (``policy == "all"`` when present). One y-axis,
+    diagonal = perfect calibration, colour = model.
+    """
+    if rel.empty:
+        return []
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from matplotlib.lines import Line2D
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    paths = []
+    for ds, d in rel.groupby("dataset", sort=True):
+        if (d["policy"] == "all").any():
+            d = d[d["policy"] == "all"]
+        agg = (
+            d.assign(nominal=1.0 - d["alpha"])
+            .groupby(["model", "nominal"], sort=True)[["raw_picp", "cal_picp"]]
+            .mean()
+            .reset_index()
+        )
+        with plt.rc_context(
+            {
+                "axes.spines.top": False,
+                "axes.spines.right": False,
+                "axes.grid": True,
+                "grid.alpha": 0.3,
+                "legend.frameon": False,
+                "legend.fontsize": 8,
+            }
+        ):
+            fig, ax = plt.subplots(figsize=(4.6, 4.2))
+            ax.plot([0, 1], [0, 1], color="#76746f", lw=1, label="ideal")
+            models = sorted(agg["model"].unique())
+            for i, m in enumerate(models):
+                a = agg[agg["model"] == m]
+                col = CAL_PALETTE[i % len(CAL_PALETTE)]
+                for var, ls in (("cal_picp", "-"), ("raw_picp", "--")):
+                    v = a.dropna(subset=[var])
+                    if len(v):
+                        ax.plot(v["nominal"], v[var], ls, color=col, marker="o", ms=4, lw=1.6)
+            handles = [Line2D([], [], color="#76746f", lw=1, label="ideal")]
+            handles += [
+                Line2D([], [], color=CAL_PALETTE[i % len(CAL_PALETTE)], lw=1.6, label=m)
+                for i, m in enumerate(models)
+            ]
+            handles += [
+                Line2D([], [], color="#3b3a37", ls="-", label="calibrated (CQR)"),
+                Line2D([], [], color="#3b3a37", ls="--", label="raw quantiles"),
+            ]
+            ax.set(
+                xlim=(0, 1),
+                ylim=(0, 1),
+                xlabel="nominal coverage",
+                ylabel="empirical coverage (PICP)",
+                title=f"{ds}: reliability",
+            )
+            ax.legend(handles=handles, loc="upper left")
+            p = out_dir / f"{experiment}_reliability_{ds}.png"
+            fig.savefig(p, dpi=150, bbox_inches="tight")
+            plt.close(fig)
+        paths.append(p)
+    return paths
+
+
 def write_report(
     experiment_name: str, tracking_uri: str, out_dir: Path | None = None
 ) -> tuple[Path, Path]:
@@ -380,8 +577,27 @@ def write_report(
         ]
     rank_md = ["## Mean rank (dataset x task x split x policy x headline metric)", ""]
     rank_md += [_fmt_rank(ranks), ""] if not ranks.empty else ["_no headline conditions_", ""]
+    cal_md: list[str] = []
+    cal_long = calibration_long(runs)
+    if not cal_long.empty:
+        cal = calibration_table(cal_long)
+        sel = cal[(cal["kind"] == "overall") & (cal["split"].isin(["loco", "test1", "test2"]))]
+        figs = plot_reliability(reliability_long(runs), out_dir.parent / "figures", experiment_name)
+        cal_md = [
+            "## Calibration (90 % intervals; PICP target 0.90 +/- 0.05; MPIW in %SOH or cycles)",
+            "",
+            "Raw = stored (0.05, 0.95) quantiles; cal = CQR with pooled inner-val residuals "
+            "(PROTOCOL §3/§5). Models without inner-val predictions (GPR) have raw only. "
+            "mean [95% cluster-bootstrap CI over cells].",
+            "",
+            _fmt_cal(sel),
+            "",
+            *[f"![reliability]({f.relative_to(out_dir.parent)})" for f in figs],
+            "",
+        ]
+        cal.to_csv(out_dir / f"{experiment_name}_calibration.csv", index=False)
     md = out_dir / f"{experiment_name}.md"
-    md.write_text("\n".join(head + body + rank_md + full))
+    md.write_text("\n".join(head + body + rank_md + cal_md + full))
     csv = out_dir / f"{experiment_name}.csv"
     pd.concat(tables.values(), ignore_index=True).to_csv(csv, index=False)
     ranks.to_csv(out_dir / f"{experiment_name}_ranks.csv", index=False)
