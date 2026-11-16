@@ -78,9 +78,9 @@ Only uncensored cells take fraction-of-life starts.
 
 ### NASA and CALCE: leave-one-cell-out (LOCO)
 - **Outer loop:** each of the 4 cells is the test cell once; the paper's 3-fold CV is dropped. The other 3 cells train.
-- **Inner loop (cross-fitted, CV+):** each training cell is held out once, which yields 3 sub-models. Each sub-model early-stops on its held-out cell.
+- **Inner loop (cross-fitted):** each training cell is held out once, which yields 3 sub-models. Each sub-model early-stops on its held-out cell.
   - Point prediction: the mean of the 3 sub-models (quantiles averaged per level).
-  - Conformal calibration (§5) pools the 3 held-out residual sets, following CV+ (Barber et al. 2021).
+  - Conformal calibration (§5) pools the 3 held-out conformity-score sets into one correction per horizon. This is **pooled split conformal**, inspired by CV+ (Barber et al. 2021) but *not* the exact CV+ jackknife: the test prediction averages the sub-models, so the CV+ 1−2α bound does not formally transfer. The finite-sample 1−α guarantee requires exchangeability of pooled and test scores, which holds only approximately (origins within a cell are autocorrelated; the effective calibration size is ~3 cells). **Empirical PICP on held-out cells is therefore the evidence of calibration.**
   - This costs 3× training. In exchange, no data is sacrificed for validation, and an honest calibration set exists even at n = 4.
 - **NASA shared-rig caveat.** B0005, B0006 and B0007 were cycled on one rig with identical timestamps and rest schedule, so their regeneration events co-occur at the same `cycle_idx`. Consequences:
   - B0018 is the **only rig-independent NASA test cell**. Every NASA table reports the B0018 fold separately ("independent fold") next to the 4-fold LOCO mean.
@@ -106,11 +106,11 @@ Four conditions, all evaluated on the NASA/CALCE LOCO test cells:
 4. **No absolute cycle index** in model inputs (§3). Test on the feature builder's column list.
 5. **Hindsight only in labels.** Label functions may read the full trajectory, but feature functions may not. The two are separate modules (`tasks/` vs `features/`), and features never import labels.
 6. **Hyperparameters are never selected on a test cell.** Toyota tuning plus inner early stopping only; the runner refuses a config whose provenance lacks a tuning run ID.
-7. **Calibration data is disjoint from test data.** CV+ residuals come from inner held-out cells only.
+7. **Calibration data is disjoint from test data.** Calibration scores come from inner held-out cells only (enforced: `uq.conformal` raises if a test cell appears in the calibration data).
 
 ## 5. Uncertainty
 - Every Task-B/C entry reports a 90 % interval.
-- **Primary method:** conformalised quantile regression (Romano et al. 2019) with CV+ residuals (§3).
+- **Primary method:** conformalised quantile regression (Romano et al. 2019) with pooled inner-fold scores (§3; guarantee stated there).
 - **Secondary method:** 5-seed deep ensemble.
 - **Reference method:** GPR, which is natively probabilistic.
 - **Metrics:**
@@ -161,3 +161,4 @@ Any deviation from this protocol is appended here with the date, the reason and 
 | 2026-11-15 (before any sweep) | §1 EOL, §2 Task C | Toyota EOL label = provider `cycle_life` (0.88 Ah = 80 % nominal); θ = 0.70 sensitivity N/A for Toyota | Our sustained rule censors 81/124 cells because tests stopped at EOL by design; where it resolves it matches the provider within 2 cycles (ADR-0005 amendment 1) | all Toyota RUL tables |
 | 2026-11-15 (before any sweep) | §6 | lr range [1e-4, 1e-2] → [1e-5, 1e-2] for all neural models; Hyperband min_resource = 20 epochs | Boundary-hit rule fired on the first study (NLinear best lr within 3 % of the lower bound); 88 % early pruning (ADR-0006 amendment 1) | all tuned-model tables |
 | 2026-11-16 (mid-sweep, before any benchmark run) | §6 | weight_decay range [1e-6, 1e-2] → [1e-8, 1e-2] for all neural models; neural studies re-run | Boundary-hit rule fired for iTransformer, Transformer, GRU (best ≈ 1.27e-6) (ADR-0006 amendment 2) | all tuned neural-model tables |
+| 2026-11-16 (before any benchmark run) | §3, §4.7, §5 | 'CV+' wording replaced by 'pooled split conformal' with its actual (approximate) guarantee | Correction of an over-claim found during implementation; procedure unchanged | calibration tables |
