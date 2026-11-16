@@ -63,3 +63,5 @@ A hit there is a finding, not a truncation. The first instance was ElasticNet fo
 **Observed tuning noise (for ADR-0008).** iTransformer forecast scored 0.393 %SOH in the first pass (narrower weight-decay range) and 0.460 in the second (wider range, a superset). With about 10 of 50 trials surviving Hyperband, the tuning outcome varies by an amount comparable to between-model gaps. Two rules follow:
 1. Model rankings are only claimed from the 5-seed benchmark with CIs, never from tuning values.
 2. Any extra tuning budget is applied to all models equally.
+
+**Clarification 3 (2026-11-16): a weight-decay hit at 1e-8 means "no decay".** After amendment 2, GRU forecast again chose weight_decay at the lower bound: 1.27e-8, at exactly the same log-fraction (0.0259) as the earlier 1.27e-6 hit. That identical fraction means it is the same seeded TPE startup point at the same quantile of a shifted range, not a trend toward ever-smaller values. Decay of 1e-8 is functionally zero for Adam at these learning rates, so 1e-8 is treated as the natural lower bound (no regularisation), and a hit there is reported without widening. No further widening is made for weight decay.
