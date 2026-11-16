@@ -1,0 +1,16 @@
+name: lgbm
+task: forecast
+params:
+  num_leaves: 41
+  learning_rate: 0.08448914641955534
+  n_estimators: 1000
+  min_child_samples: 17
+  subsample: 0.7521293186831287
+  colsample_bytree: 0.8977170276774701
+  reg_lambda: 2.3238106813260333
+  n_lags: 10
+  quantile: true
+  lookback: 32
+tuned_from: 850206a075034302a7148f9db2301f78
+search_hash: 945fad30465a
+best_value: 0.4402524667776979

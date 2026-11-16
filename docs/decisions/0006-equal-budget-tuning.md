@@ -45,3 +45,15 @@ Each model's search space is committed in `configs/model/<name>.yaml` before its
 - `subsample` and `colsample_bytree ≤ 1`
 
 A hit there is a finding, not a truncation. The first instance was ElasticNet forecast, best `l1_ratio = 0.98`, i.e. near-pure lasso; it is reported but triggers no re-sweep.
+
+## Amendment 2 (2026-11-16, mid-sweep): wider weight-decay range
+**Trigger.** In the first pass of the forecast studies (under amendment 1), the boundary-hit check fired on `weight_decay` at its lower bound (1e-6) for iTransformer, the time-step Transformer and GRU. Their best values were ≈ 1.27e-6, within 2.6 % of the bound in log space.
+
+**Decision.**
+- The weight-decay range for **every** neural model becomes log-uniform **[1e-8, 1e-2]**.
+- All neural forecast studies are re-run from scratch. The pre-widening Optuna journal is archived at `optuna/archive/journal_pre_wd_widening.log` for the record.
+- ElasticNet and LightGBM are unaffected (they have no weight-decay parameter) and keep their completed studies.
+
+**Not triggered:**
+- `n_layers = 1` (PatchTST) and `layers = 1` (GRU) are at the smallest meaningful architecture, the natural lower bound of a depth parameter, so per the clarification above they are reported but don't widen anything.
+- The first-pass results (best h=50 RMSE: iTransformer 0.393, GRU 0.421, LightGBM 0.440, iTransformer-SC 0.467, PatchTST 0.481, Transformer 0.545, RLinear 0.678, DLinear 0.742, NLinear 0.746 %SOH) are kept here only as a record. The benchmark uses the re-tuned values.

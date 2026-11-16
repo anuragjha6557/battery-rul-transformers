@@ -5,7 +5,7 @@ name: itransformer
 params: {d_model: 64, n_heads: 4, n_layers: 2, dropout: 0.1, channels: all, use_tab: true, lookback: 32, lr: 1.0e-3, weight_decay: 1.0e-4}
 search:
   lr: {type: float, low: 1.0e-5, high: 1.0e-2, log: true}
-  weight_decay: {type: float, low: 1.0e-6, high: 1.0e-2, log: true}
+  weight_decay: {type: float, low: 1.0e-8, high: 1.0e-2, log: true}
   lookback: {type: categorical, choices: [16, 32, 64]}
   d_model: {type: categorical, choices: [32, 64, 128]}
   n_heads: {type: categorical, choices: [2, 4]}
