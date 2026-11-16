@@ -11,5 +11,10 @@ Format and rules: [ADR-0001](0001-record-architecture-decisions.md). Experiment-
 | [0005](0005-eol-definition.md) | EOL rule (masked+sustained), thresholds, fixed starts, fold independence | Accepted |
 | [0006](0006-equal-budget-tuning.md) | Equal tuning budget for every model, selected on Toyota | Accepted |
 | [0007](0007-compute-strategy.md) | Compute strategy: MPS for neural, CPU for classical (measured) | Accepted |
+| [0009](0009-curve-features.md) | Curve features ablation (ICA, ΔQ(V)) | Proposed (pre-registered) |
+| [0010](0010-direct-vs-recursive.md) | Direct multi-horizon vs recursive rollout | Proposed (pre-registered) |
+| [0011](0011-uq-method.md) | Uncertainty: CQR vs deep ensemble vs GPR | Proposed (pre-registered) |
+| [0012](0012-toyota-transfer.md) | Toyota (LFP) pre-training → NASA/CALCE transfer | Proposed (pre-registered) |
+| [0013](0013-normalisation-and-loss.md) | Instance normalisation; Huber vs MSE | Proposed (pre-registered) |
 
-Planned (docs/PLAN.md §12): 0008 baseline findings · 0009 feature set · 0010 direct vs recursive · 0011 UQ method · 0012 Toyota transfer · 0013 normalization · 0014 final model selection · 0015 deployment target & input contract.
+Planned (docs/PLAN.md §12): 0008 baseline findings · 0014 final model selection · 0015 deployment target & input contract.
