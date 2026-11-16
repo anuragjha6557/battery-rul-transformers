@@ -56,8 +56,8 @@ EOL = pd.DataFrame({"cell_id": list(CELLS), "eol_cycle": [50.0, 45.0, 40.0]})
 TRAIN, TEST = ("C1", "C2"), ("C3",)
 
 
-def _inputs(cycles: pd.DataFrame, task: str, cells: tuple[str, ...] = TEST):
-    prep = prepare_cycles(cycles, TRAIN, "mc")
+def _inputs(cycles: pd.DataFrame, task: str, cells: tuple[str, ...] = TEST, fs: str = "mc"):
+    prep = prepare_cycles(cycles, TRAIN, fs)  # type: ignore[arg-type]
     spec = TaskSpec(task=task, lookback=8, horizons=(1, 5))  # type: ignore[arg-type]
     return build_samples(prep, cells, EOL, spec)
 
@@ -89,6 +89,29 @@ def test_rule2_no_future_inputs(task: str, k: int) -> None:
     assert sel_c.sum() > 0 and sel_c.sum() == sel_p.sum()
     np.testing.assert_array_equal(clean.x_hist[sel_c], pert.x_hist[sel_p])
     np.testing.assert_array_equal(clean.x_tab[sel_c], pert.x_tab[sel_p])
+
+
+@pytest.mark.parametrize("task", ["soh", "forecast", "rul"])
+@pytest.mark.parametrize("k", [10, 25, 39])
+def test_shared_rule2_no_future_inputs(task: str, k: int) -> None:
+    clean = _inputs(_cycles(), task, fs="shared")
+    bad = _cycles()
+    future = (bad["cell_id"] == "C3") & (bad["cycle_idx"] > k)
+    num = bad.select_dtypes("number").columns.drop("cycle_idx")
+    bad.loc[future, num] = bad.loc[future, num] * -7.0 + 3.0
+    pert = _inputs(bad, task, fs="shared")
+    sel_c = (clean.meta["origin_cycle"] <= k).to_numpy()
+    sel_p = (pert.meta["origin_cycle"] <= k).to_numpy()
+    assert sel_c.sum() > 0 and sel_c.sum() == sel_p.sum()
+    np.testing.assert_array_equal(clean.x_hist[sel_c], pert.x_hist[sel_p])
+    np.testing.assert_array_equal(clean.x_tab[sel_c], pert.x_tab[sel_p])
+
+
+def test_shared_task_a_current_cycle_features_are_charge_only() -> None:
+    s = _inputs(_cycles(), "soh", fs="shared")
+    now = [f.removeprefix("now_") for f in s.feature_names if f.startswith("now_")]
+    assert now and set(now) <= set(CHARGE_CHANNELS)
+    assert not set(s.channel_names) & {"discharge_time_s", "discharge_energy_wh"}
 
 
 # Rule 3 -------------------------------------------------------------------------------------

@@ -23,7 +23,7 @@ from numpy.lib.stride_tricks import sliding_window_view
 from battery_rul.models.base import SampleSet, TaskName
 from battery_rul.splits.scaling import FoldScaler
 
-FeatureSet = Literal["sc", "mc", "mc_curve"]
+FeatureSet = Literal["sc", "mc", "mc_curve", "shared"]
 OriginPolicy = Literal["all", "start_points"]
 
 #: Charge-phase / pre-charge per-cycle quantities. Allowed for the current cycle in Task A
@@ -62,6 +62,19 @@ def merge_curve_features(cycles: pd.DataFrame, feats: pd.DataFrame) -> pd.DataFr
     base = cycles.drop(columns=[c for c in cols if c in cycles.columns])
     return base.merge(feats[[*keys, *cols]], on=keys, how="left")
 
+
+#: Chemistry-agnostic channels present (finite) in NASA, CALCE *and* Toyota (ADR-0012), in a fixed
+#: order so a transferred model sees identical variates in every dataset. Excluded: temperature
+#: (all-NaN charge temperature in CALCE/Toyota), rest time (NaN in Toyota), discharge-phase
+#: channels (NaN in Toyota) and ``skipped_cv`` (protocol-specific). Each dataset standardises these
+#: with its own training cells (the domain-normalisation step).
+SHARED_CHANNELS: Final = (
+    "ir_ohm",
+    "charge_throughput_ah",
+    "charge_time_s",
+    "cc_time_s",
+    "cv_time_s",
+)
 
 FIXED_STARTS: Final[dict[str, tuple[int, ...]]] = {
     "nasa": (30, 50),
@@ -124,6 +137,15 @@ def prepare_cycles(
     if feature_set == "sc":
         return PreparedCycles(cycles=df, channels=(), scaler=None)
     candidates = [*CHARGE_CHANNELS, *DISCHARGE_CHANNELS]
+    if feature_set == "shared":
+        candidates = list(SHARED_CHANNELS)
+        absent = [
+            c
+            for c in candidates
+            if c not in df.columns or not df.loc[df["cell_id"].isin(train_cells), c].notna().any()
+        ]
+        if absent:  # identical channels across datasets is the point: never silently drop
+            raise ValueError(f"feature_set 'shared' needs channels with training data: {absent}")
     if feature_set == "mc_curve":
         curve_cols = [
             c for c in df.columns if c.startswith((CURVE_CHARGE_PREFIX, CURVE_DISCHARGE_PREFIX))
