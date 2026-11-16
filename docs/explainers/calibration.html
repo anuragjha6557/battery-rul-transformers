@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prediction Intervals &amp; Calibration</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]});"></script>
+<style>
+  :root { --ink:#1b1b1a; --muted:#5b5a55; --line:#e4e2dc; --bg:#fcfcfb; --card:#f4f3ef; --accent:#2a78d6; --warm:#eb6834; --ok:#1baf7a; }
+  @media (prefers-color-scheme: dark) { :root { --ink:#eeede9; --muted:#b9b7ae; --line:#3a3936; --bg:#1a1a19; --card:#252523; --accent:#5a9ee8; --warm:#e07a4f; --ok:#2fbf8a; } }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:17px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  main { max-width: 780px; margin: 0 auto; padding: 48px 20px 80px; }
+  h1 { font-size: 2rem; line-height:1.2; margin: 0 0 6px; }
+  .sub { color: var(--muted); margin: 0 0 36px; }
+  h2 { font-size: 1.3rem; margin: 44px 0 10px; padding-top: 12px; border-top: 1px solid var(--line); }
+  h2 .n { color: var(--accent); margin-right: 8px; }
+  p, li { color: var(--ink); }
+  .muted { color: var(--muted); }
+  .eq { background: var(--card); border-radius: 10px; padding: 6px 16px; margin: 14px 0; overflow-x: auto; }
+  .ex { border-left: 4px solid var(--accent); background: var(--card); padding: 10px 16px; border-radius: 0 10px 10px 0; margin: 14px 0; }
+  .warn { border-left-color: var(--warm); }
+  .good { border-left-color: var(--ok); }
+  .ex b { display:block; margin-bottom: 2px; }
+  table { border-collapse: collapse; width: 100%; margin: 14px 0; font-size: 0.95rem; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; }
+  code { background: var(--card); padding: 1px 6px; border-radius: 5px; font-size: 0.9em; }
+  .bar { position: relative; height: 34px; margin: 18px 0 6px; }
+  .bar .axis { position:absolute; left:0; right:0; top:16px; height:2px; background:var(--line); }
+  .bar .iv { position:absolute; top:10px; height:14px; border-radius:7px; }
+  .bar .pt { position:absolute; top:7px; width:2px; height:20px; background:var(--ink); }
+  .bar .truth { position:absolute; top:4px; width:12px; height:12px; margin-left:-6px; border-radius:50%; background:var(--warm); }
+  .legend { font-size: 0.85rem; color: var(--muted); margin-bottom: 14px; }
+  .toc { background: var(--card); border-radius: 10px; padding: 12px 20px; }
+  .toc ol { margin: 6px 0; padding-left: 22px; }
+</style>
+</head>
+<body>
+<main>
+<h1>Prediction intervals &amp; calibration</h1>
+<p class="sub">From a single number to an honest, calibrated range, using the battery models in this project (<code>battery-rul-transformers</code>).</p>
+
+<div class="toc"><b>Contents</b>
+<ol>
+<li>Point prediction</li><li>Prediction interval</li><li>Is the interval honest? Coverage</li>
+<li>Approach A: Gaussian (mean ± kσ)</li><li>Approach B: quantile regression (no distribution assumed)</li>
+<li>Approach C: conformal calibration (CQR)</li><li>Approach D: deep ensemble</li><li>How we judge intervals</li>
+<li>Values used in this project</li><li>The caveat</li>
+</ol></div>
+
+<h2><span class="n">1</span>Point prediction</h2>
+<p>A model predicts one number, for example: <i>"In 50 cycles this battery's SOH will be <b>85.0 %</b>."</i> The real value will almost never be exactly 85.0. It might be 84.2 or 86.1, and a single number says nothing about how wrong it could be.</p>
+
+<h2><span class="n">2</span>Prediction interval</h2>
+<p>A better answer is a range plus a confidence level: <i>"SOH will be between <b>83.5 %</b> and <b>86.5 %</b>, and I am <b>90 %</b> confident the truth lands inside."</i> That is a <b>90 % prediction interval</b>.</p>
+<div class="bar"><div class="axis"></div>
+  <div class="iv" style="left:25%;width:50%;background:var(--accent);opacity:.35"></div>
+  <div class="pt" style="left:50%"></div></div>
+<div class="legend">Blue bar = 90 % interval [83.5, 86.5]; black tick = point prediction 85.0.</div>
+<p>The "90 %" is a promise: across many such predictions, <b>about 9 in 10</b> true values should fall inside their intervals. For battery decisions the width matters. "85 ± 1.5" and "85 ± 10" lead to very different maintenance choices.</p>
+
+<h2><span class="n">3</span>Is the interval honest? Coverage</h2>
+<p>Test the promise on predictions where the truth is known. The fraction of truths that land inside is the <b>coverage</b>, called PICP (prediction-interval coverage probability):</p>
+<div class="eq">$$\text{PICP} = \frac{1}{N}\sum_{i=1}^{N} \mathbf{1}\big[\,\ell_i \le y_i \le u_i\,\big]$$</div>
+<p class="muted">\(\ell_i, u_i\) are the lower and upper ends of interval \(i\), \(y_i\) is the true value, and \(\mathbf 1[\cdot]\) is 1 if true and 0 if false.</p>
+<div class="ex warn"><b>Over-confident (too narrow)</b>The truth lands inside 74 of 100 times: it promised 90 % and delivered 74 %. This really happened with raw LightGBM on CALCE.</div>
+<div class="ex"><b>Under-confident (too wide)</b>The truth lands inside 99 of 100 times. It is honest but wasteful; the intervals could be tighter.</div>
+<div class="ex good"><b>Well calibrated</b>The truth lands inside about 90 of 100 times. The promise matches reality.</div>
+<p><b>Calibration</b> means making measured coverage match the promised level, with intervals that are as narrow as possible.</p>
+
+<h2><span class="n">4</span>Approach A: Gaussian intervals (mean ± k·σ)</h2>
+<p>This is the classic approach, and the one you might expect. The model predicts a mean \(\mu(x)\) and a standard deviation \(\sigma(x)\), and <b>assumes the error is normally distributed</b>:</p>
+<div class="eq">$$\big[\,\mu(x) - z\,\sigma(x),\;\; \mu(x) + z\,\sigma(x)\,\big], \qquad z = z_{0.95} = 1.645 \text{ for a 90 % interval}$$</div>
+<div class="ex"><b>Example</b>\(\mu = 85.0,\ \sigma = 0.9\) gives \(85.0 \pm 1.645\times 0.9 = [83.5,\ 86.5]\).</div>
+<p>In this project only the <b>Gaussian-process (GPR) baseline</b> works this way. Its weakness is that the interval is always symmetric and only as good as the normality assumption. Battery errors are often <b>skewed</b>: regeneration bumps push SOH up, while artifacts and late-life knee points push it down. In our pilot, GPR's "90 %" intervals covered only <b>54 %</b> at a 50-cycle horizon.</p>
+
+<h2><span class="n">5</span>Approach B: quantile regression (no distribution assumed)</h2>
+<p>Our main models (LightGBM and all neural networks) skip the mean, the σ and the density. They directly predict <b>quantiles</b> \(\hat q_\tau(x)\): values the truth should fall below with probability \(\tau\).</p>
+<table>
+<tr><th>Level \(\tau\)</th><th>Meaning</th><th>Example</th></tr>
+<tr><td>0.05</td><td>only 5 % chance the truth is <i>lower</i></td><td>82.9</td></tr>
+<tr><td>0.50</td><td>the median, used as the point prediction</td><td>85.0</td></tr>
+<tr><td>0.95</td><td>only 5 % chance the truth is <i>higher</i></td><td>85.8</td></tr>
+</table>
+<p>The 90 % interval is simply \([\hat q_{0.05}(x),\ \hat q_{0.95}(x)]\), here <b>[82.9, 85.8]</b>. It is lopsided: 2.1 below the median and 0.8 above, because the model learned that downside surprises are bigger. Mean ± kσ cannot express that.</p>
+<p>The model learns quantiles by minimising the <b>pinball (quantile) loss</b>:</p>
+<div class="eq">$$L_\tau(y,\hat q) = \max\!\big(\,\tau\,(y-\hat q),\;\; (\tau-1)\,(y-\hat q)\,\big)$$</div>
+<p>For \(\tau = 0.95\), predicting too low (\(y &gt; \hat q\)) costs \(0.95\times\) the gap, while predicting too high costs only \(0.05\times\) the gap. The loss is smallest when the truth falls below \(\hat q\) exactly 95 % of the time. So the model learns the real 95th percentile, <b>whatever the shape of the distribution</b>. The neural models output all five levels {0.05, 0.25, 0.5, 0.75, 0.95} at once; LightGBM fits one model per level. If the predicted levels ever cross, they are sorted (quantile rearrangement).</p>
+
+<h2><span class="n">6</span>Approach C: conformal calibration (CQR)</h2>
+<p>Quantile models can still be over- or under-confident. Conformalised Quantile Regression (Romano et al., 2019) measures the miss on data the model never trained on and shifts the intervals to fix it.</p>
+<p><b>Step 1. Score each calibration point.</b> The calibration data are the predictions on the <i>inner held-out cells</i> from cross-fitting, never the test cell. For each of the \(n\) points, compute how far the truth fell <i>outside</i> the interval (negative if it was inside):</p>
+<div class="eq">$$E_i = \max\!\big(\,\hat q_{0.05}(x_i) - y_i,\;\; y_i - \hat q_{0.95}(x_i)\,\big), \qquad i = 1,\dots,n$$</div>
+<p><b>Step 2. Take a finite-sample quantile of the scores</b>, with \(\alpha = 0.10\) for 90 %:</p>
+<div class="eq">$$c = \text{the } k\text{-th smallest } E_i, \qquad k = \big\lceil (n+1)(1-\alpha) \big\rceil$$</div>
+<p><b>Step 3. Widen (or narrow) every new interval by \(c\):</b></p>
+<div class="eq">$$C(x) = \big[\,\hat q_{0.05}(x) - c,\;\; \hat q_{0.95}(x) + c\,\big]$$</div>
+<p><b>Guarantee:</b> if calibration and test points are exchangeable (statistically interchangeable), then</p>
+<div class="eq">$$\Pr\big(\,y \in C(x)\,\big) \;\ge\; 1-\alpha = 90\%$$</div>
+<p>This needs <b>no distribution assumption</b> at all.</p>
+<div class="ex"><b>Worked example</b>\(n = 999\) calibration points give \(k = \lceil 1000 \times 0.9 \rceil = 900\), so \(c\) is the 900th smallest score.
+<br>If \(c = +0.7\): [82.9, 85.8] becomes <b>[82.2, 86.5]</b> (too narrow, so it widens).
+<br>If \(c = -0.3\): it becomes <b>[83.2, 85.5]</b> (too wide, so it narrows).
+<br>The point prediction (85.0) never changes, and the skew is kept because both ends move by the same \(c\).</div>
+<div class="bar"><div class="axis"></div>
+  <div class="iv" style="left:14%;width:58%;background:var(--ok);opacity:.35"></div>
+  <div class="iv" style="left:22%;width:42%;background:var(--accent);opacity:.5"></div>
+  <div class="pt" style="left:50%"></div><div class="truth" style="left:68%"></div></div>
+<div class="legend">Blue = raw quantile interval (misses the orange truth); green = CQR-calibrated interval, wider by \(c\) on both ends.</div>
+<p><b>Point-only models</b> (persistence, ElasticNet) have no quantiles, so they use absolute residuals:</p>
+<div class="eq">$$E_i = |\,y_i - \hat y_i\,|, \qquad C(x) = \big[\,\hat y(x) - c,\;\; \hat y(x) + c\,\big]$$</div>
+<p class="muted">Rule 7 of PROTOCOL.md is enforced in code: calibration refuses to run if any test cell appears in the calibration data.</p>
+
+<h2><span class="n">7</span>Approach D: deep ensemble (ablation arm)</h2>
+<p>Train the same model with 5 random seeds and average each quantile level across members:</p>
+<div class="eq">$$\hat q_\tau^{\,\text{ens}}(x) = \frac{1}{5}\sum_{s=1}^{5} \hat q_\tau^{(s)}(x)$$</div>
+<p>This captures uncertainty from training randomness. CQR can be applied on top. ADR-0011 compares raw, CQR, ensemble and GPR.</p>
+
+<h2><span class="n">8</span>How intervals are judged</h2>
+<table>
+<tr><th>Metric</th><th>Formula / meaning</th><th>Goal</th></tr>
+<tr><td>PICP (coverage)</td><td>fraction of truths inside (section 3)</td><td>0.90 ± 0.05</td></tr>
+<tr><td>MPIW (width)</td><td>\(\frac1N\sum_i (u_i-\ell_i)\)</td><td>small, <i>once coverage is honest</i></td></tr>
+<tr><td>Interval score</td><td>\((u-\ell) + \frac{2}{\alpha}(\ell-y)\mathbf 1[y&lt;\ell] + \frac{2}{\alpha}(y-u)\mathbf 1[y&gt;u]\)</td><td>low: rewards narrow intervals, penalises misses</td></tr>
+<tr><td>Pinball loss</td><td>mean of \(L_\tau\) over levels (section 5)</td><td>low</td></tr>
+<tr><td>Reliability diagram</td><td>promised vs actual coverage at several levels</td><td>points on the diagonal</td></tr>
+</table>
+<p>Coverage alone is not enough: ±50 % intervals give 100 % coverage and are useless. The aim is <b>honest coverage with the narrowest intervals</b>.</p>
+
+<h2><span class="n">9</span>Values used in this project</h2>
+<table>
+<tr><th>Item</th><th>Value</th></tr>
+<tr><td>Quantile levels \(\tau\)</td><td>0.05, 0.25, 0.5, 0.75, 0.95</td></tr>
+<tr><td>Interval level</td><td>90 % (\(\alpha = 0.10\)), using \(\tau = 0.05\) and \(0.95\)</td></tr>
+<tr><td>Calibration data</td><td>inner held-out cells only, pooled per forecast horizon; never the test cell</td></tr>
+<tr><td>Units</td><td>%SOH for SOH and forecasts; cycles for RUL</td></tr>
+<tr><td>Gaussian \(z\) (GPR only)</td><td>1.645</td></tr>
+<tr><td>Code</td><td><code>src/battery_rul/uq/conformal.py</code>, <code>battery-rul calibrate</code></td></tr>
+</table>
+
+<h2><span class="n">10</span>The caveat</h2>
+<p>The conformal guarantee assumes exchangeability. Here it holds only <b>approximately</b>: consecutive cycles of one battery are strongly correlated, and the test battery is a different battery from the calibration ones. The effective calibration sample is closer to "about 3 cells" than "999 points". That is why coverage is <b>measured on the held-out test cells and reported</b> rather than assumed from the formula (PROTOCOL.md §3, §5).</p>
+</main>
+</body>
+</html>
