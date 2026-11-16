@@ -57,3 +57,9 @@ A hit there is a finding, not a truncation. The first instance was ElasticNet fo
 **Not triggered:**
 - `n_layers = 1` (PatchTST) and `layers = 1` (GRU) are at the smallest meaningful architecture, the natural lower bound of a depth parameter, so per the clarification above they are reported but don't widen anything.
 - The first-pass results (best h=50 RMSE: iTransformer 0.393, GRU 0.421, LightGBM 0.440, iTransformer-SC 0.467, PatchTST 0.481, Transformer 0.545, RLinear 0.678, DLinear 0.742, NLinear 0.746 %SOH) are kept here only as a record. The benchmark uses the re-tuned values.
+
+**Clarification 2 (2026-11-16): depth is bounded by the parameter budget.** For the attention models, `n_layers ≤ 3` is not an arbitrary truncation. The shared ≤ 250 k parameter cap (PROTOCOL §6) already forces the FFN width to shrink at d_model = 128, n_layers = 3, so adding layers only trades width for depth inside the same budget. A best `n_layers = 3` is therefore a budget-bound result: it is reported, and it does not trigger widening. The budget, not the range, is the binding constraint, and it is the same for every model.
+
+**Observed tuning noise (for ADR-0008).** iTransformer forecast scored 0.393 %SOH in the first pass (narrower weight-decay range) and 0.460 in the second (wider range, a superset). With about 10 of 50 trials surviving Hyperband, the tuning outcome varies by an amount comparable to between-model gaps. Two rules follow:
+1. Model rankings are only claimed from the 5-seed benchmark with CIs, never from tuning values.
+2. Any extra tuning budget is applied to all models equally.
