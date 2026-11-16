@@ -23,7 +23,7 @@ from numpy.lib.stride_tricks import sliding_window_view
 from battery_rul.models.base import SampleSet, TaskName
 from battery_rul.splits.scaling import FoldScaler
 
-FeatureSet = Literal["sc", "mc"]
+FeatureSet = Literal["sc", "mc", "mc_curve"]
 OriginPolicy = Literal["all", "start_points"]
 
 #: Charge-phase / pre-charge per-cycle quantities. Allowed for the current cycle in Task A
@@ -42,6 +42,26 @@ CHARGE_CHANNELS: Final = (
 #: Discharge-phase quantities: near-copies of capacity_k. History-only (cycles < origin for
 #: Task A; <= origin for B/C, where capacity itself is observed anyway).
 DISCHARGE_CHANNELS: Final = ("discharge_time_s", "discharge_temp_max_c", "discharge_energy_wh")
+
+#: Curve-feature column prefixes (features/curves.py). ``chg_*`` come from the charge curve of
+#: cycle k and join the charge family; ``dis_*`` come from the discharge curve and join the
+#: discharge family (history-only for Task A).
+CURVE_CHARGE_PREFIX: Final = "chg_"
+CURVE_DISCHARGE_PREFIX: Final = "dis_"
+
+
+def is_charge_channel(name: str) -> bool:
+    """True for channels that may be used as the current cycle's inputs in Task A."""
+    return name in CHARGE_CHANNELS or name.startswith(CURVE_CHARGE_PREFIX)
+
+
+def merge_curve_features(cycles: pd.DataFrame, feats: pd.DataFrame) -> pd.DataFrame:
+    """Left-join cached curve features (keyed dataset, cell_id, cycle_idx) onto ``cycles``."""
+    cols = [c for c in feats.columns if c.startswith((CURVE_CHARGE_PREFIX, CURVE_DISCHARGE_PREFIX))]
+    keys = ["dataset", "cell_id", "cycle_idx"]
+    base = cycles.drop(columns=[c for c in cols if c in cycles.columns])
+    return base.merge(feats[[*keys, *cols]], on=keys, how="left")
+
 
 FIXED_STARTS: Final[dict[str, tuple[int, ...]]] = {
     "nasa": (30, 50),
@@ -104,6 +124,15 @@ def prepare_cycles(
     if feature_set == "sc":
         return PreparedCycles(cycles=df, channels=(), scaler=None)
     candidates = [*CHARGE_CHANNELS, *DISCHARGE_CHANNELS]
+    if feature_set == "mc_curve":
+        curve_cols = [
+            c for c in df.columns if c.startswith((CURVE_CHARGE_PREFIX, CURVE_DISCHARGE_PREFIX))
+        ]
+        if not curve_cols:
+            raise ValueError(
+                "feature_set 'mc_curve' needs curve features; use merge_curve_features"
+            )
+        candidates += curve_cols
     train_rows = df["cell_id"].isin(train_cells)
     channels = tuple(c for c in candidates if df.loc[train_rows, c].notna().any())
     df[list(channels)] = df.groupby("cell_id", sort=False)[list(channels)].ffill()
@@ -159,7 +188,7 @@ def build_samples(
         eol.set_index("cell_id")["theta"] if "theta" in eol.columns else pd.Series(dtype=float)
     )
     hist_channels = ("soh", *prepared.channels)
-    task_a_now = tuple(c for c in prepared.channels if c in CHARGE_CHANNELS)
+    task_a_now = tuple(c for c in prepared.channels if is_charge_channel(c))
     L, task = spec.lookback, spec.task
     H = spec.target_horizons
 
