@@ -16,7 +16,7 @@ from typing import Any
 import torch
 from torch import nn
 
-from battery_rul.models.neural import NeuralModel
+from battery_rul.models.neural import NeuralModel, revin_inputs
 
 TAB_HIDDEN = 32
 _ALLOWED_ARCH = {"cell", "hidden", "layers", "dropout", "lookback"}
@@ -33,8 +33,11 @@ class _Recurrent(nn.Module):
         hidden: int,
         layers: int,
         dropout: float,
+        revin: bool = False,
+        denorm_soh: bool = False,
     ) -> None:
         super().__init__()
+        self.revin, self.denorm_soh = revin, denorm_soh
         rnn = {"lstm": nn.LSTM, "gru": nn.GRU}[cell]
         self.rnn = rnn(
             n_channels,
@@ -50,12 +53,18 @@ class _Recurrent(nn.Module):
         self.n_h, self.n_q, self.has_tab = n_h, n_q, n_tab > 0
 
     def forward(self, x_hist: torch.Tensor, x_tab: torch.Tensor) -> torch.Tensor:
+        scale = None
+        if self.revin:
+            x_hist, scale = revin_inputs(x_hist)
         _, state = self.rnn(x_hist)
         h = state[0] if isinstance(state, tuple) else state  # LSTM: (h_n, c_n)
         z = h[-1]
         if self.has_tab:
             z = torch.cat([z, self.tab(x_tab)], dim=1)
-        return self.head(z).view(-1, self.n_h, self.n_q)
+        out = self.head(z).view(-1, self.n_h, self.n_q)
+        if scale is not None and self.denorm_soh:
+            out = out * scale
+        return out
 
 
 class RecurrentModel(NeuralModel):
@@ -70,8 +79,10 @@ class RecurrentModel(NeuralModel):
         hidden: int = 64,
         layers: int = 2,
         dropout: float = 0.1,
+        revin: bool = False,
         **kwargs: Any,
     ) -> None:
+        self.revin = revin  # opt-in instance normalisation (ADR-0013 E); not an arch param
         if cell not in ("lstm", "gru"):
             raise ValueError("cell must be 'lstm' or 'gru'")
         super().__init__(cell=cell, hidden=hidden, layers=layers, dropout=dropout, **kwargs)
@@ -84,5 +95,14 @@ class RecurrentModel(NeuralModel):
     ) -> nn.Module:
         a = self.arch
         return _Recurrent(
-            a["cell"], n_channels, n_tab, n_h, n_q, int(a["hidden"]), int(a["layers"]), a["dropout"]
+            a["cell"],
+            n_channels,
+            n_tab,
+            n_h,
+            n_q,
+            int(a["hidden"]),
+            int(a["layers"]),
+            a["dropout"],
+            self.revin,
+            getattr(self, "_task", "forecast") != "rul",
         )

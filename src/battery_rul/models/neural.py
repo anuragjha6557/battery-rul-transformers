@@ -53,6 +53,19 @@ def masked_mse(pred: torch.Tensor, y: torch.Tensor, m: torch.Tensor) -> torch.Te
     return (err * m).sum() / m.sum().clamp_min(1)
 
 
+def masked_huber(
+    pred: torch.Tensor, y: torch.Tensor, m: torch.Tensor, delta: float
+) -> torch.Tensor:
+    """Masked Huber loss, pred (B,H,1), y (B,H), m (B,H) bool.
+
+    ``0.5 e^2`` for ``|e| <= delta`` (i.e. MSE/2 on small errors), ``delta (|e| - delta/2)``
+    beyond. Targets are residuals in SOH fraction units, so ``delta`` is in SOH fraction.
+    """
+    e = (pred[..., 0] - y).abs()
+    err = torch.where(e <= delta, 0.5 * e**2, delta * (e - 0.5 * delta))
+    return (err * m).sum() / m.sum().clamp_min(1)
+
+
 def masked_pinball(
     pred: torch.Tensor, y: torch.Tensor, m: torch.Tensor, q: torch.Tensor
 ) -> torch.Tensor:
@@ -60,6 +73,26 @@ def masked_pinball(
     diff = y[..., None] - pred
     loss = torch.maximum(q * diff, (q - 1) * diff)
     return (loss * m[..., None]).sum() / (m.sum().clamp_min(1) * q.numel())
+
+
+def revin_inputs(x_hist: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+    """Instance normalisation of every history channel (ADR-0013 E), opt-in via ``revin=True``.
+
+    Reuses iTransformer's ``fill_and_normalise``: each channel is centred on its last valid
+    value and divided by its masked std (padding filled with the first valid value first).
+
+    Args:
+        x_hist: (B, L, C+1) with the validity mask as the last channel.
+    Returns:
+        x_norm (B, L, C+1), same layout (mask channel unchanged), and the SOH scale (B, 1, 1)
+        by which a residual-space SOH output must be multiplied (same convention as
+        iTransformer's ``denorm_soh``). The absolute level is discarded, as in RevIN.
+    """
+    from battery_rul.models.itransformer import fill_and_normalise  # lazy: circular import
+
+    z, _, scale = fill_and_normalise(x_hist)  # (B, V, L), _, (B, V)
+    x_norm = torch.cat([z.transpose(1, 2), x_hist[..., -1:]], dim=2)
+    return x_norm, scale[:, :1, None]
 
 
 class NeuralModel:
@@ -81,6 +114,8 @@ class NeuralModel:
         patience: int = 20,
         quantiles: tuple[float, ...] | None = DEFAULT_QUANTILES,
         grad_clip: float = 1.0,
+        loss: str = "mse",
+        huber_delta: float = 0.01,
         device: str = "auto",
         epoch_callback: Callable[[int, float], None] | None = None,
         **arch: Any,
@@ -90,6 +125,10 @@ class NeuralModel:
         self.lr, self.weight_decay, self.batch_size = lr, weight_decay, batch_size
         self.max_epochs, self.patience, self.grad_clip = max_epochs, patience, grad_clip
         self.quantiles = tuple(sorted(quantiles)) if quantiles is not None else None
+        if loss not in ("mse", "huber"):
+            raise ValueError("loss must be 'mse' or 'huber'")
+        #: Point-mode loss (ADR-0013 F); quantile mode always uses pinball.
+        self.loss_name, self.huber_delta = loss, float(huber_delta)
         self.device = resolve_device(device)  # type: ignore[arg-type]
         #: Called as ``epoch_callback(epoch, val_loss)`` after each epoch's validation loss
         #: (1-based epoch). Used by tuning for pruning; an exception raised here (e.g.
@@ -127,6 +166,8 @@ class NeuralModel:
 
     def _loss(self, pred: torch.Tensor, y: torch.Tensor, m: torch.Tensor) -> torch.Tensor:
         if self.quantiles is None:
+            if self.loss_name == "huber":
+                return masked_huber(pred, y, m, self.huber_delta)
             return masked_mse(pred, y, m)
         q = torch.tensor(self.quantiles, dtype=pred.dtype, device=pred.device)
         return masked_pinball(pred, y, m, q)

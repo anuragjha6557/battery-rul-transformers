@@ -20,7 +20,7 @@ from typing import Any
 import torch
 from torch import nn
 
-from battery_rul.models.neural import NeuralModel
+from battery_rul.models.neural import NeuralModel, revin_inputs
 
 MAX_PARAMS = 250_000
 TAB_HIDDEN = 32
@@ -44,8 +44,11 @@ class _TimeTransformer(nn.Module):
         n_layers: int,
         dropout: float,
         ff_dim: int,
+        revin: bool = False,
+        denorm_soh: bool = False,
     ) -> None:
         super().__init__()
+        self.revin, self.denorm_soh = revin, denorm_soh
         self.embed = nn.Linear(n_channels, d_model)
         self.pos = nn.Parameter(torch.zeros(1, lookback, d_model))
         nn.init.normal_(self.pos, std=0.02)
@@ -67,6 +70,9 @@ class _TimeTransformer(nn.Module):
         self.n_h, self.n_q, self.has_tab = n_h, n_q, n_tab > 0
 
     def forward(self, x_hist: torch.Tensor, x_tab: torch.Tensor) -> torch.Tensor:
+        scale = None
+        if self.revin:
+            x_hist, scale = revin_inputs(x_hist)
         valid = x_hist[:, :, -1] > 0.5  # (B, L)
         h = self.embed(x_hist) + self.pos
         h = self.encoder(h, src_key_padding_mask=~valid)
@@ -74,7 +80,10 @@ class _TimeTransformer(nn.Module):
         z = (h * w).sum(1) / w.sum(1).clamp_min(1.0)
         if self.has_tab:
             z = torch.cat([z, self.tab(x_tab)], dim=1)
-        return self.head(z).view(-1, self.n_h, self.n_q)
+        out = self.head(z).view(-1, self.n_h, self.n_q)
+        if scale is not None and self.denorm_soh:
+            out = out * scale
+        return out
 
 
 class TimeTransformer(NeuralModel):
@@ -90,8 +99,10 @@ class TimeTransformer(NeuralModel):
         n_layers: int = 2,
         dropout: float = 0.1,
         ff_mult: int = 4,
+        revin: bool = False,
         **kwargs: Any,
     ) -> None:
+        self.revin = revin  # opt-in instance normalisation (ADR-0013 E); not an arch param
         super().__init__(
             d_model=d_model,
             n_heads=n_heads,
@@ -123,6 +134,8 @@ class TimeTransformer(NeuralModel):
                 int(a["n_layers"]),
                 float(a["dropout"]),
                 ff,
+                self.revin,
+                getattr(self, "_task", "forecast") != "rul",
             )
             if count_params(module) <= MAX_PARAMS or ff <= 4:
                 return module
