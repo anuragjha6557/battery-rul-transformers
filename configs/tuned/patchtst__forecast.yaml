@@ -1,0 +1,15 @@
+name: patchtst
+task: forecast
+params:
+  patch_len: 4
+  d_model: 128
+  n_heads: 4
+  n_layers: 1
+  dropout: 0.19644418569981661
+  channels: soh
+  lookback: 64
+  lr: 0.0002852833131098961
+  weight_decay: 5.744439945774406e-06
+tuned_from: bcf9c9177fe24baf940c00e091232163
+search_hash: 02c9acc2e2a9
+best_value: 0.49873228537485437

@@ -281,3 +281,12 @@ def test_tuned_entries_are_task_scoped(
     )
     with pytest.raises(ValueError, match=r"none for task\(s\) \['soh'\]"):
         resolve_tuned_models(only_forecast)
+
+
+def test_finalize_only_requires_existing_study(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    import pytest
+
+    from battery_rul.train.tune import TuningError, tune
+
+    with pytest.raises(TuningError, match="finalize-only"):
+        tune("elasticnet", "forecast", n_trials=0, journal=tmp_path / "j.log")

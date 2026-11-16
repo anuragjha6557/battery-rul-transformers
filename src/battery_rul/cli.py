@@ -111,7 +111,9 @@ def benchmark(
 def tune(
     model: str = typer.Option(..., help="Model config name (configs/model/<name>.yaml)"),
     task: str = typer.Option(..., help="soh | forecast | rul"),
-    n_trials: int = typer.Option(50, help="Trials to add to the study (equal budget: 50)"),
+    n_trials: int = typer.Option(
+        50, help="Trials to add (equal budget: 50); 0 = finalize an existing study only"
+    ),
     n_jobs: int = typer.Option(4, help="Parallel worker processes sharing the study"),
     train_stride: int = typer.Option(4, help="Keep every k-th training origin per cell"),
     journal: str = typer.Option(

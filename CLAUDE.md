@@ -27,6 +27,7 @@ Current state and next action: `docs/STATUS.md`. Decisions: `docs/decisions/` (A
 ## Hard-won rules (do not relearn these)
 - **OpenMP isolation (macOS):** torch and LightGBM load different `libomp` copies that cannot share a process in either import order. Never import `lightgbm` or `torch` at module top-level outside their model modules. Model classes load lazily via `models/registry.py`, which records each model's OpenMP family, and the runner isolates mixed experiments in per-unit worker processes. LightGBM tests live in `tests/lgbm/` and run in a separate pytest process (`make test` does both). Linux CI is unaffected, so a green CI does not prove macOS is fine.
 - **Gate exit codes:** run gates as `set -o pipefail; make lint test typecheck ...`, or check `$?` before committing. A `| grep` once hid a failing gate and a broken commit was pushed.
+- **No merges into `main` while a tuning sweep or benchmark is running.** Each study is a long-lived process that lazily imports modules at the end (MLflow logging), so a mid-run merge mixes old in-memory and new on-disk code (`patchtst__forecast` crashed with an ImportError this way). Commit agent work on its branch and merge after the run. `battery-rul tune --n-trials 0` finalizes a study from its journal without adding trials.
 - **Worktrees:** don't `git worktree remove` an agent's worktree until its final hand-back message has arrived; an agent may still be finishing.
 
 ## Workflow rules

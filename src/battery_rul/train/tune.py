@@ -403,8 +403,10 @@ def tune(
     import optuna
 
     optuna.logging.set_verbosity(optuna.logging.WARNING)
-    if n_trials < 1 or n_jobs < 1 or train_stride < 1:
-        raise ValueError("n_trials, n_jobs and train_stride must be >= 1")
+    # n_trials == 0 = finalize only: re-run the post-processing (tuned YAML, boundary check,
+    # MLflow run) for an existing study without adding trials (e.g. after a crash in logging).
+    if n_trials < 0 or n_jobs < 1 or train_stride < 1:
+        raise ValueError("n_trials must be >= 0; n_jobs and train_stride must be >= 1")
     cdir = config_dir or CONFIG_DIR
     cfg = load_model_config(model, cdir)
     _check_tunable(cfg, task)
@@ -441,12 +443,16 @@ def tune(
     n_existing = len(study.trials)
 
     t0 = time.perf_counter()
-    jobs = min(n_jobs, n_trials)
+    if n_trials == 0 and n_existing == 0:
+        raise TuningError(f"finalize-only (n_trials=0) needs an existing study {sname!r}")
+    jobs = max(1, min(n_jobs, n_trials))
     shares = [n_trials // jobs + (1 if i < n_trials % jobs else 0) for i in range(jobs)]
     # Distinct, deterministic sampler seeds per worker and per resume (identical seeds would
     # make parallel workers propose identical startup trials).
     seeds = [seed + n_existing + i for i in range(jobs)]
-    if jobs == 1:
+    if n_trials == 0:
+        pass  # finalize only
+    elif jobs == 1:
         _worker(spec, shares[0], seeds[0], False)
     else:
         with (
