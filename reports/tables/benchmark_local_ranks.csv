@@ -1,0 +1,5 @@
+model,mean_rank,n_conditions,n_missing
+param_power,2.0,16,0
+gpr,2.1875,16,0
+param_exp2,2.6875,16,0
+param_linear,3.125,16,0

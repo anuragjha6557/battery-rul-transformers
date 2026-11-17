@@ -123,6 +123,10 @@ def _power(u: np.ndarray, a: float, b: float, p: float) -> np.ndarray:
     return a - b * np.power(np.maximum(u, 0.0), p)
 
 
+#: Physical SOH range for forecast outputs of the local extrapolators.
+SOH_MIN, SOH_MAX = 0.0, 1.2
+
+
 class ParamFit:
     """Per-sample parametric fade curve, extrapolated for Task B (forecast) and C (rul).
 
@@ -245,7 +249,9 @@ class ParamFit:
             self.n_fallback_ += int(fell_back)
             t_last = float(len(y) - 1)
             if thetas is None:
-                point[i] = curve(t_last + h)  # type: ignore[operator]
+                # Clip to the physical SOH range: an exp2 fit with a positive growth term can
+                # extrapolate to astronomically large values (seen on NASA: RMSE ~1e8).
+                point[i] = np.clip(curve(t_last + h), SOH_MIN, SOH_MAX)  # type: ignore[operator]
             else:
                 step = _first_crossing(curve(t_last + steps), float(thetas[i]))  # type: ignore[operator]
                 if step is None:

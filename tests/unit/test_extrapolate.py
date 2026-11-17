@@ -176,3 +176,14 @@ def test_gpr_short_history() -> None:
     m = GPRExtrap()
     p = m.predict(make([np.array([0.99, 0.98])], "rul"))
     assert p.point[0, 0] == m.max_horizon and m.last_censored_[0]
+
+
+def test_paramfit_forecast_is_clipped_to_physical_range() -> None:
+    """An exploding exp2 extrapolation must not produce absurd SOH values (NASA bug: ~1e8)."""
+    from battery_rul.models.extrapolate import SOH_MAX, SOH_MIN, ParamFit
+
+    m = ParamFit(kind="exp2")
+    m._fit_one = lambda y: ((lambda t: np.exp(np.asarray(t, float))), False)  # type: ignore[method-assign]
+    s = make([np.linspace(1.0, 0.9, 30)], "forecast", horizons=(1, 50, 100))
+    p = m.predict(s).point
+    assert np.all((p >= SOH_MIN) & (p <= SOH_MAX)) and p.max() == SOH_MAX

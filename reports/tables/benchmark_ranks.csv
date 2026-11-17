@@ -1,0 +1,15 @@
+model,mean_rank,n_conditions,n_missing
+itransformer,2.9375,32,4
+itransformer_sc,3.5833333333333335,36,0
+patchtst,4.375,32,4
+lgbm,4.4375,32,4
+nlinear,5.875,32,4
+lstm,6.305555555555555,36,0
+rlinear,6.861111111111111,36,0
+elasticnet,7.194444444444445,36,0
+gru,7.333333333333333,36,0
+prev_soh,9.0,4,32
+transformer,9.0,36,0
+dlinear,9.53125,32,4
+persistence,10.125,24,12
+last_slope,10.25,24,12
