@@ -1,0 +1,15 @@
+name: itransformer
+task: rul
+params:
+  d_model: 128
+  n_heads: 4
+  n_layers: 3
+  dropout: 0.08808424451210385
+  channels: all
+  use_tab: true
+  lookback: 64
+  lr: 0.0024380744710772663
+  weight_decay: 0.0010180146582342115
+tuned_from: 1fa03f1c2daa47daa56ccd6e104d3855
+search_hash: 424e83df2958
+best_value: 98.17106897186258

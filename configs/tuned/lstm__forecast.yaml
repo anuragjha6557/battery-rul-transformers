@@ -1,0 +1,13 @@
+name: lstm
+task: forecast
+params:
+  cell: lstm
+  hidden: 32
+  layers: 1
+  dropout: 0.13224295309519093
+  lookback: 64
+  lr: 0.0008226045248887457
+  weight_decay: 0.00017737276482506807
+tuned_from: 7f284fe55ff64ebabc1eb96d6e5b6d88
+search_hash: 3465d671af83
+best_value: 0.4624322072722169

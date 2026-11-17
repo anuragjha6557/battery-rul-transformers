@@ -1,0 +1,13 @@
+name: gru
+task: forecast
+params:
+  cell: gru
+  hidden: 128
+  layers: 1
+  dropout: 0.08004818253085999
+  lookback: 16
+  lr: 0.00032810068809124474
+  weight_decay: 1.4307290357163438e-08
+tuned_from: 53d556bff484407eb366847e8fad7364
+search_hash: 3465d671af83
+best_value: 0.43092517606331954

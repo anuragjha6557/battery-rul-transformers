@@ -1,0 +1,13 @@
+name: transformer
+task: forecast
+params:
+  d_model: 128
+  n_heads: 2
+  n_layers: 3
+  dropout: 0.15866847592587133
+  lookback: 16
+  lr: 0.0008096384026619582
+  weight_decay: 0.00019549524484259868
+tuned_from: 396094637846476bab45aed423125957
+search_hash: 424e83df2958
+best_value: 0.4741082078074985

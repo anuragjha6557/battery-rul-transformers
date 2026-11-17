@@ -1,0 +1,9 @@
+name: rlinear
+task: soh
+params:
+  lookback: 16
+  lr: 0.023826839017737723
+  weight_decay: 2.9653973810460957e-06
+tuned_from: 3d1d4a11202e46e2b29274b6c41b4d39
+search_hash: 584be2ef31ce
+best_value: 0.1673305843789816

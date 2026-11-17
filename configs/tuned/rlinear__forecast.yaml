@@ -1,0 +1,9 @@
+name: rlinear
+task: forecast
+params:
+  lookback: 64
+  lr: 0.003882972348093487
+  weight_decay: 4.787114504916357e-08
+tuned_from: b7045a50176747f79190b989b8e7f910
+search_hash: 584be2ef31ce
+best_value: 0.6831855545937227

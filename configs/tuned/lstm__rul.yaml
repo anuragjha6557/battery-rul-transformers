@@ -1,0 +1,13 @@
+name: lstm
+task: rul
+params:
+  cell: lstm
+  hidden: 128
+  layers: 2
+  dropout: 0.28612266808346
+  lookback: 16
+  lr: 0.022587130540688855
+  weight_decay: 1.000115520507387e-05
+tuned_from: 0a7f962db5c74278b8a38b185bd55f82
+search_hash: 3465d671af83
+best_value: 100.7851033668968

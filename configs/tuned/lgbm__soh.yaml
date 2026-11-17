@@ -1,0 +1,16 @@
+name: lgbm
+task: soh
+params:
+  num_leaves: 60
+  learning_rate: 0.07449252611831995
+  n_estimators: 1000
+  min_child_samples: 87
+  subsample: 0.9412738999924808
+  colsample_bytree: 0.691996556581643
+  reg_lambda: 3.7831508505531146
+  n_lags: 10
+  quantile: true
+  lookback: 32
+tuned_from: 2812d1017fd04edd92b04e137ee26aa3
+search_hash: 945fad30465a
+best_value: 0.18194649528313472

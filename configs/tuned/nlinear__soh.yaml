@@ -1,0 +1,9 @@
+name: nlinear
+task: soh
+params:
+  lookback: 32
+  lr: 0.0056614015283581055
+  weight_decay: 1.4906288366101638e-05
+tuned_from: 4dc743e3ffc54876b3aa3288b5925576
+search_hash: 584be2ef31ce
+best_value: 0.17076179299935218

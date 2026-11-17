@@ -1,0 +1,13 @@
+name: lstm
+task: soh
+params:
+  cell: lstm
+  hidden: 32
+  layers: 2
+  dropout: 0.1564929627367357
+  lookback: 64
+  lr: 0.0012081098328668059
+  weight_decay: 0.003967538660112545
+tuned_from: b286d991a0594e5a8d7696e7faca7d44
+search_hash: 3465d671af83
+best_value: 0.18272601690016188

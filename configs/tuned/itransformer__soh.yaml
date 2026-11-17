@@ -1,0 +1,15 @@
+name: itransformer
+task: soh
+params:
+  d_model: 128
+  n_heads: 2
+  n_layers: 1
+  dropout: 0.1279324236388842
+  channels: all
+  use_tab: true
+  lookback: 16
+  lr: 0.0006454203470825757
+  weight_decay: 2.387342792536739e-07
+tuned_from: 760ee46125b44b64ab30e7df9a19b057
+search_hash: 424e83df2958
+best_value: 0.14892301599889896

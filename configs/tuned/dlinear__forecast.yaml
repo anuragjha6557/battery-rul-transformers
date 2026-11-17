@@ -1,0 +1,9 @@
+name: dlinear
+task: forecast
+params:
+  lookback: 64
+  lr: 1.2702324634696669e-05
+  weight_decay: 5.5080686741693205e-06
+tuned_from: b59bb227386d4eb2984a89a09a2a637e
+search_hash: 584be2ef31ce
+best_value: 0.7338189335258078

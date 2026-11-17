@@ -1,0 +1,16 @@
+name: lgbm
+task: rul
+params:
+  num_leaves: 23
+  learning_rate: 0.011009921061144718
+  n_estimators: 1000
+  min_child_samples: 34
+  subsample: 0.6333839157838527
+  colsample_bytree: 0.7154501791338994
+  reg_lambda: 0.07446854680392939
+  n_lags: 10
+  quantile: true
+  lookback: 32
+tuned_from: 0f7cba394862475c959fe96db5dc6429
+search_hash: 945fad30465a
+best_value: 97.08991986351694

@@ -1,0 +1,9 @@
+name: dlinear
+task: rul
+params:
+  lookback: 64
+  lr: 0.009463722622634538
+  weight_decay: 4.477183238445825e-07
+tuned_from: c84eff4677544b0f9202309679162776
+search_hash: 584be2ef31ce
+best_value: 158.79685414999963

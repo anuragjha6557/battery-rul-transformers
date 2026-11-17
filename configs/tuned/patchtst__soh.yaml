@@ -1,0 +1,15 @@
+name: patchtst
+task: soh
+params:
+  patch_len: 8
+  d_model: 128
+  n_heads: 2
+  n_layers: 2
+  dropout: 0.2809150949581291
+  channels: soh
+  lookback: 16
+  lr: 0.0011337091742359253
+  weight_decay: 1.3928081335714772e-08
+tuned_from: e048c5c1b0a347f9a1cde351224f1596
+search_hash: '288882870585'
+best_value: 0.14264748117930143

@@ -1,0 +1,15 @@
+name: patchtst
+task: rul
+params:
+  patch_len: 4
+  d_model: 64
+  n_heads: 4
+  n_layers: 1
+  dropout: 0.20287647059403938
+  channels: soh
+  lookback: 64
+  lr: 0.0008226045248887457
+  weight_decay: 0.00017737276482506807
+tuned_from: 54e9c63b49144e1ba534608e2c0fdfab
+search_hash: '288882870585'
+best_value: 273.592218073907

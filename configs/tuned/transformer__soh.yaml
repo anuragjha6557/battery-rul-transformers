@@ -1,0 +1,13 @@
+name: transformer
+task: soh
+params:
+  d_model: 32
+  n_heads: 2
+  n_layers: 3
+  dropout: 0.29117409401315203
+  lookback: 16
+  lr: 0.0007283844334792002
+  weight_decay: 0.0052778052606028475
+tuned_from: 9494fc12b7814b39955935e343106c0f
+search_hash: 424e83df2958
+best_value: 0.18376109671338434

@@ -1,0 +1,10 @@
+name: elasticnet
+task: rul
+params:
+  alpha: 0.004504966847105844
+  l1_ratio: 0.7504727834167999
+  n_lags: 10
+  lookback: 32
+tuned_from: dc8e9f5af6954c85b3d01727f428ff64
+search_hash: 15ac2ea2c80c
+best_value: 126.23442163894155

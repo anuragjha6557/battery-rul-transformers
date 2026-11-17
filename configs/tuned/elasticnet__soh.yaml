@@ -1,0 +1,10 @@
+name: elasticnet
+task: soh
+params:
+  alpha: 2.1930365471456784e-05
+  l1_ratio: 0.01172220998200455
+  n_lags: 20
+  lookback: 32
+tuned_from: 78371e004d2041f2944ce54bbb71c06e
+search_hash: 15ac2ea2c80c
+best_value: 0.175066038128355

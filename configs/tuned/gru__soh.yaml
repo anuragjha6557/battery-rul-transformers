@@ -1,0 +1,13 @@
+name: gru
+task: soh
+params:
+  cell: gru
+  hidden: 128
+  layers: 2
+  dropout: 0.037638032178135314
+  lookback: 16
+  lr: 0.00011810218003734183
+  weight_decay: 0.0014663262287307021
+tuned_from: b4381440b4ff4f18b4a0cc5c62620985
+search_hash: 3465d671af83
+best_value: 0.1826607978284879

@@ -1,0 +1,9 @@
+name: dlinear
+task: soh
+params:
+  lookback: 16
+  lr: 0.0011337091742359253
+  weight_decay: 1.3928081335714772e-08
+tuned_from: 716ea29bf5894aefb55e22dfe1539939
+search_hash: 584be2ef31ce
+best_value: 0.17400133867250994

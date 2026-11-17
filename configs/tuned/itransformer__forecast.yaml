@@ -1,0 +1,15 @@
+name: itransformer
+task: forecast
+params:
+  d_model: 64
+  n_heads: 2
+  n_layers: 2
+  dropout: 0.20992750800627935
+  channels: all
+  use_tab: true
+  lookback: 32
+  lr: 0.00010014510964563198
+  weight_decay: 6.027974864334257e-08
+tuned_from: e7df37d7b60b424a98edc371dd825e07
+search_hash: 424e83df2958
+best_value: 0.379566969616075

@@ -1,0 +1,13 @@
+name: transformer
+task: rul
+params:
+  d_model: 128
+  n_heads: 2
+  n_layers: 2
+  dropout: 0.15874262828311173
+  lookback: 16
+  lr: 0.00032810068809124474
+  weight_decay: 1.4307290357163438e-08
+tuned_from: 6dedecca0a52414a9ce601e03026ed30
+search_hash: 424e83df2958
+best_value: 106.33983912807955

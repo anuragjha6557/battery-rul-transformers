@@ -1,0 +1,9 @@
+name: nlinear
+task: rul
+params:
+  lookback: 64
+  lr: 0.013077350081641908
+  weight_decay: 5.6690705641612346e-08
+tuned_from: 72c2ebd02b3c46148fbff5356e45cf54
+search_hash: 584be2ef31ce
+best_value: 158.8982532886856

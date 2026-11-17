@@ -1,0 +1,13 @@
+name: gru
+task: rul
+params:
+  cell: gru
+  hidden: 128
+  layers: 2
+  dropout: 0.07865019793016241
+  lookback: 16
+  lr: 0.0009591280468522636
+  weight_decay: 2.965719592050405e-07
+tuned_from: 72cf719f5dbb4cf0a7318d4e00a92f58
+search_hash: 3465d671af83
+best_value: 105.81638824977149

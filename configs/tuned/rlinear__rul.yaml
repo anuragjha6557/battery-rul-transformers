@@ -1,0 +1,9 @@
+name: rlinear
+task: rul
+params:
+  lookback: 16
+  lr: 0.0012508513532634778
+  weight_decay: 6.696887819605982e-06
+tuned_from: 64479a5f16254f45a742666e7bddf267
+search_hash: 584be2ef31ce
+best_value: 380.2319209001681

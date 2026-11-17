@@ -1,0 +1,9 @@
+name: nlinear
+task: forecast
+params:
+  lookback: 64
+  lr: 0.0008226045248887457
+  weight_decay: 0.00017737276482506807
+tuned_from: e1ae2fb66f8d49e6a977a67be9e55127
+search_hash: 584be2ef31ce
+best_value: 0.7466329486516041
