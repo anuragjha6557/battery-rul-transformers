@@ -1,0 +1,23 @@
+# @package _global_
+# Local extrapolators (classical prognostics baselines). No training and deterministic, so one seed;
+# start points only (GPR refits per test window, so all-origins on Toyota would take hours).
+# Run: battery-rul benchmark --config benchmark_local --n-jobs 4
+defaults:
+  - /experiment_schema
+  - _self_
+
+name: benchmark_local
+datasets: [nasa, calce, toyota]
+tasks: [forecast, rul]
+models:
+  - name: param_linear
+    params: {kind: linear, lookback: 512}
+  - name: param_exp2
+    params: {kind: exp2, lookback: 512}
+  - name: param_power
+    params: {kind: power, lookback: 512}
+  - name: gpr
+    params: {fit_window: 200, lookback: 512}
+seeds: [0]
+lookback: 32
+eval_origins: [start_points]

@@ -58,6 +58,9 @@ class ExperimentConfig:
     feature_set: str = "mc"
     theta: float = 0.8
     eval_origins: list[str] = field(default_factory=lambda: ["start_points"])
+    # Keep every k-th *training* window per cell, per dataset (default 1 = all). Validation
+    # (inner held-out) and test windows are never thinned. PROTOCOL deviation log 2026-11-16.
+    train_stride: dict[str, int] = field(default_factory=dict)
     n_jobs: int = 1
     device: str = "auto"
     allow_untuned: bool = False

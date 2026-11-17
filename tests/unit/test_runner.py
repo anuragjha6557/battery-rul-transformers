@@ -265,3 +265,39 @@ def test_every_model_config_is_registered() -> None:
         assert cfg["name"] in MODELS, f"{path.name}: {cfg['name']} not registered"
         params = {k: v for k, v in (cfg.get("params") or {}).items() if k != "lookback"}
         make_model(cfg["name"], **params)
+
+
+class SizeModel(ConstModel):
+    """Records (n_train, n_val) per fit."""
+
+    sizes: ClassVar[list[tuple[int, int]]] = []
+
+    def fit(self, train: SampleSet, val: SampleSet | None = None) -> FitInfo:
+        assert val is not None
+        SizeModel.sizes.append((len(train), len(val)))
+        return super().fit(train, val)
+
+
+def test_train_stride_thins_training_windows_only(tmp_path: Path, processed: Path) -> None:
+    """Benchmark option B: training windows thinned per dataset; inner-val never thinned."""
+    MODELS["size"] = SizeModel
+    try:
+        sizes = {}
+        for stride in (1, 4):
+            SizeModel.sizes.clear()
+            cfg = _cfg(
+                tmp_path / f"s{stride}",
+                datasets=["nasa"],
+                models=[ModelConfig("size", {"lookback": 8})],
+                eval_origins=["all"],
+                train_stride={"nasa": stride},
+            )
+            run_experiment(cfg, processed)
+            sizes[stride] = list(SizeModel.sizes)
+        for (tr1, va1), (tr4, va4) in zip(sizes[1], sizes[4], strict=True):
+            assert va1 == va4  # validation untouched
+            assert abs(tr4 - tr1 / 4) <= 2 * 4  # ~1/4 per cell (ceil per cell)
+        runs = _unit_runs(cfg)
+        assert (runs["params.train_stride"] == "4").all()
+    finally:
+        MODELS.pop("size", None)

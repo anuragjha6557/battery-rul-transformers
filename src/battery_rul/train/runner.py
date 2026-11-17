@@ -64,6 +64,7 @@ from battery_rul.tasks.samples import (
     build_samples,
     merge_curve_features,
     prepare_cycles,
+    thin_origins,
 )
 from battery_rul.train.config import (
     ExperimentConfig,
@@ -171,6 +172,7 @@ def unit_config(
         "theta": cfg.theta,
         "eval_origins": list(cfg.eval_origins),
         "protocol_version": cfg.protocol_version,
+        "train_stride": int(cfg.train_stride.get(dataset, 1)),
     }
 
 
@@ -399,17 +401,19 @@ def _execute_unit(unit: UnitSpec, cfg: ExperimentConfig, processed_dir: str) -> 
     subs: list[tuple[Model, SampleSet | None, str]] = []
     infos: list[FitInfo] = []
     t0 = time.perf_counter()
+    stride = int(cfg.train_stride.get(unit.dataset, 1))
     if do_cross_fit:
         for i, (tr, va) in enumerate(plan.inner):
             seed_everything(unit.seed)
             m = _make(unit, cfg)
-            va_ss = fd.train.subset(np.isin(train_cells, list(va)))
-            infos.append(m.fit(fd.train.subset(np.isin(train_cells, list(tr))), va_ss))
+            va_ss = fd.train.subset(np.isin(train_cells, list(va)))  # never thinned
+            tr_ss = thin_origins(fd.train.subset(np.isin(train_cells, list(tr))), stride)
+            infos.append(m.fit(tr_ss, va_ss))
             subs.append((m, va_ss, f"inner{i}:" + "+".join(va)))
     else:
         seed_everything(unit.seed)
         m = _make(unit, cfg)
-        infos.append(m.fit(fd.train, None))
+        infos.append(m.fit(thin_origins(fd.train, stride), None))
         subs.append((m, None, "all"))
     fit_s = time.perf_counter() - t0
 
@@ -548,6 +552,7 @@ def _log_unit(
             "tuned_from": unit.model.tuned_from or "none",
             "tunable": probe_tuned,
             "eval_origins": ",".join(cfg.eval_origins),
+            "train_stride": int(cfg.train_stride.get(unit.dataset, 1)),
         }
         params.update({f"model.{k}": v for k, v in model_ctor_params(unit.model).items()})
         mlflow.log_params(params)

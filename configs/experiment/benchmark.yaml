@@ -1,0 +1,54 @@
+# @package _global_
+# Phase 4/5 benchmark (Table 1): every tuned model x 3 tasks x 3 datasets x 5 seeds, plus level-0
+# baselines. NASA/CALCE in full; Toyota trains on every 4th window with 5 cross-fitted sub-models
+# (owner decision 2026-11-16, PROTOCOL deviations log). Validation and test windows are never thinned.
+# Run: battery-rul benchmark --config benchmark --n-jobs 4
+defaults:
+  - /experiment_schema
+  - _self_
+
+name: benchmark
+datasets: [nasa, calce, toyota]
+tasks: [forecast, soh, rul]
+models:
+  - name: persistence
+  - name: last_slope
+    params: {window: 10}
+  - name: prev_soh
+  - tuned: elasticnet__forecast
+  - tuned: lgbm__forecast
+  - tuned: nlinear__forecast
+  - tuned: dlinear__forecast
+  - tuned: rlinear__forecast
+  - tuned: lstm__forecast
+  - tuned: gru__forecast
+  - tuned: transformer__forecast
+  - tuned: patchtst__forecast
+  - tuned: itransformer__forecast
+  - tuned: itransformer_sc__forecast
+  - tuned: elasticnet__soh
+  - tuned: lgbm__soh
+  - tuned: nlinear__soh
+  - tuned: dlinear__soh
+  - tuned: rlinear__soh
+  - tuned: lstm__soh
+  - tuned: gru__soh
+  - tuned: transformer__soh
+  - tuned: patchtst__soh
+  - tuned: itransformer__soh
+  - tuned: itransformer_sc__soh
+  - tuned: elasticnet__rul
+  - tuned: lgbm__rul
+  - tuned: nlinear__rul
+  - tuned: dlinear__rul
+  - tuned: rlinear__rul
+  - tuned: lstm__rul
+  - tuned: gru__rul
+  - tuned: transformer__rul
+  - tuned: patchtst__rul
+  - tuned: itransformer__rul
+  - tuned: itransformer_sc__rul
+seeds: [0, 1, 2, 3, 4]
+lookback: 32
+eval_origins: [start_points, all]
+train_stride: {toyota: 4}

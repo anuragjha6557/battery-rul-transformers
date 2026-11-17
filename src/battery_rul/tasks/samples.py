@@ -314,3 +314,16 @@ def _summary_features(soh: np.ndarray, pos: np.ndarray) -> np.ndarray:
         curv = float(np.polyfit(np.arange(tail50.size), tail50, 2)[0]) if tail50.size >= 3 else 0.0
         out[i] = (h[-1], h[-5:].mean(), _slope(h[-10:]), _slope(tail50), curv)
     return out
+
+
+def thin_origins(ss: SampleSet, stride: int) -> SampleSet:
+    """Keep every ``stride``-th origin per cell (the 1st, (1+stride)-th, ...), in sample order.
+
+    Used for *training* windows only (tuning and, per ``ExperimentConfig.train_stride``, the
+    benchmark): consecutive windows share L-1 of L cycles, so thinning removes near-duplicates
+    while every cell and life stage stays covered. Validation and test windows are never thinned.
+    """
+    if stride <= 1:
+        return ss
+    rank = ss.meta.groupby("cell_id", sort=False).cumcount().to_numpy()
+    return ss.subset(rank % stride == 0)

@@ -57,7 +57,7 @@ from battery_rul.models.registry import (
     omp_family,
 )
 from battery_rul.splits.toyota import grouped_kfold, official_split
-from battery_rul.tasks.samples import TaskSpec, build_samples, prepare_cycles
+from battery_rul.tasks.samples import TaskSpec, build_samples, prepare_cycles, thin_origins
 from battery_rul.train.config import CONFIG_DIR, default_horizons, default_tracking_uri
 from battery_rul.utils import PROCESSED_DIR, PROJECT_ROOT, resolve_device, seed_everything
 
@@ -174,14 +174,6 @@ def primary_horizon(horizons: tuple[int, ...]) -> int:
     if not ok:
         raise TuningError(f"no horizon <= {MAX_PRIMARY_HORIZON} in {horizons}")
     return max(ok)
-
-
-def thin_origins(ss: SampleSet, stride: int) -> SampleSet:
-    """Keep every ``stride``-th origin per cell (the 1st, (1+stride)-th, ...), in sample order."""
-    if stride <= 1:
-        return ss
-    rank = ss.meta.groupby("cell_id", sort=False).cumcount().to_numpy()
-    return ss.subset(rank % stride == 0)
 
 
 def primary_metric(task: str, ss: SampleSet, point: np.ndarray) -> float:
