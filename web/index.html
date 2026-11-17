@@ -46,6 +46,17 @@ th:first-child,td:first-child{text-align:left}
 code{background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:0 4px}
 a{color:var(--accent)}
 .hidden{display:none}
+.cmp{margin:10px 0 4px;padding-top:10px;border-top:1px solid var(--line)}
+.cmp h4{margin:0 0 2px;font-size:.92rem}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.chip{flex-direction:row;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:.82rem;color:var(--ink);cursor:pointer;background:var(--bg)}
+.chip:has(input:checked){border-color:var(--ink);font-weight:600}
+.chip.off{opacity:.45;cursor:not-allowed}
+.chip input{margin:0;accent-color:var(--ink)}
+.sw{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:baseline}
+.chip .sw{margin-right:0}
+tr.live td{font-weight:650}
+#cmp-na{color:var(--warn-ink);background:var(--warn-bg);border-radius:6px;padding:4px 10px}
 .muted{color:var(--muted);font-size:.85rem}
 </style>
 </head>
@@ -80,8 +91,15 @@ a{color:var(--accent)}
           <span id="origin-label" class="mono"></span>
         </div>
         <p class="hint">Drag across the chart (or the slider) to choose the prediction point. The model only sees the cycles to the left of the line and predicts instantly in your browser.</p>
+        <div class="cmp">
+          <h4>Compare with benchmarked methods</h4>
+          <div class="chips" id="cmp-chips" role="group" aria-label="Benchmarked methods to overlay"></div>
+          <p class="hint" id="cmp-na">benchmark comparisons are available for the demo cells only (they are the models' real held-out predictions)</p>
+          <p class="hint">Benchmarked methods were trained per dataset without this cell (leave-one-cell-out / official split); the live model is trained on all three datasets. Their forecasts exist only at the marked horizons (dotted lines just connect them); up to 5 at once, the shaded band is the first selected method's 90% interval.</p>
+        </div>
         <div id="plot"></div>
       </div>
+      <div class="panel scroll"><h3 class="ph">Method comparison at this prediction point</h3><table id="cmptable"></table><p class="muted" id="cmpnote"></p></div>
       <div class="panel">
         <h3 class="ph">Remaining-life prediction at every point in the cell's life</h3>
         <div id="plot-rul"></div>

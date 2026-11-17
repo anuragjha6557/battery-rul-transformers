@@ -11,6 +11,72 @@ let DEMOS = []; // [name, label] from examples/demos.json (scripts/make_examples
 let S = null; // {rows, soh, truthEol, eolLabel, k, cache: Map, track, demo}
 let busy = false, pending = null, playing = false;
 
+// ---------------------------------------------------------------- benchmark comparison
+// Precomputed held-out predictions of the benchmarked models (scripts/make_demo_compare.py), demo cells only.
+const MAX_SEL = 5;
+const CMP_STYLE = { // fixed colours, labels from web/showcase/viz.mjs
+  itransformer: { color: "#2a78d6", symbol: "circle" },
+  lgbm: { color: "#eb6834", symbol: "diamond" },
+  itransformer_sc: { color: "#1baf7a", symbol: "square" },
+  patchtst: { color: "#6250d6", symbol: "triangle-up" },
+  lstm: { color: "#e87ba4", symbol: "cross" },
+  persistence: { color: "#7d8088", symbol: "x", dash: "dash" },
+};
+const OTHER_SYMBOLS = ["star", "hexagram", "triangle-down", "pentagon", "bowtie", "hourglass", "circle-open", "diamond-open"];
+const CMP_ORDER = ["itransformer", "lgbm", "itransformer_sc", "patchtst", "lstm", "persistence", "last_slope", "elasticnet",
+  "nlinear", "dlinear", "rlinear", "gru", "transformer"];
+const CMP_LABEL = { // shown when no compare file is loaded
+  itransformer: "iTransformer (MC)", lgbm: "LightGBM", itransformer_sc: "iTransformer (SC)", patchtst: "PatchTST", lstm: "LSTM",
+  persistence: "Persistence (SOH stays the same)", last_slope: "Last slope", elasticnet: "ElasticNet", nlinear: "NLinear",
+  dlinear: "DLinear", rlinear: "RLinear", gru: "GRU", transformer: "Transformer",
+};
+const LIVE_LABEL = "iTransformer-v2 (live, deployed)";
+const NOTE_NA = "benchmark comparisons are available for the demo cells only (they are the models' real held-out predictions)";
+const cmpStyle = (m) => CMP_STYLE[m] ?? { color: "#9b9a94", symbol: OTHER_SYMBOLS[Math.max(0, CMP_ORDER.indexOf(m)) % OTHER_SYMBOLS.length] };
+let CMP = null; // {h, scale, fi: Map origin->row, ri: Map, models, rulCache}
+let SEL = ["lgbm", "itransformer", "persistence"]; // selection order = drawing order; the first one with an interval gets the band
+let lastRes = null;
+const rgba = (hex, a) => {
+  const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex);
+  return m ? `rgba(${parseInt(m[1], 16)},${parseInt(m[2], 16)},${parseInt(m[3], 16)},${a})` : hex;
+};
+
+function buildCmp(j) {
+  const idx = (o) => new Map(o.map((c, i) => [c, i]));
+  return { h: j.h, scale: j.scale, models: j.models, fi: idx(j.origin.forecast ?? []), ri: idx(j.origin.rul ?? []),
+    rulOrigin: j.origin.rul ?? [], rulCache: new Map() };
+}
+/** Is a precomputed forecast available at the current prediction point? */
+const cmpAvail = (last) => !!CMP && CMP.fi.has(last);
+
+function buildChips() {
+  const keys = CMP ? CMP_ORDER.filter((m) => m in CMP.models).concat(Object.keys(CMP.models).filter((m) => !CMP_ORDER.includes(m))) : CMP_ORDER;
+  if (CMP) SEL = SEL.filter((m) => m in CMP.models);
+  $("cmp-chips").innerHTML = keys.map((m) => {
+    const st = cmpStyle(m), label = CMP?.models[m]?.label ?? CMP_LABEL[m] ?? m;
+    return `<label class="chip"><input type="checkbox" data-m="${m}"${SEL.includes(m) ? " checked" : ""}>` +
+      `<span class="sw" style="background:${st.color}"></span>${escape(label)}</label>`;
+  }).join("");
+  for (const inp of $("cmp-chips").querySelectorAll("input")) {
+    inp.addEventListener("change", () => {
+      const m = inp.dataset.m;
+      SEL = inp.checked ? [...SEL.filter((x) => x !== m), m] : SEL.filter((x) => x !== m);
+      if (lastRes) render(lastRes); else updateChips(false);
+    });
+  }
+  updateChips(false);
+}
+function updateChips(avail) {
+  for (const inp of $("cmp-chips").querySelectorAll("input")) {
+    const full = !SEL.includes(inp.dataset.m) && SEL.length >= MAX_SEL;
+    inp.disabled = !avail || full;
+    inp.parentElement.classList.toggle("off", inp.disabled);
+    inp.parentElement.title = !avail ? NOTE_NA : full ? `At most ${MAX_SEL} methods at once: untick one first` : "";
+  }
+  $("cmp-na").classList.toggle("hidden", avail);
+  $("cmp-na").textContent = NOTE_NA;
+}
+
 // ---------------------------------------------------------------- page chrome
 for (const b of document.querySelectorAll("nav button")) {
   b.addEventListener("click", () => {
@@ -106,12 +172,15 @@ async function loadCell() {
   try {
     const demo = $("demo").value;
     let rows, k0, truthEol = null, eolLabel = "";
+    CMP = null; lastRes = null;
     if (demo) {
-      const [cut, full, eol] = await Promise.all([
+      const [cut, full, eol, cmp] = await Promise.all([
         fetch(`examples/${demo}.csv`).then((r) => r.text()),
         fetch(`examples/${demo}_full.csv`).then((r) => r.text()),
         fetch(`examples/${demo}_eol.json`).then((r) => (r.ok ? r.json() : null)),
+        fetch(`examples/${demo}_compare.json`).then((r) => (r.ok ? r.json() : null)).catch(() => null),
       ]);
+      if (cmp) CMP = buildCmp(cmp);
       rows = validate(parseCSV(full), meta.min_cycles);
       const lastCut = validate(parseCSV(cut), meta.min_cycles).cycle_idx.at(-1);
       k0 = Math.max(0, rows.cycle_idx.indexOf(lastCut));
@@ -146,11 +215,12 @@ async function loadCell() {
     Object.assign($("origin"), { min: meta.min_cycles - 1, max: kMax, value: k0 });
     show("", "");
     showPanels(true);
+    buildChips();
     drawStatic();
     await setOrigin(k0, true);
     computeTrack(); // background
   } catch (e) {
-    S = null;
+    S = null; CMP = null; lastRes = null;
     showPanels(false);
     show("err", e instanceof InputError ? `Input problem: ${escape(e.message)}` : `Unexpected error: ${escape(e.message)}`);
   }
@@ -253,6 +323,7 @@ function base(shapes = [], annotations = []) {
 }
 
 function render(res) {
+  lastRes = res;
   const ink = css("--ink"), muted = css("--muted"), line = css("--line");
   const k = S.k, c = S.rows.cycle_idx, last = res.last_cycle, r = res.rul;
   $("origin-label").textContent = S.truthEol !== null
@@ -277,18 +348,46 @@ function render(res) {
 
   // main chart
   const fc = [last, ...res.forecast.map((f) => f.cycle)], s0 = res.history.soh.at(-1);
+  const avail = cmpAvail(last);
+  updateChips(avail);
+  const fi = avail ? CMP.fi.get(last) : -1, sc = avail ? 100 / CMP.scale : 0;
+  const sel = avail ? SEL : [];
+  const cmpTraces = [], band = [];
+  const bandM = sel.find((m) => CMP.models[m].forecast?.lo);
+  if (bandM) {
+    const f = CMP.models[bandM].forecast, st = cmpStyle(bandM), xs = CMP.h.map((h) => last + h);
+    band.push(
+      { x: [last, ...xs], y: [s0 * 100, ...f.hi[fi].map((v) => (v === null ? null : v * sc))], mode: "lines", line: { width: 0 }, hoverinfo: "skip", showlegend: false },
+      { x: [last, ...xs], y: [s0 * 100, ...f.lo[fi].map((v) => (v === null ? null : v * sc))], mode: "lines", line: { width: 0 }, fill: "tonexty",
+        fillcolor: rgba(st.color, 0.18), name: `90% interval, ${CMP.models[bandM].label}`, hoverinfo: "skip" });
+  }
+  for (const m of sel) {
+    const f = CMP.models[m].forecast;
+    if (!f) continue;
+    const st = cmpStyle(m), pt = f.point[fi];
+    cmpTraces.push({
+      x: [last, ...CMP.h.map((h) => last + h)], y: [s0 * 100, ...pt.map((v) => (v === null ? null : v * sc))],
+      mode: "lines+markers", name: CMP.models[m].label,
+      line: { color: st.color, width: 1.2, dash: st.dash ?? "dot" },
+      marker: { size: [0, ...CMP.h.map(() => 8)], symbol: st.symbol, color: st.color, line: { width: 1, color: css("--panel") } },
+      customdata: [[0, null, null], ...CMP.h.map((h, i) => [h, f.lo ? f.lo[fi][i] * sc : null, f.hi ? f.hi[fi][i] * sc : null])],
+      hovertemplate: "+%{customdata[0]}: %{y:.1f}%" + (f.lo ? " (90%: %{customdata[1]:.1f}–%{customdata[2]:.1f}%)" : "") + `<extra>${escape(CMP.models[m].label)}</extra>`,
+    });
+  }
   const traces = [
     { x: fc, y: [s0, ...res.forecast.map((f) => f.hi)].map((v) => v * 100), mode: "lines", line: { width: 0 }, hoverinfo: "skip", showlegend: false },
     { x: fc, y: [s0, ...res.forecast.map((f) => f.lo)].map((v) => v * 100), mode: "lines", line: { width: 0 }, fill: "tonexty",
-      fillcolor: "rgba(214,96,0,0.22)", name: "90% interval", hoverinfo: "skip" },
+      fillcolor: rgba(ink, 0.13), name: "90% interval, live", hoverinfo: "skip" },
+    ...band,
     { x: c.slice(0, k + 1), y: S.soh.slice(0, k + 1).map((v) => v * 100), mode: "lines", name: "seen by the model",
       line: { color: "#1f5f99", width: 2 }, hovertemplate: "SOH %{y:.1f}%<extra>measured</extra>" },
     { x: c.slice(k), y: S.soh.slice(k).map((v) => v * 100), mode: "lines", name: "measured later (hidden from the model)",
       line: { color: muted, dash: "dot", width: 1.5 }, hovertemplate: "SOH %{y:.1f}%<extra>measured later</extra>" },
-    { x: fc, y: [s0, ...res.forecast.map((f) => f.soh)].map((v) => v * 100), mode: "lines+markers", name: "forecast (median)",
-      line: { color: "#d66000", width: 2.5 }, marker: { size: 7 },
+    ...cmpTraces,
+    { x: fc, y: [s0, ...res.forecast.map((f) => f.soh)].map((v) => v * 100), mode: "lines+markers", name: LIVE_LABEL,
+      line: { color: ink, width: 3.5 }, marker: { size: 9, color: ink, line: { width: 1.5, color: css("--panel") } },
       customdata: [[0, s0 * 100, s0 * 100], ...res.forecast.map((f) => [f.horizon, f.lo * 100, f.hi * 100])],
-      hovertemplate: "+%{customdata[0]} cycles: %{y:.1f}% (90%: %{customdata[1]:.1f}–%{customdata[2]:.1f}%)<extra>forecast</extra>" },
+      hovertemplate: "+%{customdata[0]} cycles: %{y:.1f}% (90%: %{customdata[1]:.1f}–%{customdata[2]:.1f}%)<extra>live model</extra>" },
   ];
   const shapes = [
     { type: "rect", xref: "x", yref: "paper", x0: last + r.lo, x1: last + r.hi, y0: 0, y1: 1, fillcolor: "rgba(214,160,0,0.13)", line: { width: 0 }, layer: "below" },
@@ -311,6 +410,7 @@ function render(res) {
   lay.yaxis = { title: "state of health (%)", gridcolor: line, range: yRange, fixedrange: true };
   Plotly.react("plot", traces, lay, { responsive: true, displayModeBar: false });
   drawTrack();
+  renderCmpTable(res, sel, fi);
 
   $("ftable").innerHTML =
     "<tr><th>Horizon</th><th>Cycle</th><th>SOH forecast</th><th>90% interval</th><th>Measured</th></tr>" +
@@ -320,22 +420,77 @@ function render(res) {
     }).join("");
 }
 
+function renderCmpTable(res, sel, fi) {
+  const c = S.rows.cycle_idx, last = res.last_cycle, trueRul = S.truthEol !== null && S.truthEol - last > 0 ? S.truthEol - last : null;
+  const H = 50, hv = res.forecast.find((f) => f.horizon === H);
+  const iM = c.indexOf(last + H), meas = iM >= 0 ? S.soh[iM] : null;
+  const rows = [{ name: LIVE_LABEL, color: css("--ink"), live: true, soh: hv?.soh, lo: hv?.lo, hi: hv?.hi,
+    rul: res.rul.cycles, rlo: res.rul.lo, rhi: res.rul.hi }];
+  if (fi >= 0) {
+    const hi = CMP.h.indexOf(H), ri = CMP.ri.get(last);
+    for (const m of sel) {
+      const e = CMP.models[m], f = e.forecast, r = e.rul, v = (x) => (x == null ? null : x / CMP.scale);
+      rows.push({ name: e.label, color: cmpStyle(m).color, soh: hi >= 0 && f ? v(f.point[fi][hi]) : null,
+        lo: hi >= 0 && f?.lo ? v(f.lo[fi][hi]) : null, hi: hi >= 0 && f?.hi ? v(f.hi[fi][hi]) : null,
+        rul: ri !== undefined && r ? r.point[ri] : null, rlo: ri !== undefined && r?.lo ? r.lo[ri] : null, rhi: ri !== undefined && r?.hi ? r.hi[ri] : null });
+    }
+  }
+  for (const r of rows) r.err = trueRul !== null && r.rul != null ? r.rul - trueRul : null;
+  if (trueRul !== null) rows.sort((a, b) => (a.err === null) - (b.err === null) || Math.abs(a.err ?? 0) - Math.abs(b.err ?? 0));
+  const sgn = (v, u, d = 0) => `${v > 0 ? "+" : v < 0 ? "−" : ""}${Math.abs(v).toFixed(d)}${u}`;
+  $("cmptable").innerHTML = `<tr><th>Method</th><th>SOH at +${H}</th><th>error vs measured</th><th>Predicted RUL (90%)</th><th>RUL error</th></tr>` +
+    rows.map((r) => `<tr${r.live ? ' class="live"' : ""}><td><span class="sw" style="background:${r.color}"></span>${escape(r.name)}</td>` +
+      `<td>${r.soh != null ? pct(r.soh) : "–"}${r.lo != null && r.hi != null ? ` <span class="muted">(${pct(r.lo)}–${pct(r.hi)})</span>` : ""}</td>` +
+      `<td>${r.soh != null && meas !== null ? sgn((r.soh - meas) * 100, " pp", 1) : "–"}</td>` +
+      `<td>${r.rul != null ? Math.round(r.rul) : "–"}${r.rlo != null && r.rhi != null ? ` <span class="muted">(${Math.round(r.rlo)}–${Math.round(r.rhi)})</span>` : ""}</td>` +
+      `<td>${r.err !== null ? sgn(r.err, " cycles") : "–"}</td></tr>`).join("");
+  $("cmpnote").textContent = [
+    meas === null ? `Measured SOH at +${H} cycles is not known (past the end of the data).` : "",
+    trueRul === null ? "Actual remaining life is unknown or already reached, so rows are not ranked." : "Sorted by absolute RUL error.",
+    fi < 0 ? "Benchmarked methods are shown for the demo cells only." : "",
+  ].filter(Boolean).join(" ");
+}
+
+function cmpRulTrace(m) {
+  let t = CMP.rulCache.get(m);
+  if (!t) {
+    const r = CMP.models[m].rul;
+    if (!r) return null;
+    t = { x: CMP.rulOrigin, y: r.point.map((v) => v), lo: r.lo, hi: r.hi };
+    CMP.rulCache.set(m, t);
+  }
+  return t;
+}
+
 function drawTrack() {
   if (!S) return;
   const ink = css("--ink"), muted = css("--muted"), line = css("--line");
   const t = S.track, x = t.map((p) => p.cycle);
+  const cap = S.rows.cycle_idx[S.kMax];
+  const cmpT = [];
+  if (cmpAvail(S.rows.cycle_idx[S.k])) {
+    for (const m of SEL) {
+      const r = cmpRulTrace(m);
+      if (!r) continue;
+      const n = r.x.findIndex((o) => o > cap), e = n < 0 ? r.x.length : n, st = cmpStyle(m);
+      cmpT.push({ x: r.x.slice(0, e), y: r.y.slice(0, e), mode: "lines", name: CMP.models[m].label,
+        line: { color: st.color, width: 1.8, dash: st.dash ?? "solid" }, connectgaps: false,
+        hovertemplate: `%{y:.0f} cycles<extra>${escape(CMP.models[m].label)}</extra>` });
+    }
+  }
   const traces = [
     { x, y: t.map((p) => p.hi), mode: "lines", line: { width: 0 }, hoverinfo: "skip", showlegend: false },
-    { x, y: t.map((p) => p.lo), mode: "lines", line: { width: 0 }, fill: "tonexty", fillcolor: "rgba(31,95,153,0.18)", name: "90% interval", hoverinfo: "skip" },
-    { x, y: t.map((p) => p.rul), mode: "lines", name: "predicted RUL", line: { color: "#1f5f99", width: 2 },
-      customdata: t.map((p) => [p.lo, p.hi]), hovertemplate: "predicted %{y:.0f} (90%: %{customdata[0]:.0f}–%{customdata[1]:.0f}) cycles<extra></extra>" },
+    { x, y: t.map((p) => p.lo), mode: "lines", line: { width: 0 }, fill: "tonexty", fillcolor: rgba(ink, 0.1), name: "90% interval, live", hoverinfo: "skip" },
+    ...cmpT,
+    { x, y: t.map((p) => p.rul), mode: "lines", name: LIVE_LABEL, line: { color: ink, width: 3.5 },
+      customdata: t.map((p) => [p.lo, p.hi]), hovertemplate: "%{y:.0f} (90%: %{customdata[0]:.0f}–%{customdata[1]:.0f}) cycles<extra>live model</extra>" },
   ];
   if (S.truthEol !== null) {
     const tx = S.rows.cycle_idx.filter((cc) => cc <= S.truthEol);
     traces.push(
       { x: tx, y: tx.map((cc) => (S.truthEol - cc) * 1.2), mode: "lines", line: { color: muted, dash: "dot", width: 1 }, name: "±20% of truth", hoverinfo: "skip" },
       { x: tx, y: tx.map((cc) => (S.truthEol - cc) * 0.8), mode: "lines", line: { color: muted, dash: "dot", width: 1 }, showlegend: false, hoverinfo: "skip" },
-      { x: tx, y: tx.map((cc) => S.truthEol - cc), mode: "lines", name: "true RUL", line: { color: ink, width: 1.5 },
+      { x: tx, y: tx.map((cc) => S.truthEol - cc), mode: "lines", name: "true RUL", line: { color: "#b22222", width: 2, dash: "dash" },
         hovertemplate: "true %{y:.0f} cycles<extra></extra>" },
     );
   }
