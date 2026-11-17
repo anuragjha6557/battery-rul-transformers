@@ -2,7 +2,7 @@
 
 - Protocol version: 1.1
 - Git SHA: 7086afc90e
-- Seeds: 5  |  unit runs: 1532
+- Seeds: 5  |  unit runs: 1620
 - Note: n = 4 cells per NASA/CALCE dataset, so the 95 % cluster-bootstrap CI is wide by construction. Toyota rows are over test cells (test1 / test2 separately) with a cell-level bootstrap CI and a Holm-adjusted Wilcoxon p vs the best baseline. All metrics are computed per cell from the logged predictions.
 
 ## Headline (kind = overall; RMSE in %SOH, RUL MAE in cycles)
@@ -450,49 +450,749 @@
 
 | split | policy | kind | metric | model | mean [95% CI] | vs best baseline | indep. (B0018) | n_cells | n_seeds | run_group |
 |---|---|---|---|---|---|---|---|---|---|---|
+| test1 | all | overall | rul_mae | dlinear | 134.275 [96.428, 182.072] |  |  | 43 | 5 | c066ff8c |
 | test1 | all | overall | rul_mae | elasticnet | 110.004 [78.385, 150.217] |  |  | 43 | 5 | 6228f90c |
 | test1 | all | overall | rul_mae | gru | 80.826 [57.844, 108.591] |  |  | 43 | 5 | 68c083f5 |
-| test1 | all | overall | rul_mae | itransformer_sc | 77.203 [53.823, 106.896] |  |  | 43 | 2 | 1f0731d5 |
+| test1 | all | overall | rul_mae | itransformer | 78.362 [54.298, 108.739] |  |  | 43 | 5 | 1f7dadba |
+| test1 | all | overall | rul_mae | itransformer_sc | 76.097 [53.084, 105.406] |  |  | 43 | 5 | 4a0a69dd |
+| test1 | all | overall | rul_mae | lgbm | 57.869 [39.443, 80.381] |  |  | 43 | 5 | b88b5644 |
 | test1 | all | overall | rul_mae | lstm | 70.208 [51.137, 93.125] |  |  | 43 | 5 | 7a6e2343 |
+| test1 | all | overall | rul_mae | nlinear | 134.312 [96.475, 182.102] |  |  | 43 | 5 | f6a02b2d |
+| test1 | all | overall | rul_mae | patchtst | 250.500 [204.828, 304.197] |  |  | 43 | 5 | 5b64c567 |
 | test1 | all | overall | rul_mae | rlinear | 339.280 [287.944, 399.732] |  |  | 43 | 5 | aa9b25f1 |
 | test1 | all | overall | rul_mae | transformer | 88.107 [64.229, 115.516] |  |  | 43 | 5 | cd2ed4cc |
+| test1 | start_points | overall | rul_mae | dlinear | 156.452 [108.107, 217.042] |  |  | 43 | 5 | c066ff8c |
 | test1 | start_points | overall | rul_mae | elasticnet | 125.405 [85.423, 176.345] |  |  | 43 | 5 | 6228f90c |
 | test1 | start_points | overall | rul_mae | gru | 92.286 [64.128, 127.250] |  |  | 43 | 5 | 68c083f5 |
-| test1 | start_points | overall | rul_mae | itransformer_sc | 99.171 [70.006, 135.061] |  |  | 43 | 2 | 1f0731d5 |
+| test1 | start_points | overall | rul_mae | itransformer | 94.330 [67.393, 128.161] |  |  | 43 | 5 | 1f7dadba |
+| test1 | start_points | overall | rul_mae | itransformer_sc | 97.213 [68.566, 132.581] |  |  | 43 | 5 | 4a0a69dd |
+| test1 | start_points | overall | rul_mae | lgbm | 67.601 [45.610, 94.968] |  |  | 43 | 5 | b88b5644 |
 | test1 | start_points | overall | rul_mae | lstm | 76.267 [54.146, 104.259] |  |  | 43 | 5 | 7a6e2343 |
+| test1 | start_points | overall | rul_mae | nlinear | 156.510 [108.240, 217.209] |  |  | 43 | 5 | f6a02b2d |
+| test1 | start_points | overall | rul_mae | patchtst | 287.042 [234.037, 351.378] |  |  | 43 | 5 | 5b64c567 |
 | test1 | start_points | overall | rul_mae | rlinear | 400.143 [333.537, 478.880] |  |  | 43 | 5 | aa9b25f1 |
 | test1 | start_points | overall | rul_mae | transformer | 99.973 [71.229, 133.382] |  |  | 43 | 5 | cd2ed4cc |
+| test2 | all | overall | rul_mae | dlinear | 228.638 [192.558, 270.241] |  |  | 40 | 5 | c066ff8c |
 | test2 | all | overall | rul_mae | elasticnet | 144.845 [111.655, 181.870] |  |  | 40 | 5 | 6228f90c |
 | test2 | all | overall | rul_mae | gru | 181.852 [144.439, 224.114] |  |  | 40 | 5 | 68c083f5 |
-| test2 | all | overall | rul_mae | itransformer_sc | 119.882 [101.183, 140.187] |  |  | 40 | 2 | 1f0731d5 |
+| test2 | all | overall | rul_mae | itransformer | 132.495 [114.716, 152.479] |  |  | 40 | 5 | 1f7dadba |
+| test2 | all | overall | rul_mae | itransformer_sc | 119.174 [101.336, 138.518] |  |  | 40 | 5 | 4a0a69dd |
+| test2 | all | overall | rul_mae | lgbm | 184.111 [146.696, 226.053] |  |  | 40 | 5 | b88b5644 |
 | test2 | all | overall | rul_mae | lstm | 162.489 [126.112, 203.447] |  |  | 40 | 5 | 7a6e2343 |
+| test2 | all | overall | rul_mae | nlinear | 228.602 [192.523, 270.195] |  |  | 40 | 5 | f6a02b2d |
+| test2 | all | overall | rul_mae | patchtst | 439.806 [396.156, 488.354] |  |  | 40 | 5 | 5b64c567 |
 | test2 | all | overall | rul_mae | rlinear | 500.895 [456.237, 550.052] |  |  | 40 | 5 | aa9b25f1 |
 | test2 | all | overall | rul_mae | transformer | 197.530 [158.876, 241.623] |  |  | 40 | 5 | cd2ed4cc |
+| test2 | start_points | overall | rul_mae | dlinear | 268.875 [221.856, 322.296] |  |  | 40 | 5 | c066ff8c |
 | test2 | start_points | overall | rul_mae | elasticnet | 174.555 [132.039, 222.183] |  |  | 40 | 5 | 6228f90c |
 | test2 | start_points | overall | rul_mae | gru | 222.226 [174.619, 275.988] |  |  | 40 | 5 | 68c083f5 |
-| test2 | start_points | overall | rul_mae | itransformer_sc | 141.603 [114.093, 172.256] |  |  | 40 | 2 | 1f0731d5 |
+| test2 | start_points | overall | rul_mae | itransformer | 148.814 [121.862, 178.203] |  |  | 40 | 5 | 1f7dadba |
+| test2 | start_points | overall | rul_mae | itransformer_sc | 140.132 [113.587, 169.878] |  |  | 40 | 5 | 4a0a69dd |
+| test2 | start_points | overall | rul_mae | lgbm | 225.294 [177.597, 278.713] |  |  | 40 | 5 | b88b5644 |
 | test2 | start_points | overall | rul_mae | lstm | 198.626 [151.921, 251.321] |  |  | 40 | 5 | 7a6e2343 |
+| test2 | start_points | overall | rul_mae | nlinear | 268.839 [221.819, 322.262] |  |  | 40 | 5 | f6a02b2d |
+| test2 | start_points | overall | rul_mae | patchtst | 545.111 [491.458, 604.655] |  |  | 40 | 5 | 5b64c567 |
 | test2 | start_points | overall | rul_mae | rlinear | 608.419 [551.652, 670.555] |  |  | 40 | 5 | aa9b25f1 |
 | test2 | start_points | overall | rul_mae | transformer | 236.446 [186.416, 293.541] |  |  | 40 | 5 | cd2ed4cc |
+
+### toyota_soh
+
+| split | policy | kind | metric | model | mean [95% CI] | vs best baseline | indep. (B0018) | n_cells | n_seeds | run_group |
+|---|---|---|---|---|---|---|---|---|---|---|
+| test1 | all | overall | rmse | dlinear | 0.126 [0.075, 0.186] | p=2.5e-12 (vs prev_soh) |  | 43 | 5 | 3ac7bfd2 |
+| test1 | all | overall | rmse | elasticnet | 0.129 [0.077, 0.189] | p=2.5e-12 (vs prev_soh) |  | 43 | 5 | 46575c2e |
+| test1 | all | overall | rmse | gru | 0.136 [0.082, 0.199] | p=2.5e-12 (vs prev_soh) |  | 43 | 5 | 3ddf16a8 |
+| test1 | all | overall | rmse | itransformer | 0.111 [0.067, 0.163] | p=2.5e-12 (vs prev_soh) |  | 43 | 5 | 86cda30d |
+| test1 | all | overall | rmse | itransformer_sc | 0.111 [0.067, 0.163] | p=2.5e-12 (vs prev_soh) |  | 43 | 5 | 38d1aefd |
+| test1 | all | overall | rmse | lgbm | 0.133 [0.079, 0.196] | p=2.5e-12 (vs prev_soh) |  | 43 | 5 | ac42ccf2 |
+| test1 | all | overall | rmse | lstm | 0.135 [0.082, 0.199] | p=2.5e-12 (vs prev_soh) |  | 43 | 5 | cd05dc09 |
+| test1 | all | overall | rmse | nlinear | 0.126 [0.075, 0.185] | p=2.5e-12 (vs prev_soh) |  | 43 | 5 | c114a71d |
+| test1 | all | overall | rmse | patchtst | 0.109 [0.066, 0.159] | p=2.5e-12 (vs prev_soh) |  | 43 | 5 | 93bc379a |
+| test1 | all | overall | rmse | prev_soh | 0.158 [0.106, 0.219] |  |  | 43 | 5 | 7e056afa |
+| test1 | all | overall | rmse | rlinear | 0.124 [0.073, 0.182] | p=2.5e-12 (vs prev_soh) |  | 43 | 5 | e63748eb |
+| test1 | all | overall | rmse | transformer | 0.139 [0.085, 0.202] | p=7.5e-12 (vs prev_soh) |  | 43 | 5 | 56c061b1 |
+| test1 | start_points | overall | rmse | dlinear | 0.047 [0.025, 0.081] | p=0.00783 (vs prev_soh) |  | 43 | 5 | 3ac7bfd2 |
+| test1 | start_points | overall | rmse | elasticnet | 0.040 [0.026, 0.058] | p=0.029 (vs prev_soh) |  | 43 | 5 | 46575c2e |
+| test1 | start_points | overall | rmse | gru | 0.035 [0.023, 0.051] | p=0.00255 (vs prev_soh) |  | 43 | 5 | 3ddf16a8 |
+| test1 | start_points | overall | rmse | itransformer | 0.028 [0.021, 0.037] | p=0.00427 (vs prev_soh) |  | 43 | 5 | 86cda30d |
+| test1 | start_points | overall | rmse | itransformer_sc | 0.028 [0.020, 0.038] | p=0.00891 (vs prev_soh) |  | 43 | 5 | 38d1aefd |
+| test1 | start_points | overall | rmse | lgbm | 0.031 [0.019, 0.047] | p=6.17e-05 (vs prev_soh) |  | 43 | 5 | ac42ccf2 |
+| test1 | start_points | overall | rmse | lstm | 0.035 [0.023, 0.050] | p=0.00255 (vs prev_soh) |  | 43 | 5 | cd05dc09 |
+| test1 | start_points | overall | rmse | nlinear | 0.054 [0.031, 0.083] | p=0.138 (vs prev_soh) |  | 43 | 5 | c114a71d |
+| test1 | start_points | overall | rmse | patchtst | 0.028 [0.022, 0.037] | p=0.0081 (vs prev_soh) |  | 43 | 5 | 93bc379a |
+| test1 | start_points | overall | rmse | prev_soh | 0.041 [0.030, 0.056] |  |  | 43 | 5 | 7e056afa |
+| test1 | start_points | overall | rmse | rlinear | 0.057 [0.026, 0.109] | p=0.0085 (vs prev_soh) |  | 43 | 5 | e63748eb |
+| test1 | start_points | overall | rmse | transformer | 0.038 [0.027, 0.054] | p=0.138 (vs prev_soh) |  | 43 | 5 | 56c061b1 |
+| test2 | all | overall | rmse | dlinear | 0.016 [0.013, 0.018] | p=2e-11 (vs prev_soh) |  | 40 | 5 | 3ac7bfd2 |
+| test2 | all | overall | rmse | elasticnet | 0.024 [0.022, 0.026] | p=2.42e-10 (vs prev_soh) |  | 40 | 5 | 46575c2e |
+| test2 | all | overall | rmse | gru | 0.049 [0.045, 0.053] | p=3.12e-05 (vs prev_soh) |  | 40 | 5 | 3ddf16a8 |
+| test2 | all | overall | rmse | itransformer | 0.023 [0.022, 0.025] | p=1e-09 (vs prev_soh) |  | 40 | 5 | 86cda30d |
+| test2 | all | overall | rmse | itransformer_sc | 0.036 [0.033, 0.039] | p=0.9 (vs prev_soh) |  | 40 | 5 | 38d1aefd |
+| test2 | all | overall | rmse | lgbm | 0.024 [0.021, 0.026] | p=6e-10 (vs prev_soh) |  | 40 | 5 | ac42ccf2 |
+| test2 | all | overall | rmse | lstm | 0.024 [0.022, 0.026] | p=1e-09 (vs prev_soh) |  | 40 | 5 | cd05dc09 |
+| test2 | all | overall | rmse | nlinear | 0.017 [0.015, 0.020] | p=2e-11 (vs prev_soh) |  | 40 | 5 | c114a71d |
+| test2 | all | overall | rmse | patchtst | 0.014 [0.011, 0.016] | p=2e-11 (vs prev_soh) |  | 40 | 5 | 93bc379a |
+| test2 | all | overall | rmse | prev_soh | 0.036 [0.034, 0.038] |  |  | 40 | 5 | 7e056afa |
+| test2 | all | overall | rmse | rlinear | 0.015 [0.013, 0.018] | p=2e-11 (vs prev_soh) |  | 40 | 5 | e63748eb |
+| test2 | all | overall | rmse | transformer | 0.038 [0.035, 0.040] | p=0.443 (vs prev_soh) |  | 40 | 5 | 56c061b1 |
+| test2 | start_points | overall | rmse | dlinear | 0.015 [0.009, 0.021] | p=1.04e-06 (vs prev_soh) |  | 40 | 5 | 3ac7bfd2 |
+| test2 | start_points | overall | rmse | elasticnet | 0.022 [0.016, 0.029] | p=0.00673 (vs prev_soh) |  | 40 | 5 | 46575c2e |
+| test2 | start_points | overall | rmse | gru | 0.049 [0.045, 0.054] | p=1.1e-09 (vs prev_soh) |  | 40 | 5 | 3ddf16a8 |
+| test2 | start_points | overall | rmse | itransformer | 0.025 [0.022, 0.029] | p=0.02 (vs prev_soh) |  | 40 | 5 | 86cda30d |
+| test2 | start_points | overall | rmse | itransformer_sc | 0.040 [0.036, 0.044] | p=1.43e-06 (vs prev_soh) |  | 40 | 5 | 38d1aefd |
+| test2 | start_points | overall | rmse | lgbm | 0.023 [0.018, 0.030] | p=0.00357 (vs prev_soh) |  | 40 | 5 | ac42ccf2 |
+| test2 | start_points | overall | rmse | lstm | 0.022 [0.017, 0.029] | p=0.024 (vs prev_soh) |  | 40 | 5 | cd05dc09 |
+| test2 | start_points | overall | rmse | nlinear | 0.016 [0.011, 0.023] | p=0.024 (vs prev_soh) |  | 40 | 5 | c114a71d |
+| test2 | start_points | overall | rmse | patchtst | 0.012 [0.007, 0.018] | p=6.1e-08 (vs prev_soh) |  | 40 | 5 | 93bc379a |
+| test2 | start_points | overall | rmse | prev_soh | 0.018 [0.013, 0.025] |  |  | 40 | 5 | 7e056afa |
+| test2 | start_points | overall | rmse | rlinear | 0.014 [0.009, 0.021] | p=7.67e-06 (vs prev_soh) |  | 40 | 5 | e63748eb |
+| test2 | start_points | overall | rmse | transformer | 0.037 [0.033, 0.042] | p=1.27e-09 (vs prev_soh) |  | 40 | 5 | 56c061b1 |
 
 ## Mean rank (dataset x task x split x policy x headline metric)
 
 | model | mean rank | conditions | missing |
 |---|---|---|---|
-| itransformer | 2.94 | 32 | 4 |
-| itransformer_sc | 3.58 | 36 | 0 |
-| patchtst | 4.38 | 32 | 4 |
-| lgbm | 4.44 | 32 | 4 |
-| nlinear | 5.88 | 32 | 4 |
-| lstm | 6.31 | 36 | 0 |
-| rlinear | 6.86 | 36 | 0 |
-| elasticnet | 7.19 | 36 | 0 |
-| gru | 7.33 | 36 | 0 |
-| prev_soh | 9.00 | 4 | 32 |
-| transformer | 9.00 | 36 | 0 |
-| dlinear | 9.53 | 32 | 4 |
-| persistence | 10.12 | 24 | 12 |
-| last_slope | 10.25 | 24 | 12 |
+| itransformer | 3.08 | 40 | 0 |
+| itransformer_sc | 3.95 | 40 | 0 |
+| lgbm | 4.55 | 40 | 0 |
+| patchtst | 4.65 | 40 | 0 |
+| nlinear | 6.15 | 40 | 0 |
+| lstm | 6.47 | 40 | 0 |
+| rlinear | 7.17 | 40 | 0 |
+| elasticnet | 7.35 | 40 | 0 |
+| gru | 7.72 | 40 | 0 |
+| prev_soh | 8.88 | 8 | 32 |
+| dlinear | 9.03 | 40 | 0 |
+| transformer | 9.28 | 40 | 0 |
+| persistence | 10.12 | 24 | 16 |
+| last_slope | 10.25 | 24 | 16 |
+
+## Calibration (90 % intervals; PICP target 0.90 +/- 0.05; MPIW in %SOH or cycles)
+
+Raw = stored (0.05, 0.95) quantiles; cal = CQR with pooled inner-val residuals (PROTOCOL §3/§5). Models without inner-val predictions (GPR) have raw only. mean [95% cluster-bootstrap CI over cells].
+
+| dataset | task | policy | horizon | model | PICP raw | PICP cal | MPIW raw | MPIW cal | cells |
+|---|---|---|---|---|---|---|---|---|---|
+| calce | forecast | all | 1 | dlinear | 0.959 [0.954, 0.965] | 0.902 [0.897, 0.908] | 13.500 [13.368, 13.596] | 9.861 [9.728, 9.955] | 4 |
+| calce | forecast | all | 1 | elasticnet | 0.000 [0.000, 0.000] | 0.905 [0.896, 0.914] | 0.000 [0.000, 0.000] | 2.274 [2.211, 2.336] | 4 |
+| calce | forecast | all | 1 | gru | 0.946 [0.938, 0.952] | 0.935 [0.929, 0.942] | 4.613 [4.152, 5.165] | 4.393 [3.969, 4.875] | 4 |
+| calce | forecast | all | 1 | itransformer | 0.900 [0.890, 0.909] | 0.907 [0.898, 0.916] | 2.697 [2.584, 2.810] | 2.777 [2.687, 2.882] | 4 |
+| calce | forecast | all | 1 | itransformer_sc | 0.905 [0.898, 0.913] | 0.906 [0.902, 0.910] | 2.734 [2.666, 2.801] | 2.772 [2.729, 2.847] | 4 |
+| calce | forecast | all | 1 | lgbm | 0.903 [0.897, 0.911] | 0.913 [0.903, 0.922] | 3.586 [3.403, 3.799] | 3.722 [3.553, 3.932] | 4 |
+| calce | forecast | all | 1 | lstm | 0.924 [0.914, 0.931] | 0.923 [0.909, 0.935] | 3.267 [3.081, 3.570] | 3.280 [3.097, 3.581] | 4 |
+| calce | forecast | all | 1 | nlinear | 0.897 [0.878, 0.915] | 0.902 [0.880, 0.921] | 3.169 [3.067, 3.244] | 3.242 [3.106, 3.332] | 4 |
+| calce | forecast | all | 1 | patchtst | 0.938 [0.927, 0.945] | 0.921 [0.911, 0.931] | 3.930 [3.815, 4.068] | 3.687 [3.544, 3.830] | 4 |
+| calce | forecast | all | 1 | rlinear | 0.900 [0.892, 0.909] | 0.916 [0.908, 0.924] | 3.905 [3.794, 4.003] | 4.048 [3.933, 4.127] | 4 |
+| calce | forecast | all | 1 | transformer | 0.963 [0.958, 0.969] | 0.952 [0.944, 0.959] | 9.094 [8.227, 9.796] | 6.848 [6.305, 7.323] | 4 |
+| calce | forecast | all | 10 | dlinear | 0.913 [0.908, 0.917] | 0.901 [0.895, 0.905] | 12.702 [12.543, 12.831] | 11.280 [11.089, 11.443] | 4 |
+| calce | forecast | all | 10 | elasticnet | 0.000 [0.000, 0.000] | 0.897 [0.871, 0.919] | 0.000 [0.000, 0.000] | 5.332 [5.072, 5.503] | 4 |
+| calce | forecast | all | 10 | gru | 0.902 [0.891, 0.921] | 0.913 [0.897, 0.929] | 5.958 [5.650, 6.266] | 6.134 [6.046, 6.233] | 4 |
+| calce | forecast | all | 10 | itransformer | 0.860 [0.832, 0.888] | 0.904 [0.876, 0.933] | 4.884 [4.767, 5.000] | 5.511 [5.336, 5.655] | 4 |
+| calce | forecast | all | 10 | itransformer_sc | 0.873 [0.840, 0.907] | 0.904 [0.877, 0.930] | 5.156 [4.949, 5.363] | 5.658 [5.448, 5.869] | 4 |
+| calce | forecast | all | 10 | lgbm | 0.877 [0.859, 0.900] | 0.907 [0.889, 0.926] | 5.208 [4.940, 5.476] | 5.650 [5.399, 5.902] | 4 |
+| calce | forecast | all | 10 | lstm | 0.882 [0.838, 0.916] | 0.904 [0.862, 0.935] | 5.350 [5.029, 5.777] | 5.757 [5.403, 6.148] | 4 |
+| calce | forecast | all | 10 | nlinear | 0.899 [0.876, 0.922] | 0.903 [0.879, 0.925] | 5.848 [5.721, 5.976] | 5.933 [5.811, 6.075] | 4 |
+| calce | forecast | all | 10 | patchtst | 0.895 [0.864, 0.920] | 0.906 [0.876, 0.932] | 6.167 [5.999, 6.308] | 6.352 [6.156, 6.486] | 4 |
+| calce | forecast | all | 10 | rlinear | 0.870 [0.838, 0.902] | 0.906 [0.880, 0.931] | 6.553 [6.442, 6.664] | 7.106 [6.872, 7.358] | 4 |
+| calce | forecast | all | 10 | transformer | 0.952 [0.945, 0.960] | 0.930 [0.919, 0.942] | 10.157 [9.636, 10.679] | 8.215 [7.823, 8.442] | 4 |
+| calce | forecast | all | 25 | dlinear | 0.915 [0.899, 0.927] | 0.902 [0.883, 0.916] | 13.908 [13.742, 14.074] | 12.804 [12.641, 12.966] | 4 |
+| calce | forecast | all | 25 | elasticnet | 0.000 [0.000, 0.000] | 0.904 [0.873, 0.927] | 0.000 [0.000, 0.000] | 8.968 [8.573, 9.333] | 4 |
+| calce | forecast | all | 25 | gru | 0.883 [0.852, 0.914] | 0.912 [0.889, 0.937] | 7.417 [7.044, 7.790] | 8.094 [7.636, 8.499] | 4 |
+| calce | forecast | all | 25 | itransformer | 0.828 [0.778, 0.876] | 0.895 [0.848, 0.942] | 5.942 [5.670, 6.169] | 7.214 [6.637, 7.593] | 4 |
+| calce | forecast | all | 25 | itransformer_sc | 0.855 [0.801, 0.905] | 0.901 [0.858, 0.934] | 6.601 [6.102, 7.012] | 7.443 [6.922, 7.853] | 4 |
+| calce | forecast | all | 25 | lgbm | 0.848 [0.803, 0.889] | 0.908 [0.850, 0.939] | 6.583 [6.197, 6.845] | 7.714 [7.028, 8.193] | 4 |
+| calce | forecast | all | 25 | lstm | 0.868 [0.822, 0.907] | 0.907 [0.869, 0.942] | 6.875 [6.321, 7.428] | 7.815 [7.165, 8.336] | 4 |
+| calce | forecast | all | 25 | nlinear | 0.892 [0.860, 0.913] | 0.901 [0.868, 0.923] | 9.571 [9.424, 9.740] | 9.802 [9.609, 9.945] | 4 |
+| calce | forecast | all | 25 | patchtst | 0.881 [0.827, 0.915] | 0.898 [0.848, 0.932] | 8.640 [8.123, 9.024] | 8.965 [8.489, 9.285] | 4 |
+| calce | forecast | all | 25 | rlinear | 0.869 [0.826, 0.905] | 0.903 [0.866, 0.930] | 9.204 [8.843, 9.695] | 9.774 [9.363, 10.251] | 4 |
+| calce | forecast | all | 25 | transformer | 0.947 [0.930, 0.959] | 0.927 [0.895, 0.951] | 11.145 [10.112, 12.530] | 9.632 [8.472, 11.024] | 4 |
+| calce | forecast | all | 50 | dlinear | 0.774 [0.753, 0.789] | 0.900 [0.888, 0.917] | 15.201 [15.107, 15.340] | 22.250 [21.890, 22.838] | 4 |
+| calce | forecast | all | 50 | elasticnet | 0.000 [0.000, 0.000] | 0.900 [0.864, 0.949] | 0.000 [0.000, 0.000] | 12.151 [11.112, 13.294] | 4 |
+| calce | forecast | all | 50 | gru | 0.871 [0.824, 0.917] | 0.912 [0.870, 0.954] | 8.980 [8.111, 9.954] | 10.360 [9.558, 11.538] | 4 |
+| calce | forecast | all | 50 | itransformer | 0.799 [0.741, 0.832] | 0.896 [0.857, 0.935] | 6.720 [6.366, 7.075] | 8.968 [8.334, 9.378] | 4 |
+| calce | forecast | all | 50 | itransformer_sc | 0.837 [0.752, 0.907] | 0.888 [0.812, 0.946] | 7.720 [6.929, 8.303] | 9.056 [8.134, 9.803] | 4 |
+| calce | forecast | all | 50 | lgbm | 0.805 [0.719, 0.890] | 0.903 [0.826, 0.952] | 7.101 [6.246, 8.021] | 9.251 [7.884, 10.433] | 4 |
+| calce | forecast | all | 50 | lstm | 0.852 [0.794, 0.915] | 0.899 [0.844, 0.951] | 7.828 [7.198, 8.405] | 9.398 [8.587, 10.152] | 4 |
+| calce | forecast | all | 50 | nlinear | 0.888 [0.842, 0.915] | 0.903 [0.856, 0.929] | 12.547 [12.207, 12.928] | 12.958 [12.591, 13.325] | 4 |
+| calce | forecast | all | 50 | patchtst | 0.867 [0.761, 0.923] | 0.893 [0.799, 0.948] | 11.137 [9.855, 11.896] | 11.697 [10.421, 12.568] | 4 |
+| calce | forecast | all | 50 | rlinear | 0.864 [0.801, 0.917] | 0.894 [0.828, 0.940] | 11.966 [11.350, 12.588] | 12.803 [11.999, 13.559] | 4 |
+| calce | forecast | all | 50 | transformer | 0.926 [0.902, 0.951] | 0.908 [0.870, 0.943] | 11.522 [10.590, 12.455] | 10.601 [9.574, 11.631] | 4 |
+| calce | forecast | all | 100 | dlinear | 0.842 [0.825, 0.862] | 0.900 [0.884, 0.917] | 21.960 [21.765, 22.128] | 25.613 [25.265, 25.854] | 4 |
+| calce | forecast | all | 100 | elasticnet | 0.000 [0.000, 0.000] | 0.899 [0.858, 0.940] | 0.000 [0.000, 0.000] | 14.474 [14.057, 15.169] | 4 |
+| calce | forecast | all | 100 | gru | 0.813 [0.738, 0.889] | 0.902 [0.871, 0.950] | 9.941 [9.330, 10.747] | 12.262 [11.720, 13.116] | 4 |
+| calce | forecast | all | 100 | itransformer | 0.734 [0.633, 0.794] | 0.887 [0.832, 0.931] | 8.698 [7.999, 9.310] | 12.775 [11.530, 13.795] | 4 |
+| calce | forecast | all | 100 | itransformer_sc | 0.789 [0.704, 0.857] | 0.882 [0.813, 0.941] | 9.570 [8.699, 10.292] | 12.389 [11.535, 13.242] | 4 |
+| calce | forecast | all | 100 | lgbm | 0.762 [0.676, 0.839] | 0.898 [0.807, 0.954] | 9.060 [7.635, 10.291] | 12.461 [10.399, 13.955] | 4 |
+| calce | forecast | all | 100 | lstm | 0.801 [0.718, 0.884] | 0.891 [0.854, 0.943] | 8.929 [8.229, 9.477] | 11.478 [10.896, 11.982] | 4 |
+| calce | forecast | all | 100 | nlinear | 0.890 [0.818, 0.927] | 0.903 [0.827, 0.949] | 18.888 [18.165, 19.610] | 19.443 [18.509, 20.220] | 4 |
+| calce | forecast | all | 100 | patchtst | 0.844 [0.720, 0.929] | 0.896 [0.804, 0.965] | 15.946 [14.338, 17.102] | 17.596 [16.059, 18.907] | 4 |
+| calce | forecast | all | 100 | rlinear | 0.850 [0.773, 0.911] | 0.889 [0.824, 0.941] | 17.149 [16.158, 18.090] | 19.135 [17.825, 20.308] | 4 |
+| calce | forecast | all | 100 | transformer | 0.906 [0.861, 0.950] | 0.901 [0.850, 0.952] | 12.794 [12.136, 13.566] | 12.516 [11.422, 13.402] | 4 |
+| calce | forecast | start_points | 1 | dlinear | 0.990 [0.970, 1.000] | 0.980 [0.960, 1.000] | 14.686 [14.472, 14.919] | 11.047 [10.811, 11.302] | 4 |
+| calce | forecast | start_points | 1 | elasticnet | 0.000 [0.000, 0.000] | 1.000 [1.000, 1.000] | 0.000 [0.000, 0.000] | 2.274 [2.211, 2.336] | 4 |
+| calce | forecast | start_points | 1 | gru | 0.990 [0.970, 1.000] | 0.990 [0.970, 1.000] | 3.291 [2.982, 3.723] | 3.070 [2.778, 3.433] | 4 |
+| calce | forecast | start_points | 1 | itransformer | 0.900 [0.800, 1.000] | 0.900 [0.800, 1.000] | 1.649 [1.372, 1.926] | 1.729 [1.425, 2.034] | 4 |
+| calce | forecast | start_points | 1 | itransformer_sc | 0.930 [0.790, 1.000] | 0.930 [0.790, 1.000] | 1.857 [1.669, 1.991] | 1.895 [1.716, 2.075] | 4 |
+| calce | forecast | start_points | 1 | lgbm | 1.000 [1.000, 1.000] | 1.000 [1.000, 1.000] | 3.193 [2.635, 3.752] | 3.330 [2.774, 3.885] | 4 |
+| calce | forecast | start_points | 1 | lstm | 0.980 [0.940, 1.000] | 0.960 [0.880, 1.000] | 2.276 [2.025, 2.527] | 2.289 [2.040, 2.549] | 4 |
+| calce | forecast | start_points | 1 | nlinear | 0.950 [0.850, 1.000] | 0.950 [0.850, 1.000] | 2.103 [1.957, 2.277] | 2.176 [2.029, 2.361] | 4 |
+| calce | forecast | start_points | 1 | patchtst | 0.970 [0.910, 1.000] | 0.950 [0.850, 1.000] | 2.627 [2.322, 2.852] | 2.384 [2.126, 2.578] | 4 |
+| calce | forecast | start_points | 1 | rlinear | 0.960 [0.880, 1.000] | 0.960 [0.880, 1.000] | 2.484 [2.174, 2.772] | 2.627 [2.309, 2.917] | 4 |
+| calce | forecast | start_points | 1 | transformer | 1.000 [1.000, 1.000] | 1.000 [1.000, 1.000] | 7.805 [6.847, 8.763] | 5.560 [4.900, 6.219] | 4 |
+| calce | forecast | start_points | 10 | dlinear | 0.930 [0.920, 0.950] | 0.970 [0.940, 1.000] | 13.656 [13.249, 13.941] | 12.234 [11.801, 12.518] | 4 |
+| calce | forecast | start_points | 10 | elasticnet | 0.000 [0.000, 0.000] | 0.950 [0.850, 1.000] | 0.000 [0.000, 0.000] | 5.332 [5.072, 5.503] | 4 |
+| calce | forecast | start_points | 10 | gru | 0.930 [0.820, 1.000] | 0.940 [0.850, 1.000] | 4.117 [3.781, 4.618] | 4.293 [3.997, 4.687] | 4 |
+| calce | forecast | start_points | 10 | itransformer | 0.710 [0.520, 0.900] | 0.880 [0.800, 0.960] | 2.850 [2.329, 3.372] | 3.478 [2.943, 4.012] | 4 |
+| calce | forecast | start_points | 10 | itransformer_sc | 0.930 [0.820, 1.000] | 0.950 [0.850, 1.000] | 3.338 [2.865, 3.643] | 3.840 [3.336, 4.184] | 4 |
+| calce | forecast | start_points | 10 | lgbm | 0.950 [0.850, 1.000] | 0.950 [0.850, 1.000] | 4.098 [3.852, 4.434] | 4.540 [4.329, 4.810] | 4 |
+| calce | forecast | start_points | 10 | lstm | 0.930 [0.790, 1.000] | 0.950 [0.850, 1.000] | 3.615 [3.363, 3.920] | 4.023 [3.696, 4.354] | 4 |
+| calce | forecast | start_points | 10 | nlinear | 0.950 [0.850, 1.000] | 0.950 [0.850, 1.000] | 3.999 [3.725, 4.225] | 4.084 [3.784, 4.277] | 4 |
+| calce | forecast | start_points | 10 | patchtst | 0.940 [0.850, 1.000] | 0.940 [0.850, 1.000] | 4.091 [3.570, 4.565] | 4.277 [3.699, 4.734] | 4 |
+| calce | forecast | start_points | 10 | rlinear | 0.940 [0.850, 1.000] | 0.950 [0.850, 1.000] | 4.565 [3.985, 5.119] | 5.118 [4.414, 5.759] | 4 |
+| calce | forecast | start_points | 10 | transformer | 0.980 [0.940, 1.000] | 0.970 [0.910, 1.000] | 8.279 [7.735, 9.009] | 6.337 [5.782, 6.893] | 4 |
+| calce | forecast | start_points | 25 | dlinear | 0.960 [0.910, 1.000] | 0.950 [0.880, 1.000] | 14.094 [13.791, 14.306] | 12.990 [12.682, 13.199] | 4 |
+| calce | forecast | start_points | 25 | elasticnet | 0.000 [0.000, 0.000] | 1.000 [1.000, 1.000] | 0.000 [0.000, 0.000] | 8.968 [8.573, 9.333] | 4 |
+| calce | forecast | start_points | 25 | gru | 0.890 [0.780, 1.000] | 0.940 [0.880, 1.000] | 5.611 [5.427, 5.914] | 6.287 [5.968, 6.690] | 4 |
+| calce | forecast | start_points | 25 | itransformer | 0.720 [0.500, 0.940] | 0.900 [0.700, 1.000] | 3.267 [2.685, 3.848] | 4.539 [3.798, 5.165] | 4 |
+| calce | forecast | start_points | 25 | itransformer_sc | 0.850 [0.700, 1.000] | 0.870 [0.740, 1.000] | 4.243 [3.704, 4.570] | 5.086 [4.532, 5.403] | 4 |
+| calce | forecast | start_points | 25 | lgbm | 0.750 [0.500, 0.950] | 0.900 [0.800, 1.000] | 5.678 [5.294, 5.887] | 6.809 [6.409, 7.210] | 4 |
+| calce | forecast | start_points | 25 | lstm | 0.880 [0.760, 1.000] | 0.970 [0.940, 1.000] | 5.052 [4.759, 5.344] | 5.992 [5.693, 6.253] | 4 |
+| calce | forecast | start_points | 25 | nlinear | 0.810 [0.580, 1.000] | 0.850 [0.670, 1.000] | 7.887 [7.733, 8.027] | 8.118 [8.010, 8.200] | 4 |
+| calce | forecast | start_points | 25 | patchtst | 0.800 [0.570, 0.980] | 0.810 [0.580, 1.000] | 6.407 [5.807, 7.007] | 6.732 [6.132, 7.332] | 4 |
+| calce | forecast | start_points | 25 | rlinear | 0.790 [0.650, 0.940] | 0.800 [0.650, 0.950] | 6.766 [6.323, 7.168] | 7.336 [6.890, 7.797] | 4 |
+| calce | forecast | start_points | 25 | transformer | 1.000 [1.000, 1.000] | 0.960 [0.920, 1.000] | 8.790 [8.187, 9.267] | 7.277 [7.116, 7.458] | 4 |
+| calce | forecast | start_points | 50 | dlinear | 0.910 [0.890, 0.920] | 0.990 [0.970, 1.000] | 16.129 [15.630, 16.629] | 23.178 [22.422, 23.954] | 4 |
+| calce | forecast | start_points | 50 | elasticnet | 0.000 [0.000, 0.000] | 0.950 [0.850, 1.000] | 0.000 [0.000, 0.000] | 12.151 [11.112, 13.294] | 4 |
+| calce | forecast | start_points | 50 | gru | 0.840 [0.740, 0.940] | 0.940 [0.850, 1.000] | 6.448 [6.096, 6.779] | 7.828 [7.336, 8.321] | 4 |
+| calce | forecast | start_points | 50 | itransformer | 0.820 [0.660, 0.960] | 0.950 [0.850, 1.000] | 3.794 [3.087, 4.500] | 6.041 [5.165, 6.730] | 4 |
+| calce | forecast | start_points | 50 | itransformer_sc | 0.930 [0.850, 1.000] | 0.950 [0.850, 1.000] | 5.296 [4.688, 5.879] | 6.632 [5.893, 7.325] | 4 |
+| calce | forecast | start_points | 50 | lgbm | 0.650 [0.500, 0.800] | 0.950 [0.850, 1.000] | 4.964 [4.493, 5.523] | 7.114 [6.400, 7.781] | 4 |
+| calce | forecast | start_points | 50 | lstm | 0.870 [0.760, 0.980] | 0.950 [0.850, 1.000] | 5.369 [5.182, 5.612] | 6.939 [6.538, 7.339] | 4 |
+| calce | forecast | start_points | 50 | nlinear | 0.900 [0.800, 1.000] | 0.930 [0.850, 1.000] | 10.644 [10.496, 10.822] | 11.055 [10.873, 11.202] | 4 |
+| calce | forecast | start_points | 50 | patchtst | 0.920 [0.810, 0.990] | 0.950 [0.850, 1.000] | 9.323 [8.159, 10.144] | 9.883 [8.653, 10.910] | 4 |
+| calce | forecast | start_points | 50 | rlinear | 0.930 [0.850, 1.000] | 0.950 [0.850, 1.000] | 9.568 [9.185, 10.228] | 10.406 [9.859, 11.035] | 4 |
+| calce | forecast | start_points | 50 | transformer | 0.960 [0.880, 1.000] | 0.960 [0.880, 1.000] | 9.488 [8.987, 9.989] | 8.567 [8.373, 8.838] | 4 |
+| calce | forecast | start_points | 100 | dlinear | 0.970 [0.960, 0.990] | 0.980 [0.960, 1.000] | 20.856 [20.483, 21.391] | 24.509 [24.094, 25.155] | 4 |
+| calce | forecast | start_points | 100 | elasticnet | 0.000 [0.000, 0.000] | 1.000 [1.000, 1.000] | 0.000 [0.000, 0.000] | 14.474 [14.057, 15.169] | 4 |
+| calce | forecast | start_points | 100 | gru | 0.880 [0.700, 1.000] | 0.980 [0.940, 1.000] | 8.388 [8.201, 8.575] | 10.709 [10.348, 11.039] | 4 |
+| calce | forecast | start_points | 100 | itransformer | 0.800 [0.570, 0.960] | 0.990 [0.970, 1.000] | 6.009 [4.747, 7.272] | 10.086 [8.473, 11.338] | 4 |
+| calce | forecast | start_points | 100 | itransformer_sc | 0.880 [0.700, 1.000] | 0.950 [0.850, 1.000] | 7.524 [6.666, 8.381] | 10.342 [9.352, 11.332] | 4 |
+| calce | forecast | start_points | 100 | lgbm | 0.750 [0.650, 0.800] | 0.950 [0.850, 1.000] | 6.424 [5.634, 7.214] | 9.825 [8.346, 11.109] | 4 |
+| calce | forecast | start_points | 100 | lstm | 0.890 [0.770, 0.980] | 1.000 [1.000, 1.000] | 7.300 [6.777, 7.670] | 9.849 [9.143, 10.556] | 4 |
+| calce | forecast | start_points | 100 | nlinear | 0.950 [0.850, 1.000] | 0.950 [0.850, 1.000] | 15.506 [15.107, 15.801] | 16.061 [15.625, 16.649] | 4 |
+| calce | forecast | start_points | 100 | patchtst | 0.920 [0.760, 1.000] | 0.950 [0.850, 1.000] | 13.325 [12.160, 14.485] | 14.975 [13.704, 16.374] | 4 |
+| calce | forecast | start_points | 100 | rlinear | 0.900 [0.700, 1.000] | 0.900 [0.700, 1.000] | 12.489 [11.630, 13.537] | 14.475 [13.618, 15.533] | 4 |
+| calce | forecast | start_points | 100 | transformer | 0.950 [0.880, 1.000] | 0.990 [0.970, 1.000] | 10.762 [10.119, 11.464] | 10.484 [9.596, 11.373] | 4 |
+| calce | rul | all | 0 | dlinear | 0.848 [0.777, 0.919] | 0.903 [0.863, 0.945] | 439.820 [425.050, 455.100] | 465.706 [451.001, 480.028] | 4 |
+| calce | rul | all | 0 | elasticnet | 0.000 [0.000, 0.000] | 0.876 [0.744, 0.985] | 0.000 [0.000, 0.000] | 789.093 [614.008, 1014.653] | 4 |
+| calce | rul | all | 0 | gru | 0.787 [0.685, 0.889] | 0.859 [0.758, 0.952] | 260.973 [216.102, 305.845] | 292.727 [228.843, 356.610] | 4 |
+| calce | rul | all | 0 | itransformer | 0.698 [0.345, 0.954] | 0.738 [0.376, 0.990] | 215.929 [147.695, 272.048] | 248.862 [171.777, 318.804] | 4 |
+| calce | rul | all | 0 | itransformer_sc | 0.740 [0.377, 0.955] | 0.775 [0.412, 0.982] | 222.627 [157.079, 277.014] | 260.823 [187.296, 313.853] | 4 |
+| calce | rul | all | 0 | lgbm | 0.730 [0.617, 0.869] | 0.864 [0.728, 1.000] | 295.575 [260.474, 322.010] | 374.294 [328.028, 414.598] | 4 |
+| calce | rul | all | 0 | lstm | 0.672 [0.337, 0.926] | 0.753 [0.400, 0.976] | 210.296 [153.502, 255.660] | 253.007 [192.395, 301.627] | 4 |
+| calce | rul | all | 0 | nlinear | 0.827 [0.733, 0.921] | 0.897 [0.853, 0.945] | 435.756 [411.304, 460.207] | 466.155 [446.851, 483.012] | 4 |
+| calce | rul | all | 0 | patchtst | 0.808 [0.784, 0.844] | 0.917 [0.895, 0.942] | 390.326 [365.094, 415.557] | 461.623 [433.453, 489.793] | 4 |
+| calce | rul | all | 0 | rlinear | 0.786 [0.746, 0.830] | 0.893 [0.873, 0.912] | 885.422 [828.315, 932.388] | 1004.761 [952.506, 1057.016] | 4 |
+| calce | rul | all | 0 | transformer | 0.849 [0.731, 0.952] | 0.874 [0.773, 0.976] | 352.197 [327.845, 381.137] | 373.113 [340.642, 417.210] | 4 |
+| calce | rul | start_points | 0 | dlinear | 0.930 [0.860, 1.000] | 0.990 [0.970, 1.000] | 387.356 [371.795, 406.654] | 413.242 [400.193, 430.841] | 4 |
+| calce | rul | start_points | 0 | elasticnet | 0.000 [0.000, 0.000] | 0.850 [0.550, 1.000] | 0.000 [0.000, 0.000] | 789.093 [614.008, 1014.653] | 4 |
+| calce | rul | start_points | 0 | gru | 0.820 [0.590, 0.970] | 0.900 [0.830, 0.970] | 269.101 [229.533, 308.668] | 300.854 [242.274, 359.434] | 4 |
+| calce | rul | start_points | 0 | itransformer | 0.620 [0.240, 0.900] | 0.690 [0.280, 1.000] | 210.002 [146.915, 267.628] | 242.935 [170.997, 308.881] | 4 |
+| calce | rul | start_points | 0 | itransformer_sc | 0.710 [0.280, 1.000] | 0.730 [0.280, 1.000] | 227.326 [162.545, 286.807] | 265.522 [195.263, 321.662] | 4 |
+| calce | rul | start_points | 0 | lgbm | 0.800 [0.600, 1.000] | 0.900 [0.700, 1.000] | 269.271 [227.780, 300.825] | 347.990 [295.707, 392.956] | 4 |
+| calce | rul | start_points | 0 | lstm | 0.570 [0.200, 0.940] | 0.690 [0.240, 0.980] | 198.083 [151.973, 243.098] | 240.794 [190.866, 289.066] | 4 |
+| calce | rul | start_points | 0 | nlinear | 0.880 [0.760, 1.000] | 0.940 [0.880, 1.000] | 379.143 [361.440, 404.606] | 409.542 [393.100, 431.523] | 4 |
+| calce | rul | start_points | 0 | patchtst | 0.900 [0.800, 1.000] | 0.960 [0.920, 1.000] | 358.729 [340.339, 375.510] | 430.026 [412.845, 442.795] | 4 |
+| calce | rul | start_points | 0 | rlinear | 0.820 [0.740, 0.920] | 0.940 [0.850, 1.000] | 764.406 [596.614, 855.440] | 883.745 [701.491, 986.732] | 4 |
+| calce | rul | start_points | 0 | transformer | 0.870 [0.610, 1.000] | 0.890 [0.670, 1.000] | 354.397 [329.567, 378.454] | 375.313 [344.970, 417.005] | 4 |
+| calce | soh | all | 0 | dlinear | 0.904 [0.890, 0.924] | 0.903 [0.887, 0.925] | 3.273 [3.189, 3.369] | 3.268 [3.164, 3.374] | 4 |
+| calce | soh | all | 0 | elasticnet | 0.000 [0.000, 0.000] | 0.903 [0.874, 0.931] | 0.000 [0.000, 0.000] | 1.846 [1.756, 1.936] | 4 |
+| calce | soh | all | 0 | gru | 0.900 [0.889, 0.910] | 0.904 [0.893, 0.916] | 3.140 [2.908, 3.431] | 3.176 [2.969, 3.442] | 4 |
+| calce | soh | all | 0 | itransformer | 0.869 [0.855, 0.884] | 0.915 [0.905, 0.921] | 1.612 [1.490, 1.734] | 1.890 [1.798, 2.018] | 4 |
+| calce | soh | all | 0 | itransformer_sc | 0.861 [0.852, 0.874] | 0.909 [0.903, 0.915] | 1.616 [1.514, 1.748] | 1.907 [1.806, 2.044] | 4 |
+| calce | soh | all | 0 | lgbm | 0.827 [0.809, 0.846] | 0.910 [0.889, 0.931] | 2.272 [2.070, 2.434] | 2.729 [2.517, 2.885] | 4 |
+| calce | soh | all | 0 | lstm | 0.898 [0.891, 0.911] | 0.900 [0.894, 0.909] | 2.328 [2.236, 2.424] | 2.347 [2.238, 2.455] | 4 |
+| calce | soh | all | 0 | nlinear | 0.907 [0.892, 0.922] | 0.909 [0.893, 0.925] | 3.528 [3.365, 3.690] | 3.547 [3.403, 3.682] | 4 |
+| calce | soh | all | 0 | patchtst | 0.870 [0.854, 0.883] | 0.907 [0.893, 0.915] | 2.206 [2.103, 2.326] | 2.529 [2.422, 2.637] | 4 |
+| calce | soh | all | 0 | rlinear | 0.832 [0.825, 0.839] | 0.903 [0.899, 0.908] | 3.084 [2.979, 3.189] | 3.408 [3.306, 3.510] | 4 |
+| calce | soh | all | 0 | transformer | 0.922 [0.914, 0.929] | 0.913 [0.899, 0.924] | 3.032 [2.883, 3.170] | 2.908 [2.739, 3.077] | 4 |
+| calce | soh | start_points | 0 | dlinear | 1.000 [1.000, 1.000] | 1.000 [1.000, 1.000] | 2.587 [2.399, 2.774] | 2.582 [2.386, 2.764] | 4 |
+| calce | soh | start_points | 0 | elasticnet | 0.000 [0.000, 0.000] | 1.000 [1.000, 1.000] | 0.000 [0.000, 0.000] | 1.846 [1.756, 1.936] | 4 |
+| calce | soh | start_points | 0 | gru | 0.960 [0.880, 1.000] | 0.960 [0.880, 1.000] | 1.946 [1.775, 2.074] | 1.982 [1.842, 2.082] | 4 |
+| calce | soh | start_points | 0 | itransformer | 0.940 [0.850, 1.000] | 1.000 [1.000, 1.000] | 0.798 [0.687, 0.902] | 1.076 [0.953, 1.207] | 4 |
+| calce | soh | start_points | 0 | itransformer_sc | 0.900 [0.830, 0.970] | 1.000 [1.000, 1.000] | 0.825 [0.717, 0.946] | 1.116 [1.009, 1.241] | 4 |
+| calce | soh | start_points | 0 | lgbm | 0.850 [0.800, 0.950] | 0.950 [0.850, 1.000] | 0.800 [0.692, 0.907] | 1.257 [1.145, 1.373] | 4 |
+| calce | soh | start_points | 0 | lstm | 0.950 [0.850, 1.000] | 0.950 [0.850, 1.000] | 1.793 [1.634, 1.919] | 1.812 [1.623, 1.999] | 4 |
+| calce | soh | start_points | 0 | nlinear | 1.000 [1.000, 1.000] | 1.000 [1.000, 1.000] | 2.582 [2.240, 2.838] | 2.601 [2.248, 2.889] | 4 |
+| calce | soh | start_points | 0 | patchtst | 0.870 [0.740, 1.000] | 0.950 [0.850, 1.000] | 1.275 [0.982, 1.467] | 1.597 [1.313, 1.799] | 4 |
+| calce | soh | start_points | 0 | rlinear | 0.850 [0.800, 0.950] | 1.000 [1.000, 1.000] | 1.880 [1.360, 2.319] | 2.204 [1.683, 2.635] | 4 |
+| calce | soh | start_points | 0 | transformer | 0.980 [0.940, 1.000] | 0.990 [0.970, 1.000] | 2.504 [2.426, 2.583] | 2.380 [2.243, 2.516] | 4 |
+| nasa | forecast | all | 1 | dlinear | 0.961 [0.914, 0.991] | 0.898 [0.801, 0.980] | 17.829 [17.005, 18.596] | 10.797 [9.642, 11.880] | 4 |
+| nasa | forecast | all | 1 | elasticnet | 0.000 [0.000, 0.000] | 0.884 [0.790, 0.951] | 0.000 [0.000, 0.000] | 2.279 [1.952, 2.576] | 4 |
+| nasa | forecast | all | 1 | gru | 0.978 [0.945, 0.995] | 0.944 [0.895, 0.993] | 14.146 [12.565, 15.782] | 12.413 [10.151, 14.675] | 4 |
+| nasa | forecast | all | 1 | itransformer | 0.902 [0.876, 0.923] | 0.900 [0.871, 0.920] | 2.404 [2.048, 2.787] | 2.401 [2.049, 2.799] | 4 |
+| nasa | forecast | all | 1 | itransformer_sc | 0.900 [0.869, 0.920] | 0.898 [0.857, 0.922] | 2.502 [2.160, 3.036] | 2.487 [2.135, 2.990] | 4 |
+| nasa | forecast | all | 1 | lgbm | 0.895 [0.829, 0.960] | 0.909 [0.852, 0.966] | 2.355 [2.087, 2.670] | 2.488 [2.188, 2.855] | 4 |
+| nasa | forecast | all | 1 | lstm | 0.945 [0.906, 0.978] | 0.942 [0.897, 0.979] | 9.983 [9.100, 10.867] | 9.544 [8.527, 10.562] | 4 |
+| nasa | forecast | all | 1 | nlinear | 0.874 [0.794, 0.953] | 0.905 [0.849, 0.961] | 2.351 [2.150, 2.553] | 2.612 [2.393, 2.832] | 4 |
+| nasa | forecast | all | 1 | patchtst | 0.953 [0.943, 0.961] | 0.918 [0.892, 0.943] | 3.867 [3.312, 4.656] | 3.405 [2.874, 4.156] | 4 |
+| nasa | forecast | all | 1 | rlinear | 0.858 [0.792, 0.903] | 0.902 [0.854, 0.933] | 2.958 [2.573, 3.530] | 3.320 [2.950, 3.870] | 4 |
+| nasa | forecast | all | 1 | transformer | 0.996 [0.994, 0.999] | 0.986 [0.978, 0.995] | 18.036 [15.730, 21.021] | 15.055 [12.276, 18.396] | 4 |
+| nasa | forecast | all | 10 | dlinear | 0.906 [0.865, 0.947] | 0.895 [0.838, 0.953] | 20.056 [19.882, 20.292] | 14.669 [14.270, 14.910] | 4 |
+| nasa | forecast | all | 10 | elasticnet | 0.000 [0.000, 0.000] | 0.807 [0.498, 1.000] | 0.000 [0.000, 0.000] | 10.381 [8.270, 12.146] | 4 |
+| nasa | forecast | all | 10 | gru | 0.934 [0.836, 0.991] | 0.946 [0.872, 0.996] | 16.051 [14.448, 17.236] | 16.681 [14.680, 18.378] | 4 |
+| nasa | forecast | all | 10 | itransformer | 0.730 [0.659, 0.801] | 0.899 [0.820, 0.971] | 4.425 [3.924, 4.925] | 6.474 [5.964, 6.883] | 4 |
+| nasa | forecast | all | 10 | itransformer_sc | 0.773 [0.677, 0.869] | 0.878 [0.783, 0.966] | 5.166 [4.824, 5.709] | 6.415 [5.972, 7.112] | 4 |
+| nasa | forecast | all | 10 | lgbm | 0.842 [0.710, 0.974] | 0.897 [0.803, 0.990] | 5.176 [4.556, 5.812] | 6.688 [6.149, 7.180] | 4 |
+| nasa | forecast | all | 10 | lstm | 0.865 [0.756, 0.929] | 0.925 [0.866, 0.983] | 10.782 [9.974, 11.584] | 13.192 [12.131, 14.253] | 4 |
+| nasa | forecast | all | 10 | nlinear | 0.827 [0.729, 0.925] | 0.902 [0.817, 0.988] | 5.781 [5.450, 6.112] | 7.443 [6.664, 8.223] | 4 |
+| nasa | forecast | all | 10 | patchtst | 0.894 [0.822, 0.934] | 0.898 [0.809, 0.951] | 6.188 [5.379, 7.322] | 6.369 [5.693, 7.460] | 4 |
+| nasa | forecast | all | 10 | rlinear | 0.782 [0.681, 0.854] | 0.887 [0.779, 0.956] | 6.854 [5.865, 8.121] | 8.717 [8.007, 9.863] | 4 |
+| nasa | forecast | all | 10 | transformer | 0.988 [0.973, 0.996] | 0.933 [0.877, 0.989] | 21.019 [15.727, 30.051] | 18.103 [12.207, 27.795] | 4 |
+| nasa | forecast | all | 25 | dlinear | 0.927 [0.867, 0.975] | 0.902 [0.810, 0.981] | 15.813 [15.129, 16.496] | 13.754 [12.400, 15.108] | 4 |
+| nasa | forecast | all | 25 | elasticnet | 0.000 [0.000, 0.000] | 0.778 [0.342, 1.000] | 0.000 [0.000, 0.000] | 18.331 [12.841, 22.989] | 4 |
+| nasa | forecast | all | 25 | gru | 0.899 [0.809, 0.958] | 0.941 [0.861, 0.994] | 16.238 [15.081, 17.177] | 20.053 [19.396, 20.673] | 4 |
+| nasa | forecast | all | 25 | itransformer | 0.589 [0.482, 0.671] | 0.890 [0.774, 0.953] | 4.647 [4.213, 5.119] | 9.732 [9.089, 10.421] | 4 |
+| nasa | forecast | all | 25 | itransformer_sc | 0.688 [0.528, 0.834] | 0.848 [0.658, 0.972] | 5.894 [5.571, 6.483] | 9.155 [7.927, 10.672] | 4 |
+| nasa | forecast | all | 25 | lgbm | 0.838 [0.702, 0.975] | 0.939 [0.882, 0.996] | 7.579 [6.582, 8.575] | 10.024 [9.339, 10.708] | 4 |
+| nasa | forecast | all | 25 | lstm | 0.748 [0.568, 0.856] | 0.896 [0.738, 0.992] | 13.098 [11.430, 14.765] | 18.716 [14.945, 22.487] | 4 |
+| nasa | forecast | all | 25 | nlinear | 0.804 [0.680, 0.891] | 0.892 [0.782, 0.983] | 8.998 [8.567, 9.428] | 11.536 [10.795, 12.077] | 4 |
+| nasa | forecast | all | 25 | patchtst | 0.829 [0.702, 0.920] | 0.876 [0.751, 0.960] | 7.880 [6.566, 9.771] | 8.922 [7.535, 10.846] | 4 |
+| nasa | forecast | all | 25 | rlinear | 0.780 [0.678, 0.859] | 0.882 [0.796, 0.946] | 12.611 [10.409, 15.358] | 16.334 [13.964, 19.520] | 4 |
+| nasa | forecast | all | 25 | transformer | 0.939 [0.883, 0.978] | 0.966 [0.938, 0.987] | 19.895 [14.128, 25.738] | 20.216 [17.101, 24.661] | 4 |
+| nasa | forecast | all | 50 | dlinear | 0.558 [0.506, 0.605] | 0.894 [0.719, 0.990] | 19.789 [19.525, 20.054] | 30.666 [28.059, 32.337] | 4 |
+| nasa | forecast | all | 50 | elasticnet | 0.000 [0.000, 0.000] | 0.761 [0.289, 1.000] | 0.000 [0.000, 0.000] | 19.175 [13.013, 26.450] | 4 |
+| nasa | forecast | all | 50 | gru | 0.841 [0.741, 0.926] | 0.935 [0.864, 0.984] | 17.744 [16.273, 19.571] | 20.547 [18.865, 22.967] | 4 |
+| nasa | forecast | all | 50 | itransformer | 0.459 [0.382, 0.536] | 0.902 [0.873, 0.932] | 5.156 [4.264, 6.361] | 21.219 [20.073, 22.540] | 4 |
+| nasa | forecast | all | 50 | itransformer_sc | 0.567 [0.457, 0.680] | 0.892 [0.838, 0.943] | 7.658 [6.781, 8.933] | 15.924 [14.349, 17.521] | 4 |
+| nasa | forecast | all | 50 | lgbm | 0.806 [0.669, 0.922] | 0.914 [0.750, 1.000] | 8.963 [7.246, 10.398] | 13.515 [11.054, 15.359] | 4 |
+| nasa | forecast | all | 50 | lstm | 0.822 [0.747, 0.897] | 0.935 [0.887, 0.976] | 12.590 [11.730, 13.598] | 15.567 [14.622, 16.512] | 4 |
+| nasa | forecast | all | 50 | nlinear | 0.819 [0.756, 0.870] | 0.916 [0.870, 0.955] | 15.235 [13.298, 17.251] | 16.924 [15.607, 18.415] | 4 |
+| nasa | forecast | all | 50 | patchtst | 0.786 [0.765, 0.804] | 0.889 [0.820, 0.947] | 9.667 [8.139, 11.790] | 12.617 [11.749, 13.403] | 4 |
+| nasa | forecast | all | 50 | rlinear | 0.726 [0.706, 0.746] | 0.913 [0.856, 0.970] | 24.055 [18.997, 30.789] | 34.192 [28.512, 40.386] | 4 |
+| nasa | forecast | all | 50 | transformer | 0.881 [0.799, 0.962] | 0.892 [0.782, 0.972] | 19.552 [17.820, 21.364] | 20.221 [18.705, 21.953] | 4 |
+| nasa | forecast | all | 100 | dlinear | 0.192 [0.056, 0.340] | 0.857 [0.596, 0.995] | 26.521 [26.047, 27.397] | 48.564 [46.378, 50.078] | 4 |
+| nasa | forecast | all | 100 | elasticnet | 0.000 [0.000, 0.000] | 0.500 [0.000, 1.000] | 0.000 [0.000, 0.000] | 28.777 [10.762, 46.791] | 4 |
+| nasa | forecast | all | 100 | gru | 0.920 [0.816, 0.992] | 0.959 [0.894, 0.998] | 20.405 [18.657, 22.552] | 23.813 [20.625, 27.407] | 4 |
+| nasa | forecast | all | 100 | itransformer | 0.012 [0.000, 0.024] | 0.850 [0.651, 0.982] | 3.025 [1.989, 4.289] | 39.454 [37.176, 41.300] | 4 |
+| nasa | forecast | all | 100 | itransformer_sc | 0.364 [0.188, 0.696] | 0.905 [0.847, 0.945] | 8.871 [5.633, 13.436] | 33.412 [31.010, 35.724] | 4 |
+| nasa | forecast | all | 100 | lgbm | 0.578 [0.234, 0.921] | 0.871 [0.637, 1.000] | 7.744 [6.888, 8.600] | 15.648 [12.632, 18.835] | 4 |
+| nasa | forecast | all | 100 | lstm | 0.680 [0.400, 0.961] | 0.851 [0.705, 0.997] | 14.328 [12.885, 16.589] | 21.099 [19.017, 23.316] | 4 |
+| nasa | forecast | all | 100 | nlinear | 0.737 [0.575, 0.865] | 0.892 [0.845, 0.944] | 16.020 [11.200, 22.447] | 20.061 [14.727, 26.658] | 4 |
+| nasa | forecast | all | 100 | patchtst | 0.618 [0.558, 0.700] | 0.863 [0.695, 0.967] | 20.966 [15.747, 29.603] | 32.560 [29.992, 35.702] | 4 |
+| nasa | forecast | all | 100 | rlinear | 0.602 [0.525, 0.678] | 0.890 [0.837, 0.943] | 38.458 [21.130, 64.140] | 59.479 [43.812, 82.617] | 4 |
+| nasa | forecast | all | 100 | transformer | 0.920 [0.795, 0.998] | 0.881 [0.699, 0.998] | 21.682 [19.035, 24.272] | 22.470 [18.522, 25.053] | 4 |
+| nasa | forecast | start_points | 1 | dlinear | 0.940 [0.880, 1.000] | 0.830 [0.690, 0.960] | 17.651 [16.035, 19.268] | 10.620 [8.636, 12.603] | 4 |
+| nasa | forecast | start_points | 1 | elasticnet | 0.000 [0.000, 0.000] | 0.700 [0.600, 0.800] | 0.000 [0.000, 0.000] | 2.279 [1.952, 2.576] | 4 |
+| nasa | forecast | start_points | 1 | gru | 0.960 [0.910, 1.000] | 0.930 [0.820, 1.000] | 16.035 [13.580, 17.980] | 14.302 [11.705, 16.898] | 4 |
+| nasa | forecast | start_points | 1 | itransformer | 0.700 [0.600, 0.800] | 0.700 [0.600, 0.800] | 2.646 [2.043, 3.248] | 2.642 [2.031, 3.253] | 4 |
+| nasa | forecast | start_points | 1 | itransformer_sc | 0.680 [0.560, 0.800] | 0.680 [0.560, 0.800] | 2.414 [2.005, 2.912] | 2.399 [2.035, 2.888] | 4 |
+| nasa | forecast | start_points | 1 | lgbm | 0.700 [0.500, 0.900] | 0.700 [0.500, 0.900] | 2.563 [2.131, 3.135] | 2.696 [2.251, 3.312] | 4 |
+| nasa | forecast | start_points | 1 | lstm | 0.950 [0.880, 1.000] | 0.920 [0.860, 0.980] | 10.779 [9.826, 11.915] | 10.340 [9.252, 11.521] | 4 |
+| nasa | forecast | start_points | 1 | nlinear | 0.640 [0.480, 0.800] | 0.650 [0.500, 0.800] | 2.247 [2.042, 2.451] | 2.508 [2.323, 2.700] | 4 |
+| nasa | forecast | start_points | 1 | patchtst | 0.700 [0.600, 0.800] | 0.680 [0.560, 0.800] | 3.549 [2.629, 4.469] | 3.087 [2.261, 3.924] | 4 |
+| nasa | forecast | start_points | 1 | rlinear | 0.640 [0.580, 0.720] | 0.690 [0.600, 0.780] | 2.662 [2.089, 3.285] | 3.024 [2.483, 3.636] | 4 |
+| nasa | forecast | start_points | 1 | transformer | 0.990 [0.970, 1.000] | 0.960 [0.910, 1.000] | 17.527 [15.584, 19.526] | 14.546 [12.139, 16.953] | 4 |
+| nasa | forecast | start_points | 10 | dlinear | 0.870 [0.820, 0.930] | 0.840 [0.740, 0.940] | 20.240 [20.000, 20.431] | 14.853 [14.392, 15.165] | 4 |
+| nasa | forecast | start_points | 10 | elasticnet | 0.000 [0.000, 0.000] | 0.800 [0.550, 1.000] | 0.000 [0.000, 0.000] | 10.381 [8.270, 12.146] | 4 |
+| nasa | forecast | start_points | 10 | gru | 0.920 [0.790, 1.000] | 0.920 [0.790, 1.000] | 17.047 [15.801, 17.841] | 17.676 [15.882, 18.721] | 4 |
+| nasa | forecast | start_points | 10 | itransformer | 0.830 [0.740, 0.950] | 0.900 [0.800, 1.000] | 5.308 [3.974, 6.642] | 7.356 [6.251, 8.683] | 4 |
+| nasa | forecast | start_points | 10 | itransformer_sc | 0.780 [0.590, 0.950] | 0.850 [0.740, 0.960] | 5.854 [4.951, 6.806] | 7.104 [6.277, 8.209] | 4 |
+| nasa | forecast | start_points | 10 | lgbm | 0.750 [0.500, 1.000] | 0.800 [0.550, 1.000] | 5.425 [4.965, 5.871] | 6.937 [6.471, 7.328] | 4 |
+| nasa | forecast | start_points | 10 | lstm | 0.870 [0.790, 0.940] | 0.920 [0.840, 1.000] | 12.310 [10.897, 14.124] | 14.720 [12.804, 16.635] | 4 |
+| nasa | forecast | start_points | 10 | nlinear | 0.780 [0.560, 1.000] | 0.890 [0.780, 1.000] | 5.909 [5.698, 6.154] | 7.572 [7.080, 7.988] | 4 |
+| nasa | forecast | start_points | 10 | patchtst | 0.940 [0.850, 1.000] | 0.930 [0.850, 1.000] | 6.502 [5.135, 8.327] | 6.683 [5.328, 8.617] | 4 |
+| nasa | forecast | start_points | 10 | rlinear | 0.670 [0.500, 0.830] | 0.860 [0.720, 1.000] | 7.050 [5.123, 9.082] | 8.913 [7.227, 10.975] | 4 |
+| nasa | forecast | start_points | 10 | transformer | 1.000 [1.000, 1.000] | 0.980 [0.940, 1.000] | 21.178 [15.913, 29.108] | 18.263 [12.277, 27.163] | 4 |
+| nasa | forecast | start_points | 25 | dlinear | 0.810 [0.610, 0.940] | 0.760 [0.470, 0.960] | 15.861 [14.420, 17.303] | 13.803 [11.691, 15.915] | 4 |
+| nasa | forecast | start_points | 25 | elasticnet | 0.000 [0.000, 0.000] | 0.750 [0.400, 1.000] | 0.000 [0.000, 0.000] | 18.331 [12.841, 22.989] | 4 |
+| nasa | forecast | start_points | 25 | gru | 0.870 [0.770, 0.920] | 0.920 [0.810, 0.990] | 17.702 [16.624, 18.430] | 21.517 [20.955, 22.078] | 4 |
+| nasa | forecast | start_points | 25 | itransformer | 0.430 [0.250, 0.640] | 0.830 [0.750, 0.920] | 5.481 [4.255, 7.082] | 10.566 [9.380, 12.579] | 4 |
+| nasa | forecast | start_points | 25 | itransformer_sc | 0.550 [0.360, 0.690] | 0.760 [0.530, 0.960] | 6.561 [5.856, 7.460] | 9.822 [8.691, 11.624] | 4 |
+| nasa | forecast | start_points | 25 | lgbm | 0.800 [0.600, 1.000] | 0.850 [0.700, 1.000] | 7.685 [6.774, 8.597] | 10.130 [9.531, 10.730] | 4 |
+| nasa | forecast | start_points | 25 | lstm | 0.610 [0.260, 0.820] | 0.780 [0.460, 1.000] | 13.759 [11.473, 16.219] | 19.377 [14.988, 23.766] | 4 |
+| nasa | forecast | start_points | 25 | nlinear | 0.740 [0.530, 0.930] | 0.890 [0.780, 0.980] | 8.466 [7.891, 9.156] | 11.004 [10.394, 11.614] | 4 |
+| nasa | forecast | start_points | 25 | patchtst | 0.880 [0.760, 1.000] | 0.910 [0.820, 1.000] | 8.228 [6.280, 10.521] | 9.270 [7.484, 11.475] | 4 |
+| nasa | forecast | start_points | 25 | rlinear | 0.620 [0.400, 0.850] | 0.890 [0.700, 1.000] | 11.534 [8.207, 15.006] | 15.258 [11.863, 19.169] | 4 |
+| nasa | forecast | start_points | 25 | transformer | 0.930 [0.820, 1.000] | 0.970 [0.940, 1.000] | 20.559 [14.468, 26.650] | 20.880 [17.442, 25.242] | 4 |
+| nasa | forecast | start_points | 50 | dlinear | 0.400 [0.270, 0.500] | 0.750 [0.370, 1.000] | 19.648 [18.981, 20.178] | 30.525 [27.462, 32.435] | 4 |
+| nasa | forecast | start_points | 50 | elasticnet | 0.000 [0.000, 0.000] | 0.800 [0.400, 1.000] | 0.000 [0.000, 0.000] | 19.175 [13.013, 26.450] | 4 |
+| nasa | forecast | start_points | 50 | gru | 0.880 [0.700, 1.000] | 0.920 [0.790, 1.000] | 18.951 [16.787, 21.115] | 21.753 [19.348, 24.158] | 4 |
+| nasa | forecast | start_points | 50 | itransformer | 0.370 [0.250, 0.460] | 0.840 [0.680, 1.000] | 5.242 [4.007, 6.711] | 21.306 [19.816, 22.890] | 4 |
+| nasa | forecast | start_points | 50 | itransformer_sc | 0.410 [0.250, 0.620] | 0.830 [0.680, 0.960] | 7.383 [6.108, 8.657] | 15.649 [14.636, 16.663] | 4 |
+| nasa | forecast | start_points | 50 | lgbm | 0.750 [0.400, 1.000] | 0.800 [0.400, 1.000] | 8.853 [6.827, 10.339] | 13.406 [10.661, 15.482] | 4 |
+| nasa | forecast | start_points | 50 | lstm | 0.760 [0.650, 0.870] | 0.920 [0.820, 1.000] | 12.658 [11.548, 14.227] | 15.635 [14.795, 16.292] | 4 |
+| nasa | forecast | start_points | 50 | nlinear | 0.880 [0.820, 0.960] | 0.930 [0.860, 1.000] | 13.802 [11.126, 16.479] | 15.490 [13.468, 17.512] | 4 |
+| nasa | forecast | start_points | 50 | patchtst | 0.790 [0.620, 0.950] | 0.890 [0.780, 1.000] | 10.154 [8.280, 12.027] | 13.104 [12.662, 13.667] | 4 |
+| nasa | forecast | start_points | 50 | rlinear | 0.750 [0.520, 0.980] | 0.910 [0.820, 1.000] | 21.782 [15.279, 28.286] | 31.920 [24.733, 39.107] | 4 |
+| nasa | forecast | start_points | 50 | transformer | 0.910 [0.830, 0.980] | 0.920 [0.820, 1.000] | 17.933 [16.153, 20.148] | 18.601 [16.138, 21.064] | 4 |
+| nasa | forecast | start_points | 100 | dlinear | 0.250 [0.000, 0.500] | 0.835 [0.580, 1.000] | 26.535 [26.085, 27.051] | 48.578 [45.989, 50.113] | 4 |
+| nasa | forecast | start_points | 100 | elasticnet | 0.000 [0.000, 0.000] | 0.500 [0.000, 1.000] | 0.000 [0.000, 0.000] | 28.777 [10.762, 46.791] | 4 |
+| nasa | forecast | start_points | 100 | gru | 0.915 [0.775, 1.000] | 0.938 [0.812, 1.000] | 19.760 [17.906, 21.595] | 23.167 [20.041, 26.450] | 4 |
+| nasa | forecast | start_points | 100 | itransformer | 0.000 [0.000, 0.000] | 0.875 [0.625, 1.000] | 3.538 [2.125, 4.950] | 39.967 [37.432, 41.667] | 4 |
+| nasa | forecast | start_points | 100 | itransformer_sc | 0.315 [0.050, 0.745] | 0.925 [0.775, 1.000] | 9.884 [6.061, 13.708] | 34.425 [33.401, 35.701] | 4 |
+| nasa | forecast | start_points | 100 | lgbm | 0.438 [0.125, 0.812] | 0.850 [0.550, 1.000] | 7.643 [6.719, 8.586] | 15.547 [12.464, 18.630] | 4 |
+| nasa | forecast | start_points | 100 | lstm | 0.665 [0.350, 0.975] | 0.850 [0.700, 1.000] | 14.086 [12.799, 16.403] | 20.857 [18.932, 23.197] | 4 |
+| nasa | forecast | start_points | 100 | nlinear | 0.775 [0.550, 1.000] | 0.925 [0.850, 1.000] | 17.537 [10.644, 24.429] | 21.578 [14.171, 28.984] | 4 |
+| nasa | forecast | start_points | 100 | patchtst | 0.700 [0.525, 0.875] | 0.845 [0.625, 1.000] | 22.009 [17.692, 27.819] | 33.602 [31.445, 35.405] | 4 |
+| nasa | forecast | start_points | 100 | rlinear | 0.750 [0.538, 0.938] | 0.938 [0.812, 1.000] | 42.517 [20.850, 64.184] | 63.538 [43.532, 83.544] | 4 |
+| nasa | forecast | start_points | 100 | transformer | 0.927 [0.812, 1.000] | 0.902 [0.737, 1.000] | 22.731 [19.574, 25.427] | 23.519 [18.729, 26.813] | 4 |
+| nasa | rul | all | 0 | dlinear | 0.602 [0.452, 0.752] | 0.921 [0.790, 1.000] | 80.440 [65.130, 95.749] | 119.668 [101.359, 133.376] | 4 |
+| nasa | rul | all | 0 | elasticnet | 0.000 [0.000, 0.000] | 0.863 [0.623, 0.996] | 0.000 [0.000, 0.000] | 440.880 [109.882, 771.878] | 4 |
+| nasa | rul | all | 0 | gru | 0.563 [0.329, 0.793] | 0.637 [0.321, 0.888] | 60.138 [49.401, 70.875] | 69.706 [59.962, 79.450] | 4 |
+| nasa | rul | all | 0 | itransformer | 0.826 [0.735, 0.917] | 0.868 [0.682, 0.979] | 68.196 [60.030, 75.513] | 85.962 [65.983, 102.566] | 4 |
+| nasa | rul | all | 0 | itransformer_sc | 0.823 [0.761, 0.873] | 0.921 [0.866, 0.976] | 67.382 [58.994, 72.429] | 87.608 [82.148, 93.069] | 4 |
+| nasa | rul | all | 0 | lgbm | 0.707 [0.490, 0.925] | 0.923 [0.769, 1.000] | 56.303 [48.233, 64.373] | 88.679 [70.277, 107.951] | 4 |
+| nasa | rul | all | 0 | lstm | 0.850 [0.740, 0.957] | 0.883 [0.776, 0.969] | 67.852 [58.155, 79.673] | 71.661 [61.160, 85.841] | 4 |
+| nasa | rul | all | 0 | nlinear | 0.588 [0.393, 0.770] | 0.923 [0.811, 1.000] | 88.061 [70.382, 105.740] | 132.315 [113.925, 146.376] | 4 |
+| nasa | rul | all | 0 | patchtst | 0.466 [0.257, 0.706] | 0.929 [0.795, 1.000] | 52.313 [36.189, 68.438] | 197.743 [169.428, 214.346] | 4 |
+| nasa | rul | all | 0 | rlinear | 0.165 [0.068, 0.261] | 0.920 [0.781, 1.000] | 12.032 [8.493, 15.570] | 187.340 [166.473, 199.291] | 4 |
+| nasa | rul | all | 0 | transformer | 0.623 [0.303, 0.873] | 0.667 [0.351, 0.943] | 64.697 [60.051, 70.654] | 76.719 [66.602, 94.193] | 4 |
+| nasa | rul | start_points | 0 | dlinear | 0.660 [0.380, 0.900] | 0.950 [0.850, 1.000] | 77.902 [55.296, 100.507] | 117.130 [96.871, 130.965] | 4 |
+| nasa | rul | start_points | 0 | elasticnet | 0.000 [0.000, 0.000] | 0.850 [0.550, 1.000] | 0.000 [0.000, 0.000] | 440.880 [109.882, 771.878] | 4 |
+| nasa | rul | start_points | 0 | gru | 0.570 [0.200, 0.940] | 0.650 [0.300, 1.000] | 65.237 [57.084, 73.389] | 74.804 [66.176, 83.433] | 4 |
+| nasa | rul | start_points | 0 | itransformer | 0.910 [0.820, 1.000] | 0.930 [0.790, 1.000] | 68.658 [59.770, 76.625] | 86.424 [65.516, 103.621] | 4 |
+| nasa | rul | start_points | 0 | itransformer_sc | 0.910 [0.810, 0.980] | 0.980 [0.940, 1.000] | 68.356 [61.538, 73.096] | 88.582 [81.204, 95.961] | 4 |
+| nasa | rul | start_points | 0 | lgbm | 0.600 [0.200, 1.000] | 0.900 [0.700, 1.000] | 52.544 [43.580, 61.601] | 84.920 [66.062, 106.935] | 4 |
+| nasa | rul | start_points | 0 | lstm | 0.860 [0.710, 0.970] | 0.910 [0.780, 0.990] | 71.662 [62.865, 80.460] | 75.472 [67.454, 84.594] | 4 |
+| nasa | rul | start_points | 0 | nlinear | 0.620 [0.320, 0.900] | 0.950 [0.850, 1.000] | 85.700 [58.208, 113.192] | 129.954 [109.122, 144.096] | 4 |
+| nasa | rul | start_points | 0 | patchtst | 0.370 [0.140, 0.790] | 0.950 [0.850, 1.000] | 55.080 [34.002, 76.158] | 200.510 [171.279, 220.639] | 4 |
+| nasa | rul | start_points | 0 | rlinear | 0.150 [0.000, 0.300] | 0.900 [0.700, 1.000] | 12.205 [7.744, 16.667] | 187.514 [166.981, 200.037] | 4 |
+| nasa | rul | start_points | 0 | transformer | 0.580 [0.240, 0.900] | 0.640 [0.300, 0.980] | 66.510 [59.840, 73.902] | 78.533 [68.437, 97.657] | 4 |
+| nasa | soh | all | 0 | dlinear | 0.884 [0.807, 0.961] | 0.899 [0.838, 0.960] | 3.046 [2.900, 3.194] | 3.056 [2.928, 3.172] | 4 |
+| nasa | soh | all | 0 | elasticnet | 0.000 [0.000, 0.000] | 0.893 [0.712, 0.989] | 0.000 [0.000, 0.000] | 4.941 [3.900, 5.981] | 4 |
+| nasa | soh | all | 0 | gru | 0.984 [0.975, 0.993] | 0.962 [0.944, 0.979] | 15.944 [14.511, 18.551] | 14.511 [12.616, 17.288] | 4 |
+| nasa | soh | all | 0 | itransformer | 0.827 [0.740, 0.902] | 0.884 [0.777, 0.949] | 1.265 [0.916, 1.637] | 1.441 [1.113, 1.795] | 4 |
+| nasa | soh | all | 0 | itransformer_sc | 0.866 [0.829, 0.902] | 0.898 [0.857, 0.932] | 1.481 [1.023, 1.940] | 1.599 [1.166, 2.037] | 4 |
+| nasa | soh | all | 0 | lgbm | 0.842 [0.733, 0.951] | 0.917 [0.850, 0.975] | 1.740 [1.421, 2.017] | 2.149 [1.887, 2.401] | 4 |
+| nasa | soh | all | 0 | lstm | 0.916 [0.862, 0.970] | 0.934 [0.872, 0.986] | 5.824 [4.554, 7.231] | 6.023 [4.792, 7.442] | 4 |
+| nasa | soh | all | 0 | nlinear | 0.873 [0.781, 0.965] | 0.876 [0.785, 0.966] | 2.432 [2.266, 2.599] | 2.478 [2.298, 2.658] | 4 |
+| nasa | soh | all | 0 | patchtst | 0.913 [0.875, 0.942] | 0.902 [0.869, 0.933] | 2.436 [1.925, 3.080] | 2.318 [1.797, 2.936] | 4 |
+| nasa | soh | all | 0 | rlinear | 0.855 [0.800, 0.902] | 0.901 [0.850, 0.936] | 2.129 [1.745, 2.514] | 2.354 [2.004, 2.712] | 4 |
+| nasa | soh | all | 0 | transformer | 0.987 [0.970, 0.999] | 0.957 [0.907, 0.991] | 26.538 [23.033, 29.992] | 23.451 [19.748, 26.214] | 4 |
+| nasa | soh | start_points | 0 | dlinear | 0.950 [0.920, 0.980] | 0.970 [0.940, 1.000] | 2.893 [2.663, 3.072] | 2.902 [2.652, 3.086] | 4 |
+| nasa | soh | start_points | 0 | elasticnet | 0.000 [0.000, 0.000] | 0.950 [0.850, 1.000] | 0.000 [0.000, 0.000] | 4.941 [3.900, 5.981] | 4 |
+| nasa | soh | start_points | 0 | gru | 0.990 [0.970, 1.000] | 0.960 [0.930, 0.990] | 17.274 [15.693, 18.343] | 15.838 [13.871, 17.367] | 4 |
+| nasa | soh | start_points | 0 | itransformer | 0.890 [0.800, 0.970] | 0.970 [0.940, 1.000] | 1.344 [0.881, 1.991] | 1.521 [1.079, 2.149] | 4 |
+| nasa | soh | start_points | 0 | itransformer_sc | 0.890 [0.800, 0.980] | 0.920 [0.820, 1.000] | 1.487 [1.002, 2.147] | 1.604 [1.135, 2.277] | 4 |
+| nasa | soh | start_points | 0 | lgbm | 0.850 [0.700, 1.000] | 0.950 [0.850, 1.000] | 1.629 [1.266, 1.892] | 2.039 [1.710, 2.286] | 4 |
+| nasa | soh | start_points | 0 | lstm | 0.890 [0.730, 1.000] | 0.910 [0.730, 1.000] | 5.928 [4.140, 7.434] | 6.127 [4.377, 7.646] | 4 |
+| nasa | soh | start_points | 0 | nlinear | 0.960 [0.920, 1.000] | 0.960 [0.920, 1.000] | 2.381 [2.182, 2.594] | 2.427 [2.209, 2.636] | 4 |
+| nasa | soh | start_points | 0 | patchtst | 0.980 [0.940, 1.000] | 0.950 [0.850, 1.000] | 2.743 [2.036, 3.850] | 2.625 [1.907, 3.706] | 4 |
+| nasa | soh | start_points | 0 | rlinear | 0.950 [0.880, 1.000] | 0.960 [0.910, 1.000] | 2.304 [1.731, 2.994] | 2.529 [2.002, 3.245] | 4 |
+| nasa | soh | start_points | 0 | transformer | 1.000 [1.000, 1.000] | 0.990 [0.970, 1.000] | 23.984 [20.348, 27.298] | 20.898 [17.063, 23.918] | 4 |
+| toyota | forecast | all | 1 | dlinear | 0.951 [0.934, 0.965] | 0.895 [0.876, 0.912] | 2.308 [2.201, 2.434] | 2.240 [2.133, 2.366] | 43 |
+| toyota | forecast | all | 1 | elasticnet | 0.000 [0.000, 0.000] | 0.880 [0.840, 0.914] | 0.000 [0.000, 0.000] | 0.116 [0.116, 0.116] | 43 |
+| toyota | forecast | all | 1 | gru | 0.990 [0.984, 0.996] | 0.976 [0.966, 0.986] | 0.707 [0.627, 0.802] | 0.598 [0.518, 0.693] | 43 |
+| toyota | forecast | all | 1 | itransformer | 0.928 [0.902, 0.950] | 0.900 [0.870, 0.926] | 0.167 [0.150, 0.186] | 0.147 [0.130, 0.167] | 43 |
+| toyota | forecast | all | 1 | itransformer_sc | 0.864 [0.824, 0.899] | 0.899 [0.862, 0.929] | 0.116 [0.106, 0.126] | 0.135 [0.126, 0.145] | 43 |
+| toyota | forecast | all | 1 | lgbm | 0.880 [0.843, 0.913] | 0.901 [0.866, 0.931] | 0.118 [0.111, 0.125] | 0.131 [0.124, 0.138] | 43 |
+| toyota | forecast | all | 1 | lstm | 0.978 [0.966, 0.989] | 0.971 [0.957, 0.983] | 0.375 [0.348, 0.408] | 0.335 [0.307, 0.368] | 43 |
+| toyota | forecast | all | 1 | nlinear | 0.888 [0.851, 0.921] | 0.903 [0.868, 0.934] | 0.121 [0.118, 0.124] | 0.133 [0.130, 0.136] | 43 |
+| toyota | forecast | all | 1 | patchtst | 0.917 [0.893, 0.938] | 0.923 [0.899, 0.943] | 0.237 [0.207, 0.271] | 0.240 [0.210, 0.274] | 43 |
+| toyota | forecast | all | 1 | rlinear | 0.908 [0.888, 0.927] | 0.933 [0.914, 0.950] | 0.338 [0.291, 0.388] | 0.350 [0.303, 0.400] | 43 |
+| toyota | forecast | all | 1 | transformer | 0.999 [0.997, 1.000] | 0.997 [0.995, 0.999] | 2.730 [2.671, 2.797] | 2.098 [2.039, 2.164] | 43 |
+| toyota | forecast | all | 10 | dlinear | 0.937 [0.920, 0.951] | 0.910 [0.892, 0.925] | 1.724 [1.627, 1.839] | 1.666 [1.569, 1.781] | 43 |
+| toyota | forecast | all | 10 | elasticnet | 0.000 [0.000, 0.000] | 0.882 [0.849, 0.909] | 0.000 [0.000, 0.000] | 0.316 [0.316, 0.316] | 43 |
+| toyota | forecast | all | 10 | gru | 0.980 [0.971, 0.988] | 0.963 [0.951, 0.973] | 0.663 [0.595, 0.741] | 0.582 [0.514, 0.660] | 43 |
+| toyota | forecast | all | 10 | itransformer | 0.920 [0.901, 0.937] | 0.909 [0.890, 0.927] | 0.265 [0.239, 0.295] | 0.254 [0.227, 0.283] | 43 |
+| toyota | forecast | all | 10 | itransformer_sc | 0.853 [0.823, 0.879] | 0.905 [0.879, 0.927] | 0.281 [0.255, 0.308] | 0.331 [0.305, 0.359] | 43 |
+| toyota | forecast | all | 10 | lgbm | 0.869 [0.841, 0.894] | 0.923 [0.898, 0.945] | 0.309 [0.262, 0.372] | 0.361 [0.314, 0.425] | 43 |
+| toyota | forecast | all | 10 | lstm | 0.942 [0.925, 0.957] | 0.941 [0.924, 0.957] | 0.374 [0.344, 0.409] | 0.370 [0.340, 0.405] | 43 |
+| toyota | forecast | all | 10 | nlinear | 0.896 [0.870, 0.919] | 0.890 [0.863, 0.913] | 0.339 [0.327, 0.354] | 0.330 [0.318, 0.345] | 43 |
+| toyota | forecast | all | 10 | patchtst | 0.860 [0.842, 0.876] | 0.916 [0.899, 0.932] | 0.321 [0.281, 0.365] | 0.356 [0.316, 0.400] | 43 |
+| toyota | forecast | all | 10 | rlinear | 0.855 [0.831, 0.879] | 0.923 [0.904, 0.940] | 0.443 [0.382, 0.508] | 0.490 [0.429, 0.556] | 43 |
+| toyota | forecast | all | 10 | transformer | 0.998 [0.996, 1.000] | 0.997 [0.994, 0.999] | 3.441 [3.375, 3.518] | 2.615 [2.549, 2.692] | 43 |
+| toyota | forecast | all | 50 | dlinear | 0.891 [0.875, 0.905] | 0.906 [0.887, 0.923] | 3.811 [3.525, 4.203] | 3.685 [3.399, 4.077] | 43 |
+| toyota | forecast | all | 50 | elasticnet | 0.000 [0.000, 0.000] | 0.880 [0.844, 0.910] | 0.000 [0.000, 0.000] | 1.755 [1.755, 1.755] | 43 |
+| toyota | forecast | all | 50 | gru | 0.909 [0.875, 0.937] | 0.901 [0.867, 0.930] | 1.305 [1.155, 1.483] | 1.280 [1.130, 1.458] | 43 |
+| toyota | forecast | all | 50 | itransformer | 0.878 [0.842, 0.909] | 0.900 [0.865, 0.929] | 0.822 [0.731, 0.923] | 0.876 [0.786, 0.978] | 43 |
+| toyota | forecast | all | 50 | itransformer_sc | 0.866 [0.837, 0.891] | 0.901 [0.874, 0.926] | 1.141 [1.012, 1.293] | 1.220 [1.090, 1.372] | 43 |
+| toyota | forecast | all | 50 | lgbm | 0.836 [0.799, 0.871] | 0.919 [0.887, 0.945] | 1.363 [1.188, 1.573] | 1.533 [1.357, 1.743] | 43 |
+| toyota | forecast | all | 50 | lstm | 0.894 [0.857, 0.924] | 0.899 [0.862, 0.929] | 1.180 [1.039, 1.357] | 1.193 [1.052, 1.370] | 43 |
+| toyota | forecast | all | 50 | nlinear | 0.888 [0.864, 0.911] | 0.890 [0.865, 0.912] | 1.872 [1.793, 1.976] | 1.878 [1.799, 1.981] | 43 |
+| toyota | forecast | all | 50 | patchtst | 0.860 [0.839, 0.880] | 0.905 [0.885, 0.923] | 1.229 [1.075, 1.408] | 1.311 [1.156, 1.489] | 43 |
+| toyota | forecast | all | 50 | rlinear | 0.862 [0.835, 0.887] | 0.900 [0.875, 0.922] | 1.507 [1.312, 1.739] | 1.582 [1.387, 1.814] | 43 |
+| toyota | forecast | all | 50 | transformer | 0.977 [0.957, 0.990] | 0.959 [0.935, 0.976] | 2.964 [2.863, 3.099] | 2.366 [2.266, 2.502] | 43 |
+| toyota | forecast | all | 100 | dlinear | 0.812 [0.769, 0.844] | 0.871 [0.824, 0.906] | 6.208 [6.073, 6.397] | 6.724 [6.588, 6.912] | 43 |
+| toyota | forecast | all | 100 | elasticnet | 0.000 [0.000, 0.000] | 0.889 [0.839, 0.928] | 0.000 [0.000, 0.000] | 4.751 [4.751, 4.751] | 43 |
+| toyota | forecast | all | 100 | gru | 0.855 [0.804, 0.895] | 0.887 [0.836, 0.925] | 2.632 [2.258, 3.089] | 2.817 [2.443, 3.273] | 43 |
+| toyota | forecast | all | 100 | itransformer | 0.850 [0.812, 0.886] | 0.897 [0.862, 0.928] | 2.028 [1.772, 2.328] | 2.245 [1.988, 2.544] | 43 |
+| toyota | forecast | all | 100 | itransformer_sc | 0.868 [0.826, 0.904] | 0.892 [0.851, 0.927] | 2.667 [2.373, 3.007] | 2.774 [2.480, 3.114] | 43 |
+| toyota | forecast | all | 100 | lgbm | 0.797 [0.742, 0.847] | 0.900 [0.848, 0.940] | 2.780 [2.442, 3.212] | 3.165 [2.828, 3.597] | 43 |
+| toyota | forecast | all | 100 | lstm | 0.866 [0.824, 0.900] | 0.903 [0.863, 0.935] | 2.686 [2.285, 3.194] | 2.889 [2.489, 3.397] | 43 |
+| toyota | forecast | all | 100 | nlinear | 0.884 [0.846, 0.915] | 0.891 [0.853, 0.922] | 4.772 [4.575, 5.019] | 4.821 [4.624, 5.068] | 43 |
+| toyota | forecast | all | 100 | patchtst | 0.853 [0.816, 0.885] | 0.887 [0.852, 0.917] | 2.919 [2.569, 3.362] | 3.052 [2.702, 3.495] | 43 |
+| toyota | forecast | all | 100 | rlinear | 0.871 [0.833, 0.905] | 0.883 [0.846, 0.916] | 3.641 [3.184, 4.160] | 3.694 [3.238, 4.213] | 43 |
+| toyota | forecast | all | 100 | transformer | 0.939 [0.902, 0.965] | 0.928 [0.890, 0.956] | 3.741 [3.378, 4.235] | 3.563 [3.200, 4.057] | 43 |
+| toyota | forecast | all | 200 | dlinear | 0.828 [0.803, 0.852] | 0.895 [0.873, 0.916] | 8.828 [8.784, 8.881] | 11.824 [11.779, 11.876] | 42 |
+| toyota | forecast | all | 200 | elasticnet | 0.000 [0.000, 0.000] | 0.916 [0.884, 0.943] | 0.000 [0.000, 0.000] | 11.340 [11.340, 11.340] | 42 |
+| toyota | forecast | all | 200 | gru | 0.795 [0.723, 0.855] | 0.900 [0.836, 0.949] | 5.931 [5.142, 6.906] | 7.720 [6.931, 8.696] | 42 |
+| toyota | forecast | all | 200 | itransformer | 0.714 [0.662, 0.763] | 0.869 [0.839, 0.899] | 3.269 [2.916, 3.643] | 5.830 [5.477, 6.204] | 42 |
+| toyota | forecast | all | 200 | itransformer_sc | 0.831 [0.784, 0.873] | 0.859 [0.816, 0.898] | 5.880 [5.120, 6.723] | 6.359 [5.599, 7.201] | 42 |
+| toyota | forecast | all | 200 | lgbm | 0.842 [0.804, 0.878] | 0.923 [0.895, 0.948] | 6.248 [5.731, 6.826] | 7.181 [6.664, 7.759] | 42 |
+| toyota | forecast | all | 200 | lstm | 0.824 [0.764, 0.878] | 0.909 [0.860, 0.947] | 6.181 [5.486, 7.013] | 7.671 [6.976, 8.503] | 42 |
+| toyota | forecast | all | 200 | nlinear | 0.893 [0.871, 0.915] | 0.901 [0.880, 0.922] | 11.107 [11.019, 11.210] | 11.215 [11.128, 11.319] | 42 |
+| toyota | forecast | all | 200 | patchtst | 0.837 [0.783, 0.886] | 0.862 [0.810, 0.908] | 6.895 [6.018, 7.879] | 7.217 [6.339, 8.200] | 42 |
+| toyota | forecast | all | 200 | rlinear | 0.854 [0.802, 0.900] | 0.864 [0.813, 0.909] | 7.956 [6.812, 9.188] | 8.090 [6.946, 9.322] | 42 |
+| toyota | forecast | all | 200 | transformer | 0.903 [0.861, 0.940] | 0.932 [0.900, 0.958] | 7.993 [7.349, 8.728] | 8.936 [8.292, 9.671] | 42 |
+| toyota | forecast | start_points | 1 | dlinear | 0.963 [0.943, 0.980] | 0.931 [0.903, 0.956] | 1.896 [1.807, 2.026] | 1.828 [1.739, 1.958] | 43 |
+| toyota | forecast | start_points | 1 | elasticnet | 0.000 [0.000, 0.000] | 0.895 [0.843, 0.942] | 0.000 [0.000, 0.000] | 0.116 [0.116, 0.116] | 43 |
+| toyota | forecast | start_points | 1 | gru | 0.986 [0.967, 1.000] | 0.979 [0.960, 0.994] | 0.732 [0.528, 1.005] | 0.623 [0.419, 0.896] | 43 |
+| toyota | forecast | start_points | 1 | itransformer | 0.927 [0.887, 0.960] | 0.877 [0.827, 0.922] | 0.150 [0.116, 0.190] | 0.131 [0.096, 0.171] | 43 |
+| toyota | forecast | start_points | 1 | itransformer_sc | 0.855 [0.787, 0.913] | 0.884 [0.821, 0.934] | 0.098 [0.084, 0.114] | 0.117 [0.104, 0.133] | 43 |
+| toyota | forecast | start_points | 1 | lgbm | 0.895 [0.849, 0.936] | 0.907 [0.860, 0.948] | 0.117 [0.106, 0.129] | 0.129 [0.119, 0.142] | 43 |
+| toyota | forecast | start_points | 1 | lstm | 0.976 [0.951, 0.994] | 0.966 [0.941, 0.987] | 0.383 [0.297, 0.504] | 0.343 [0.257, 0.464] | 43 |
+| toyota | forecast | start_points | 1 | nlinear | 0.877 [0.819, 0.927] | 0.886 [0.830, 0.935] | 0.111 [0.108, 0.114] | 0.123 [0.120, 0.126] | 43 |
+| toyota | forecast | start_points | 1 | patchtst | 0.888 [0.835, 0.934] | 0.894 [0.843, 0.938] | 0.132 [0.102, 0.169] | 0.135 [0.105, 0.172] | 43 |
+| toyota | forecast | start_points | 1 | rlinear | 0.849 [0.797, 0.895] | 0.890 [0.843, 0.931] | 0.183 [0.131, 0.245] | 0.195 [0.143, 0.257] | 43 |
+| toyota | forecast | start_points | 1 | transformer | 1.000 [1.000, 1.000] | 1.000 [1.000, 1.000] | 2.508 [2.437, 2.600] | 1.875 [1.805, 1.967] | 43 |
+| toyota | forecast | start_points | 10 | dlinear | 0.953 [0.923, 0.980] | 0.936 [0.902, 0.966] | 1.432 [1.369, 1.536] | 1.374 [1.311, 1.478] | 43 |
+| toyota | forecast | start_points | 10 | elasticnet | 0.000 [0.000, 0.000] | 0.913 [0.855, 0.959] | 0.000 [0.000, 0.000] | 0.316 [0.316, 0.316] | 43 |
+| toyota | forecast | start_points | 10 | gru | 0.970 [0.943, 0.991] | 0.943 [0.912, 0.971] | 0.673 [0.493, 0.913] | 0.592 [0.412, 0.831] | 43 |
+| toyota | forecast | start_points | 10 | itransformer | 0.895 [0.851, 0.935] | 0.883 [0.836, 0.926] | 0.231 [0.184, 0.286] | 0.219 [0.172, 0.275] | 43 |
+| toyota | forecast | start_points | 10 | itransformer_sc | 0.836 [0.774, 0.893] | 0.898 [0.844, 0.945] | 0.217 [0.184, 0.256] | 0.267 [0.234, 0.306] | 43 |
+| toyota | forecast | start_points | 10 | lgbm | 0.866 [0.814, 0.913] | 0.907 [0.855, 0.953] | 0.253 [0.199, 0.328] | 0.305 [0.252, 0.380] | 43 |
+| toyota | forecast | start_points | 10 | lstm | 0.923 [0.883, 0.959] | 0.926 [0.887, 0.959] | 0.402 [0.283, 0.579] | 0.397 [0.279, 0.574] | 43 |
+| toyota | forecast | start_points | 10 | nlinear | 0.927 [0.883, 0.964] | 0.920 [0.876, 0.958] | 0.297 [0.286, 0.313] | 0.288 [0.277, 0.304] | 43 |
+| toyota | forecast | start_points | 10 | patchtst | 0.806 [0.753, 0.857] | 0.880 [0.834, 0.923] | 0.196 [0.150, 0.251] | 0.231 [0.185, 0.286] | 43 |
+| toyota | forecast | start_points | 10 | rlinear | 0.779 [0.715, 0.838] | 0.890 [0.835, 0.938] | 0.248 [0.176, 0.333] | 0.295 [0.224, 0.380] | 43 |
+| toyota | forecast | start_points | 10 | transformer | 0.998 [0.994, 1.000] | 0.992 [0.978, 1.000] | 3.241 [3.158, 3.348] | 2.415 [2.332, 2.522] | 43 |
+| toyota | forecast | start_points | 50 | dlinear | 0.910 [0.887, 0.933] | 0.926 [0.898, 0.950] | 2.883 [2.557, 3.428] | 2.757 [2.431, 3.303] | 43 |
+| toyota | forecast | start_points | 50 | elasticnet | 0.000 [0.000, 0.000] | 0.930 [0.878, 0.971] | 0.000 [0.000, 0.000] | 1.755 [1.755, 1.755] | 43 |
+| toyota | forecast | start_points | 50 | gru | 0.907 [0.859, 0.948] | 0.894 [0.843, 0.938] | 1.172 [0.881, 1.543] | 1.147 [0.856, 1.518] | 43 |
+| toyota | forecast | start_points | 50 | itransformer | 0.893 [0.849, 0.933] | 0.913 [0.871, 0.950] | 0.675 [0.547, 0.828] | 0.730 [0.602, 0.882] | 43 |
+| toyota | forecast | start_points | 50 | itransformer_sc | 0.894 [0.847, 0.935] | 0.931 [0.888, 0.967] | 0.858 [0.691, 1.077] | 0.936 [0.770, 1.155] | 43 |
+| toyota | forecast | start_points | 50 | lgbm | 0.855 [0.785, 0.919] | 0.930 [0.884, 0.971] | 0.931 [0.755, 1.157] | 1.100 [0.924, 1.327] | 43 |
+| toyota | forecast | start_points | 50 | lstm | 0.906 [0.850, 0.952] | 0.915 [0.860, 0.960] | 0.969 [0.757, 1.224] | 0.982 [0.770, 1.237] | 43 |
+| toyota | forecast | start_points | 50 | nlinear | 0.933 [0.895, 0.964] | 0.936 [0.899, 0.969] | 1.678 [1.577, 1.828] | 1.684 [1.583, 1.833] | 43 |
+| toyota | forecast | start_points | 50 | patchtst | 0.838 [0.793, 0.881] | 0.898 [0.859, 0.934] | 0.821 [0.637, 1.062] | 0.902 [0.718, 1.144] | 43 |
+| toyota | forecast | start_points | 50 | rlinear | 0.822 [0.769, 0.873] | 0.871 [0.822, 0.916] | 0.977 [0.733, 1.301] | 1.052 [0.808, 1.376] | 43 |
+| toyota | forecast | start_points | 50 | transformer | 0.969 [0.938, 0.990] | 0.953 [0.919, 0.979] | 2.808 [2.652, 3.008] | 2.210 [2.055, 2.411] | 43 |
+| toyota | forecast | start_points | 100 | dlinear | 0.865 [0.813, 0.903] | 0.898 [0.843, 0.938] | 5.860 [5.694, 6.109] | 6.375 [6.209, 6.624] | 43 |
+| toyota | forecast | start_points | 100 | elasticnet | 0.000 [0.000, 0.000] | 0.907 [0.843, 0.959] | 0.000 [0.000, 0.000] | 4.751 [4.751, 4.751] | 43 |
+| toyota | forecast | start_points | 100 | gru | 0.847 [0.781, 0.901] | 0.874 [0.809, 0.929] | 2.514 [1.998, 3.112] | 2.698 [2.182, 3.296] | 43 |
+| toyota | forecast | start_points | 100 | itransformer | 0.870 [0.821, 0.915] | 0.909 [0.870, 0.945] | 1.890 [1.547, 2.310] | 2.107 [1.763, 2.526] | 43 |
+| toyota | forecast | start_points | 100 | itransformer_sc | 0.866 [0.803, 0.919] | 0.894 [0.833, 0.944] | 2.365 [1.986, 2.805] | 2.472 [2.092, 2.911] | 43 |
+| toyota | forecast | start_points | 100 | lgbm | 0.808 [0.733, 0.878] | 0.924 [0.866, 0.971] | 2.491 [2.070, 3.018] | 2.876 [2.456, 3.404] | 43 |
+| toyota | forecast | start_points | 100 | lstm | 0.858 [0.803, 0.907] | 0.898 [0.847, 0.942] | 2.460 [1.979, 3.036] | 2.663 [2.182, 3.239] | 43 |
+| toyota | forecast | start_points | 100 | nlinear | 0.899 [0.836, 0.950] | 0.912 [0.851, 0.958] | 4.587 [4.316, 4.933] | 4.636 [4.365, 4.982] | 43 |
+| toyota | forecast | start_points | 100 | patchtst | 0.834 [0.774, 0.888] | 0.886 [0.835, 0.931] | 2.495 [2.025, 3.085] | 2.628 [2.158, 3.218] | 43 |
+| toyota | forecast | start_points | 100 | rlinear | 0.849 [0.793, 0.901] | 0.859 [0.807, 0.909] | 3.021 [2.433, 3.704] | 3.074 [2.486, 3.758] | 43 |
+| toyota | forecast | start_points | 100 | transformer | 0.938 [0.893, 0.973] | 0.927 [0.880, 0.964] | 3.563 [3.101, 4.139] | 3.385 [2.923, 3.961] | 43 |
+| toyota | forecast | start_points | 200 | dlinear | 0.873 [0.847, 0.896] | 0.960 [0.936, 0.981] | 8.822 [8.764, 8.894] | 11.817 [11.759, 11.889] | 42 |
+| toyota | forecast | start_points | 200 | elasticnet | 0.000 [0.000, 0.000] | 0.968 [0.929, 1.000] | 0.000 [0.000, 0.000] | 11.340 [11.340, 11.340] | 42 |
+| toyota | forecast | start_points | 200 | gru | 0.833 [0.757, 0.898] | 0.937 [0.876, 0.982] | 5.973 [5.144, 6.951] | 7.762 [6.933, 8.741] | 42 |
+| toyota | forecast | start_points | 200 | itransformer | 0.752 [0.682, 0.822] | 0.911 [0.869, 0.950] | 3.527 [2.901, 4.244] | 6.088 [5.462, 6.805] | 42 |
+| toyota | forecast | start_points | 200 | itransformer_sc | 0.859 [0.782, 0.927] | 0.883 [0.817, 0.941] | 6.157 [5.077, 7.343] | 6.635 [5.555, 7.821] | 42 |
+| toyota | forecast | start_points | 200 | lgbm | 0.919 [0.869, 0.962] | 0.978 [0.952, 1.000] | 6.096 [5.497, 6.762] | 7.029 [6.430, 7.695] | 42 |
+| toyota | forecast | start_points | 200 | lstm | 0.873 [0.800, 0.936] | 0.940 [0.881, 0.984] | 6.236 [5.465, 7.128] | 7.726 [6.955, 8.618] | 42 |
+| toyota | forecast | start_points | 200 | nlinear | 0.945 [0.907, 0.977] | 0.957 [0.926, 0.983] | 11.156 [11.039, 11.297] | 11.265 [11.148, 11.406] | 42 |
+| toyota | forecast | start_points | 200 | patchtst | 0.858 [0.771, 0.931] | 0.881 [0.805, 0.944] | 7.156 [5.924, 8.543] | 7.477 [6.245, 8.865] | 42 |
+| toyota | forecast | start_points | 200 | rlinear | 0.850 [0.765, 0.925] | 0.854 [0.772, 0.927] | 7.909 [6.419, 9.563] | 8.043 [6.552, 9.697] | 42 |
+| toyota | forecast | start_points | 200 | transformer | 0.932 [0.881, 0.974] | 0.951 [0.913, 0.984] | 8.102 [7.406, 8.875] | 9.045 [8.349, 9.818] | 42 |
+| toyota | forecast | all | 1 | dlinear | 0.991 [0.987, 0.994] | 0.973 [0.969, 0.977] | 1.923 [1.897, 1.949] | 1.855 [1.829, 1.881] | 40 |
+| toyota | forecast | all | 1 | elasticnet | 0.000 [0.000, 0.000] | 0.984 [0.976, 0.990] | 0.000 [0.000, 0.000] | 0.116 [0.116, 0.116] | 40 |
+| toyota | forecast | all | 1 | gru | 0.998 [0.997, 0.999] | 0.988 [0.986, 0.991] | 0.755 [0.692, 0.827] | 0.646 [0.583, 0.718] | 40 |
+| toyota | forecast | all | 1 | itransformer | 0.986 [0.979, 0.992] | 0.982 [0.975, 0.988] | 0.104 [0.102, 0.107] | 0.085 [0.082, 0.087] | 40 |
+| toyota | forecast | all | 1 | itransformer_sc | 0.976 [0.968, 0.983] | 0.982 [0.975, 0.988] | 0.078 [0.074, 0.083] | 0.097 [0.094, 0.102] | 40 |
+| toyota | forecast | all | 1 | lgbm | 0.985 [0.978, 0.991] | 0.985 [0.978, 0.991] | 0.127 [0.124, 0.130] | 0.140 [0.137, 0.143] | 40 |
+| toyota | forecast | all | 1 | lstm | 0.995 [0.993, 0.997] | 0.993 [0.989, 0.996] | 0.283 [0.276, 0.293] | 0.243 [0.236, 0.252] | 40 |
+| toyota | forecast | all | 1 | nlinear | 0.984 [0.977, 0.990] | 0.985 [0.977, 0.990] | 0.110 [0.110, 0.111] | 0.123 [0.122, 0.123] | 40 |
+| toyota | forecast | all | 1 | patchtst | 0.968 [0.960, 0.975] | 0.973 [0.966, 0.979] | 0.112 [0.105, 0.119] | 0.115 [0.108, 0.123] | 40 |
+| toyota | forecast | all | 1 | rlinear | 0.957 [0.948, 0.965] | 0.979 [0.971, 0.985] | 0.152 [0.143, 0.162] | 0.164 [0.155, 0.174] | 40 |
+| toyota | forecast | all | 1 | transformer | 1.000 [1.000, 1.000] | 1.000 [1.000, 1.000] | 2.339 [2.313, 2.365] | 1.706 [1.680, 1.733] | 40 |
+| toyota | forecast | all | 10 | dlinear | 0.988 [0.985, 0.992] | 0.980 [0.975, 0.984] | 1.446 [1.423, 1.465] | 1.388 [1.365, 1.407] | 40 |
+| toyota | forecast | all | 10 | elasticnet | 0.000 [0.000, 0.000] | 0.961 [0.950, 0.971] | 0.000 [0.000, 0.000] | 0.316 [0.316, 0.316] | 40 |
+| toyota | forecast | all | 10 | gru | 0.998 [0.997, 0.999] | 0.988 [0.980, 0.994] | 0.695 [0.633, 0.768] | 0.614 [0.552, 0.687] | 40 |
+| toyota | forecast | all | 10 | itransformer | 0.980 [0.973, 0.986] | 0.976 [0.968, 0.983] | 0.164 [0.160, 0.167] | 0.152 [0.149, 0.156] | 40 |
+| toyota | forecast | all | 10 | itransformer_sc | 0.967 [0.958, 0.974] | 0.977 [0.969, 0.984] | 0.179 [0.170, 0.190] | 0.230 [0.220, 0.241] | 40 |
+| toyota | forecast | all | 10 | lgbm | 0.972 [0.963, 0.981] | 0.990 [0.986, 0.993] | 0.290 [0.279, 0.300] | 0.342 [0.332, 0.353] | 40 |
+| toyota | forecast | all | 10 | lstm | 0.975 [0.967, 0.983] | 0.979 [0.972, 0.985] | 0.303 [0.293, 0.314] | 0.299 [0.289, 0.309] | 40 |
+| toyota | forecast | all | 10 | nlinear | 0.987 [0.981, 0.991] | 0.986 [0.980, 0.991] | 0.298 [0.295, 0.301] | 0.289 [0.286, 0.292] | 40 |
+| toyota | forecast | all | 10 | patchtst | 0.903 [0.896, 0.911] | 0.971 [0.965, 0.977] | 0.143 [0.135, 0.152] | 0.179 [0.170, 0.188] | 40 |
+| toyota | forecast | all | 10 | rlinear | 0.891 [0.881, 0.902] | 0.974 [0.965, 0.981] | 0.202 [0.189, 0.215] | 0.249 [0.237, 0.262] | 40 |
+| toyota | forecast | all | 10 | transformer | 1.000 [1.000, 1.000] | 1.000 [1.000, 1.000] | 3.226 [3.206, 3.248] | 2.400 [2.380, 2.422] | 40 |
+| toyota | forecast | all | 50 | dlinear | 0.875 [0.866, 0.885] | 0.961 [0.953, 0.968] | 2.852 [2.811, 2.890] | 2.726 [2.686, 2.765] | 40 |
+| toyota | forecast | all | 50 | elasticnet | 0.000 [0.000, 0.000] | 0.931 [0.916, 0.947] | 0.000 [0.000, 0.000] | 1.755 [1.755, 1.755] | 40 |
+| toyota | forecast | all | 50 | gru | 0.489 [0.393, 0.584] | 0.466 [0.374, 0.561] | 1.138 [1.046, 1.245] | 1.112 [1.021, 1.220] | 40 |
+| toyota | forecast | all | 50 | itransformer | 0.930 [0.913, 0.945] | 0.948 [0.933, 0.961] | 0.456 [0.435, 0.478] | 0.511 [0.490, 0.533] | 40 |
+| toyota | forecast | all | 50 | itransformer_sc | 0.967 [0.952, 0.979] | 0.980 [0.970, 0.988] | 0.660 [0.616, 0.708] | 0.738 [0.694, 0.787] | 40 |
+| toyota | forecast | all | 50 | lgbm | 0.455 [0.399, 0.514] | 0.759 [0.683, 0.830] | 0.917 [0.886, 0.950] | 1.086 [1.056, 1.120] | 40 |
+| toyota | forecast | all | 50 | lstm | 0.627 [0.563, 0.690] | 0.656 [0.593, 0.717] | 0.756 [0.715, 0.807] | 0.769 [0.728, 0.820] | 40 |
+| toyota | forecast | all | 50 | nlinear | 0.983 [0.977, 0.988] | 0.984 [0.978, 0.989] | 1.613 [1.588, 1.642] | 1.618 [1.593, 1.648] | 40 |
+| toyota | forecast | all | 50 | patchtst | 0.885 [0.875, 0.895] | 0.962 [0.955, 0.967] | 0.578 [0.543, 0.616] | 0.660 [0.624, 0.697] | 40 |
+| toyota | forecast | all | 50 | rlinear | 0.906 [0.891, 0.921] | 0.972 [0.965, 0.979] | 0.767 [0.714, 0.828] | 0.842 [0.789, 0.903] | 40 |
+| toyota | forecast | all | 50 | transformer | 0.994 [0.991, 0.997] | 0.975 [0.963, 0.985] | 2.536 [2.520, 2.551] | 1.939 [1.923, 1.954] | 40 |
+| toyota | forecast | all | 100 | dlinear | 0.886 [0.877, 0.894] | 0.972 [0.963, 0.979] | 5.794 [5.769, 5.817] | 6.309 [6.284, 6.332] | 40 |
+| toyota | forecast | all | 100 | elasticnet | 0.000 [0.000, 0.000] | 0.953 [0.941, 0.965] | 0.000 [0.000, 0.000] | 4.751 [4.751, 4.751] | 40 |
+| toyota | forecast | all | 100 | gru | 0.268 [0.223, 0.319] | 0.329 [0.274, 0.388] | 2.110 [1.926, 2.338] | 2.295 [2.111, 2.522] | 40 |
+| toyota | forecast | all | 100 | itransformer | 0.892 [0.867, 0.914] | 0.947 [0.929, 0.962] | 1.044 [0.961, 1.138] | 1.261 [1.178, 1.355] | 40 |
+| toyota | forecast | all | 100 | itransformer_sc | 0.955 [0.928, 0.977] | 0.970 [0.947, 0.988] | 1.610 [1.482, 1.764] | 1.716 [1.589, 1.870] | 40 |
+| toyota | forecast | all | 100 | lgbm | 0.387 [0.333, 0.446] | 0.790 [0.724, 0.851] | 1.986 [1.893, 2.104] | 2.371 [2.278, 2.489] | 40 |
+| toyota | forecast | all | 100 | lstm | 0.409 [0.351, 0.468] | 0.575 [0.492, 0.657] | 1.568 [1.439, 1.727] | 1.771 [1.642, 1.930] | 40 |
+| toyota | forecast | all | 100 | nlinear | 0.965 [0.954, 0.975] | 0.980 [0.972, 0.986] | 4.203 [4.110, 4.319] | 4.252 [4.159, 4.368] | 40 |
+| toyota | forecast | all | 100 | patchtst | 0.899 [0.884, 0.913] | 0.960 [0.951, 0.969] | 1.557 [1.448, 1.685] | 1.690 [1.581, 1.818] | 40 |
+| toyota | forecast | all | 100 | rlinear | 0.950 [0.936, 0.962] | 0.969 [0.960, 0.978] | 2.088 [1.907, 2.314] | 2.141 [1.960, 2.368] | 40 |
+| toyota | forecast | all | 100 | transformer | 0.964 [0.931, 0.985] | 0.956 [0.916, 0.981] | 2.391 [2.303, 2.492] | 2.213 [2.125, 2.314] | 40 |
+| toyota | forecast | all | 200 | dlinear | 0.935 [0.924, 0.945] | 0.984 [0.980, 0.987] | 8.739 [8.710, 8.776] | 11.734 [11.706, 11.772] | 40 |
+| toyota | forecast | all | 200 | elasticnet | 0.000 [0.000, 0.000] | 0.977 [0.966, 0.986] | 0.000 [0.000, 0.000] | 11.340 [11.340, 11.340] | 40 |
+| toyota | forecast | all | 200 | gru | 0.187 [0.142, 0.237] | 0.424 [0.333, 0.517] | 5.937 [5.473, 6.474] | 7.726 [7.262, 8.263] | 40 |
+| toyota | forecast | all | 200 | itransformer | 0.818 [0.777, 0.856] | 0.964 [0.951, 0.976] | 2.198 [2.031, 2.408] | 4.759 [4.592, 4.969] | 40 |
+| toyota | forecast | all | 200 | itransformer_sc | 0.947 [0.925, 0.967] | 0.980 [0.968, 0.989] | 4.138 [3.679, 4.728] | 4.616 [4.158, 5.207] | 40 |
+| toyota | forecast | all | 200 | lgbm | 0.430 [0.369, 0.498] | 0.860 [0.801, 0.913] | 5.421 [5.081, 5.826] | 6.354 [6.014, 6.759] | 40 |
+| toyota | forecast | all | 200 | lstm | 0.371 [0.314, 0.432] | 0.846 [0.796, 0.893] | 3.846 [3.537, 4.207] | 5.336 [5.027, 5.697] | 40 |
+| toyota | forecast | all | 200 | nlinear | 0.944 [0.915, 0.969] | 0.965 [0.944, 0.984] | 10.965 [10.899, 11.050] | 11.074 [11.008, 11.159] | 40 |
+| toyota | forecast | all | 200 | patchtst | 0.936 [0.911, 0.957] | 0.981 [0.965, 0.993] | 4.883 [4.336, 5.589] | 5.204 [4.657, 5.911] | 40 |
+| toyota | forecast | all | 200 | rlinear | 0.956 [0.935, 0.973] | 0.973 [0.955, 0.986] | 5.301 [4.673, 6.111] | 5.434 [4.807, 6.245] | 40 |
+| toyota | forecast | all | 200 | transformer | 0.931 [0.896, 0.959] | 0.951 [0.928, 0.970] | 4.770 [4.485, 5.137] | 5.713 [5.428, 6.080] | 40 |
+| toyota | forecast | start_points | 1 | dlinear | 0.972 [0.945, 0.995] | 0.972 [0.945, 0.995] | 1.704 [1.679, 1.736] | 1.636 [1.611, 1.668] | 40 |
+| toyota | forecast | start_points | 1 | elasticnet | 0.000 [0.000, 0.000] | 0.950 [0.900, 0.988] | 0.000 [0.000, 0.000] | 0.116 [0.116, 0.116] | 40 |
+| toyota | forecast | start_points | 1 | gru | 0.995 [0.989, 1.000] | 0.982 [0.970, 0.993] | 0.686 [0.621, 0.761] | 0.577 [0.512, 0.652] | 40 |
+| toyota | forecast | start_points | 1 | itransformer | 0.954 [0.904, 0.991] | 0.950 [0.900, 0.988] | 0.083 [0.080, 0.086] | 0.063 [0.061, 0.066] | 40 |
+| toyota | forecast | start_points | 1 | itransformer_sc | 0.944 [0.894, 0.988] | 0.949 [0.899, 0.988] | 0.059 [0.054, 0.066] | 0.079 [0.074, 0.085] | 40 |
+| toyota | forecast | start_points | 1 | lgbm | 0.956 [0.912, 0.988] | 0.956 [0.912, 0.988] | 0.120 [0.117, 0.123] | 0.133 [0.130, 0.136] | 40 |
+| toyota | forecast | start_points | 1 | lstm | 0.979 [0.955, 0.996] | 0.970 [0.936, 0.994] | 0.250 [0.243, 0.259] | 0.210 [0.203, 0.219] | 40 |
+| toyota | forecast | start_points | 1 | nlinear | 0.950 [0.900, 0.988] | 0.950 [0.900, 0.988] | 0.107 [0.106, 0.107] | 0.119 [0.119, 0.120] | 40 |
+| toyota | forecast | start_points | 1 | patchtst | 0.953 [0.903, 0.990] | 0.953 [0.902, 0.990] | 0.053 [0.046, 0.062] | 0.056 [0.049, 0.065] | 40 |
+| toyota | forecast | start_points | 1 | rlinear | 0.925 [0.871, 0.968] | 0.951 [0.903, 0.988] | 0.064 [0.055, 0.076] | 0.076 [0.067, 0.088] | 40 |
+| toyota | forecast | start_points | 1 | transformer | 1.000 [1.000, 1.000] | 1.000 [1.000, 1.000] | 2.249 [2.223, 2.274] | 1.616 [1.591, 1.642] | 40 |
+| toyota | forecast | start_points | 10 | dlinear | 0.980 [0.955, 1.000] | 0.975 [0.945, 0.995] | 1.415 [1.400, 1.427] | 1.357 [1.342, 1.369] | 40 |
+| toyota | forecast | start_points | 10 | elasticnet | 0.000 [0.000, 0.000] | 1.000 [1.000, 1.000] | 0.000 [0.000, 0.000] | 0.316 [0.316, 0.316] | 40 |
+| toyota | forecast | start_points | 10 | gru | 0.996 [0.991, 1.000] | 0.980 [0.961, 0.995] | 0.592 [0.526, 0.668] | 0.510 [0.445, 0.587] | 40 |
+| toyota | forecast | start_points | 10 | itransformer | 0.970 [0.938, 0.995] | 0.966 [0.934, 0.993] | 0.132 [0.128, 0.136] | 0.121 [0.117, 0.125] | 40 |
+| toyota | forecast | start_points | 10 | itransformer_sc | 0.956 [0.919, 0.988] | 0.961 [0.925, 0.990] | 0.125 [0.113, 0.140] | 0.175 [0.163, 0.190] | 40 |
+| toyota | forecast | start_points | 10 | lgbm | 0.956 [0.919, 0.988] | 0.975 [0.944, 1.000] | 0.261 [0.249, 0.272] | 0.313 [0.302, 0.325] | 40 |
+| toyota | forecast | start_points | 10 | lstm | 0.960 [0.935, 0.980] | 0.969 [0.944, 0.988] | 0.265 [0.255, 0.277] | 0.261 [0.251, 0.273] | 40 |
+| toyota | forecast | start_points | 10 | nlinear | 0.970 [0.936, 0.995] | 0.969 [0.931, 0.994] | 0.275 [0.272, 0.279] | 0.266 [0.263, 0.270] | 40 |
+| toyota | forecast | start_points | 10 | patchtst | 0.884 [0.843, 0.924] | 0.961 [0.927, 0.989] | 0.070 [0.062, 0.080] | 0.106 [0.098, 0.115] | 40 |
+| toyota | forecast | start_points | 10 | rlinear | 0.874 [0.830, 0.915] | 0.961 [0.926, 0.989] | 0.088 [0.075, 0.105] | 0.135 [0.123, 0.152] | 40 |
+| toyota | forecast | start_points | 10 | transformer | 1.000 [1.000, 1.000] | 1.000 [1.000, 1.000] | 3.130 [3.109, 3.153] | 2.304 [2.283, 2.327] | 40 |
+| toyota | forecast | start_points | 50 | dlinear | 0.834 [0.814, 0.853] | 0.939 [0.914, 0.960] | 2.444 [2.425, 2.471] | 2.318 [2.299, 2.345] | 40 |
+| toyota | forecast | start_points | 50 | elasticnet | 0.000 [0.000, 0.000] | 1.000 [1.000, 1.000] | 0.000 [0.000, 0.000] | 1.755 [1.755, 1.755] | 40 |
+| toyota | forecast | start_points | 50 | gru | 0.389 [0.277, 0.502] | 0.367 [0.263, 0.476] | 0.944 [0.841, 1.067] | 0.919 [0.816, 1.042] | 40 |
+| toyota | forecast | start_points | 50 | itransformer | 0.969 [0.943, 0.990] | 0.982 [0.963, 0.997] | 0.330 [0.309, 0.357] | 0.385 [0.364, 0.411] | 40 |
+| toyota | forecast | start_points | 50 | itransformer_sc | 0.954 [0.911, 0.988] | 0.971 [0.938, 0.996] | 0.427 [0.373, 0.498] | 0.506 [0.451, 0.576] | 40 |
+| toyota | forecast | start_points | 50 | lgbm | 0.356 [0.275, 0.438] | 0.681 [0.581, 0.781] | 0.681 [0.657, 0.710] | 0.850 [0.827, 0.880] | 40 |
+| toyota | forecast | start_points | 50 | lstm | 0.537 [0.465, 0.609] | 0.566 [0.497, 0.634] | 0.568 [0.518, 0.630] | 0.581 [0.531, 0.643] | 40 |
+| toyota | forecast | start_points | 50 | nlinear | 0.971 [0.938, 0.996] | 0.974 [0.941, 0.999] | 1.473 [1.442, 1.512] | 1.478 [1.448, 1.517] | 40 |
+| toyota | forecast | start_points | 50 | patchtst | 0.863 [0.812, 0.910] | 0.969 [0.935, 0.993] | 0.299 [0.262, 0.346] | 0.381 [0.344, 0.427] | 40 |
+| toyota | forecast | start_points | 50 | rlinear | 0.870 [0.819, 0.918] | 0.946 [0.899, 0.984] | 0.422 [0.358, 0.504] | 0.497 [0.433, 0.579] | 40 |
+| toyota | forecast | start_points | 50 | transformer | 0.999 [0.996, 1.000] | 0.993 [0.980, 1.000] | 2.442 [2.429, 2.455] | 1.845 [1.832, 1.858] | 40 |
+| toyota | forecast | start_points | 100 | dlinear | 0.894 [0.868, 0.919] | 0.974 [0.951, 0.993] | 5.646 [5.627, 5.663] | 6.161 [6.142, 6.179] | 40 |
+| toyota | forecast | start_points | 100 | elasticnet | 0.000 [0.000, 0.000] | 1.000 [1.000, 1.000] | 0.000 [0.000, 0.000] | 4.751 [4.751, 4.751] | 40 |
+| toyota | forecast | start_points | 100 | gru | 0.172 [0.123, 0.230] | 0.234 [0.175, 0.297] | 1.759 [1.551, 2.020] | 1.944 [1.735, 2.205] | 40 |
+| toyota | forecast | start_points | 100 | itransformer | 0.941 [0.914, 0.966] | 0.982 [0.964, 0.996] | 0.766 [0.676, 0.873] | 0.982 [0.893, 1.089] | 40 |
+| toyota | forecast | start_points | 100 | itransformer_sc | 0.935 [0.884, 0.978] | 0.950 [0.904, 0.988] | 1.192 [1.026, 1.404] | 1.298 [1.132, 1.510] | 40 |
+| toyota | forecast | start_points | 100 | lgbm | 0.350 [0.281, 0.425] | 0.787 [0.706, 0.863] | 1.595 [1.492, 1.739] | 1.981 [1.877, 2.124] | 40 |
+| toyota | forecast | start_points | 100 | lstm | 0.342 [0.276, 0.410] | 0.509 [0.419, 0.600] | 1.224 [1.070, 1.418] | 1.427 [1.273, 1.621] | 40 |
+| toyota | forecast | start_points | 100 | nlinear | 0.936 [0.896, 0.971] | 0.965 [0.931, 0.991] | 3.929 [3.816, 4.074] | 3.978 [3.865, 4.123] | 40 |
+| toyota | forecast | start_points | 100 | patchtst | 0.911 [0.868, 0.951] | 0.975 [0.954, 0.993] | 1.007 [0.871, 1.176] | 1.140 [1.004, 1.309] | 40 |
+| toyota | forecast | start_points | 100 | rlinear | 0.910 [0.860, 0.954] | 0.940 [0.896, 0.976] | 1.464 [1.241, 1.752] | 1.518 [1.295, 1.805] | 40 |
+| toyota | forecast | start_points | 100 | transformer | 0.981 [0.949, 0.999] | 0.975 [0.934, 0.997] | 2.125 [2.022, 2.251] | 1.947 [1.844, 2.073] | 40 |
+| toyota | forecast | start_points | 200 | dlinear | 0.915 [0.887, 0.940] | 0.979 [0.959, 0.995] | 8.738 [8.704, 8.781] | 11.733 [11.700, 11.776] | 40 |
+| toyota | forecast | start_points | 200 | elasticnet | 0.000 [0.000, 0.000] | 0.988 [0.969, 1.000] | 0.000 [0.000, 0.000] | 11.340 [11.340, 11.340] | 40 |
+| toyota | forecast | start_points | 200 | gru | 0.182 [0.131, 0.236] | 0.403 [0.305, 0.501] | 5.915 [5.428, 6.489] | 7.704 [7.217, 8.278] | 40 |
+| toyota | forecast | start_points | 200 | itransformer | 0.852 [0.806, 0.894] | 0.974 [0.949, 0.994] | 2.114 [1.925, 2.344] | 4.675 [4.486, 4.905] | 40 |
+| toyota | forecast | start_points | 200 | itransformer_sc | 0.926 [0.880, 0.966] | 0.978 [0.956, 0.996] | 4.086 [3.522, 4.803] | 4.564 [4.000, 5.282] | 40 |
+| toyota | forecast | start_points | 200 | lgbm | 0.444 [0.375, 0.519] | 0.819 [0.744, 0.894] | 5.321 [4.921, 5.783] | 6.253 [5.854, 6.715] | 40 |
+| toyota | forecast | start_points | 200 | lstm | 0.356 [0.296, 0.419] | 0.846 [0.793, 0.896] | 3.864 [3.518, 4.262] | 5.354 [5.008, 5.752] | 40 |
+| toyota | forecast | start_points | 200 | nlinear | 0.912 [0.871, 0.950] | 0.941 [0.904, 0.975] | 10.978 [10.902, 11.075] | 11.087 [11.010, 11.184] | 40 |
+| toyota | forecast | start_points | 200 | patchtst | 0.934 [0.894, 0.969] | 0.985 [0.957, 1.000] | 4.686 [4.046, 5.498] | 5.008 [4.368, 5.819] | 40 |
+| toyota | forecast | start_points | 200 | rlinear | 0.960 [0.918, 0.993] | 0.965 [0.925, 0.997] | 5.150 [4.413, 6.090] | 5.284 [4.547, 6.223] | 40 |
+| toyota | forecast | start_points | 200 | transformer | 0.943 [0.898, 0.978] | 0.957 [0.924, 0.984] | 4.812 [4.494, 5.210] | 5.755 [5.437, 6.153] | 40 |
+| toyota | rul | all | 0 | dlinear | 0.868 [0.814, 0.913] | 0.942 [0.891, 0.982] | 574.277 [569.922, 579.318] | 687.014 [682.659, 692.055] | 43 |
+| toyota | rul | all | 0 | elasticnet | 0.000 [0.000, 0.000] | 0.938 [0.882, 0.982] | 0.000 [0.000, 0.000] | 577.202 [577.202, 577.202] | 43 |
+| toyota | rul | all | 0 | gru | 0.829 [0.751, 0.898] | 0.928 [0.879, 0.970] | 246.839 [214.953, 281.777] | 376.962 [345.075, 411.900] | 43 |
+| toyota | rul | all | 0 | itransformer | 0.934 [0.892, 0.968] | 0.957 [0.920, 0.985] | 306.480 [285.249, 329.937] | 364.703 [343.472, 388.159] | 43 |
+| toyota | rul | all | 0 | itransformer_sc | 0.904 [0.859, 0.942] | 0.964 [0.934, 0.988] | 336.116 [309.143, 363.898] | 455.524 [428.551, 483.306] | 43 |
+| toyota | rul | all | 0 | lgbm | 0.816 [0.750, 0.875] | 0.969 [0.933, 0.998] | 251.450 [222.426, 286.302] | 523.018 [493.995, 557.871] | 43 |
+| toyota | rul | all | 0 | lstm | 0.861 [0.805, 0.911] | 0.960 [0.922, 0.989] | 212.138 [192.364, 234.024] | 388.277 [368.503, 410.163] | 43 |
+| toyota | rul | all | 0 | nlinear | 0.863 [0.809, 0.909] | 0.941 [0.891, 0.982] | 539.815 [535.240, 544.250] | 650.555 [645.980, 654.990] | 43 |
+| toyota | rul | all | 0 | patchtst | 0.716 [0.672, 0.759] | 0.940 [0.903, 0.968] | 684.233 [578.877, 811.245] | 1449.191 [1343.835, 1576.203] | 43 |
+| toyota | rul | all | 0 | rlinear | 0.758 [0.709, 0.806] | 0.934 [0.894, 0.967] | 2282.916 [1987.885, 2630.286] | 3111.627 [2816.596, 3458.997] | 43 |
+| toyota | rul | all | 0 | transformer | 0.909 [0.858, 0.952] | 0.945 [0.908, 0.976] | 422.110 [391.986, 454.887] | 499.318 [469.194, 532.096] | 43 |
+| toyota | rul | start_points | 0 | dlinear | 0.877 [0.812, 0.935] | 0.930 [0.866, 0.983] | 561.922 [555.747, 569.244] | 674.659 [668.484, 681.981] | 43 |
+| toyota | rul | start_points | 0 | elasticnet | 0.000 [0.000, 0.000] | 0.930 [0.860, 0.988] | 0.000 [0.000, 0.000] | 577.202 [577.202, 577.202] | 43 |
+| toyota | rul | start_points | 0 | gru | 0.807 [0.707, 0.897] | 0.920 [0.858, 0.971] | 273.553 [233.187, 317.638] | 403.675 [363.309, 447.760] | 43 |
+| toyota | rul | start_points | 0 | itransformer | 0.921 [0.867, 0.965] | 0.952 [0.906, 0.988] | 330.240 [299.195, 363.524] | 388.463 [357.418, 421.747] | 43 |
+| toyota | rul | start_points | 0 | itransformer_sc | 0.880 [0.822, 0.933] | 0.958 [0.924, 0.987] | 371.062 [324.244, 418.359] | 490.470 [443.652, 537.767] | 43 |
+| toyota | rul | start_points | 0 | lgbm | 0.802 [0.709, 0.884] | 0.971 [0.936, 1.000] | 261.568 [223.270, 306.731] | 533.137 [494.839, 578.300] | 43 |
+| toyota | rul | start_points | 0 | lstm | 0.836 [0.758, 0.905] | 0.962 [0.909, 0.999] | 246.739 [213.385, 285.398] | 422.878 [389.524, 461.537] | 43 |
+| toyota | rul | start_points | 0 | nlinear | 0.860 [0.792, 0.920] | 0.931 [0.870, 0.983] | 540.937 [536.571, 545.847] | 651.677 [647.311, 656.587] | 43 |
+| toyota | rul | start_points | 0 | patchtst | 0.609 [0.534, 0.683] | 0.921 [0.873, 0.959] | 617.806 [500.599, 751.812] | 1382.764 [1265.556, 1516.770] | 43 |
+| toyota | rul | start_points | 0 | rlinear | 0.734 [0.657, 0.808] | 0.906 [0.849, 0.953] | 1772.785 [1140.160, 2526.069] | 2601.496 [1968.870, 3354.779] | 43 |
+| toyota | rul | start_points | 0 | transformer | 0.900 [0.844, 0.948] | 0.943 [0.902, 0.978] | 455.240 [418.292, 496.263] | 532.448 [495.501, 573.471] | 43 |
+| toyota | rul | all | 0 | dlinear | 0.764 [0.708, 0.815] | 0.846 [0.792, 0.896] | 563.389 [560.526, 566.749] | 676.126 [673.263, 679.486] | 40 |
+| toyota | rul | all | 0 | elasticnet | 0.000 [0.000, 0.000] | 0.863 [0.794, 0.925] | 0.000 [0.000, 0.000] | 577.202 [577.202, 577.202] | 40 |
+| toyota | rul | all | 0 | gru | 0.512 [0.439, 0.585] | 0.693 [0.612, 0.771] | 255.305 [230.974, 280.263] | 385.427 [361.097, 410.386] | 40 |
+| toyota | rul | all | 0 | itransformer | 0.819 [0.782, 0.855] | 0.901 [0.866, 0.932] | 404.084 [377.699, 430.521] | 462.307 [435.921, 488.744] | 40 |
+| toyota | rul | all | 0 | itransformer_sc | 0.866 [0.824, 0.905] | 0.952 [0.924, 0.974] | 435.072 [401.674, 468.029] | 554.480 [521.082, 587.437] | 40 |
+| toyota | rul | all | 0 | lgbm | 0.504 [0.454, 0.555] | 0.739 [0.673, 0.804] | 247.230 [236.492, 258.480] | 518.799 [508.061, 530.048] | 40 |
+| toyota | rul | all | 0 | lstm | 0.574 [0.505, 0.644] | 0.765 [0.690, 0.839] | 216.591 [206.676, 226.487] | 392.730 [382.815, 402.626] | 40 |
+| toyota | rul | all | 0 | nlinear | 0.766 [0.710, 0.818] | 0.845 [0.792, 0.895] | 540.601 [538.291, 543.394] | 651.341 [649.032, 654.134] | 40 |
+| toyota | rul | all | 0 | patchtst | 0.186 [0.156, 0.218] | 0.654 [0.595, 0.712] | 222.290 [202.986, 243.399] | 987.248 [967.944, 1008.357] | 40 |
+| toyota | rul | all | 0 | rlinear | 0.501 [0.455, 0.555] | 0.757 [0.710, 0.802] | 1156.541 [1083.039, 1231.632] | 1985.252 [1911.750, 2060.343] | 40 |
+| toyota | rul | all | 0 | transformer | 0.703 [0.638, 0.767] | 0.786 [0.719, 0.850] | 392.654 [378.458, 406.663] | 469.863 [455.666, 483.872] | 40 |
+| toyota | rul | start_points | 0 | dlinear | 0.762 [0.688, 0.838] | 0.819 [0.750, 0.887] | 545.024 [541.846, 549.119] | 657.761 [654.583, 661.856] | 40 |
+| toyota | rul | start_points | 0 | elasticnet | 0.000 [0.000, 0.000] | 0.812 [0.725, 0.894] | 0.000 [0.000, 0.000] | 577.202 [577.202, 577.202] | 40 |
+| toyota | rul | start_points | 0 | gru | 0.426 [0.326, 0.526] | 0.610 [0.509, 0.708] | 284.356 [257.330, 312.429] | 414.479 [387.452, 442.551] | 40 |
+| toyota | rul | start_points | 0 | itransformer | 0.830 [0.774, 0.885] | 0.877 [0.821, 0.930] | 463.565 [427.408, 499.046] | 521.788 [485.630, 557.269] | 40 |
+| toyota | rul | start_points | 0 | itransformer_sc | 0.853 [0.794, 0.905] | 0.931 [0.886, 0.970] | 519.214 [465.843, 571.317] | 638.622 [585.251, 690.725] | 40 |
+| toyota | rul | start_points | 0 | lgbm | 0.388 [0.319, 0.456] | 0.675 [0.600, 0.750] | 248.111 [235.048, 261.651] | 519.680 [506.617, 533.220] | 40 |
+| toyota | rul | start_points | 0 | lstm | 0.509 [0.421, 0.596] | 0.701 [0.608, 0.792] | 242.950 [230.620, 254.866] | 419.089 [406.759, 431.005] | 40 |
+| toyota | rul | start_points | 0 | nlinear | 0.762 [0.686, 0.835] | 0.819 [0.750, 0.887] | 531.122 [528.821, 534.085] | 641.862 [639.561, 644.825] | 40 |
+| toyota | rul | start_points | 0 | patchtst | 0.055 [0.029, 0.086] | 0.512 [0.441, 0.583] | 200.565 [177.020, 225.602] | 965.523 [941.978, 990.560] | 40 |
+| toyota | rul | start_points | 0 | rlinear | 0.383 [0.314, 0.456] | 0.689 [0.619, 0.759] | 521.087 [453.244, 606.417] | 1349.797 [1281.955, 1435.128] | 40 |
+| toyota | rul | start_points | 0 | transformer | 0.685 [0.596, 0.773] | 0.747 [0.656, 0.833] | 409.808 [394.995, 424.434] | 487.017 [472.204, 501.642] | 40 |
+| toyota | soh | all | 0 | dlinear | 0.895 [0.858, 0.926] | 0.890 [0.853, 0.923] | 0.120 [0.118, 0.123] | 0.117 [0.114, 0.119] | 43 |
+| toyota | soh | all | 0 | elasticnet | 0.000 [0.000, 0.000] | 0.877 [0.836, 0.912] | 0.000 [0.000, 0.000] | 0.112 [0.112, 0.112] | 43 |
+| toyota | soh | all | 0 | gru | 0.883 [0.838, 0.920] | 0.884 [0.839, 0.921] | 0.122 [0.116, 0.128] | 0.122 [0.117, 0.129] | 43 |
+| toyota | soh | all | 0 | itransformer | 0.897 [0.872, 0.919] | 0.908 [0.883, 0.929] | 0.099 [0.086, 0.114] | 0.103 [0.090, 0.118] | 43 |
+| toyota | soh | all | 0 | itransformer_sc | 0.890 [0.867, 0.910] | 0.911 [0.889, 0.930] | 0.099 [0.086, 0.115] | 0.107 [0.094, 0.123] | 43 |
+| toyota | soh | all | 0 | lgbm | 0.858 [0.809, 0.899] | 0.879 [0.833, 0.918] | 0.098 [0.093, 0.105] | 0.109 [0.104, 0.116] | 43 |
+| toyota | soh | all | 0 | lstm | 0.885 [0.843, 0.919] | 0.885 [0.843, 0.920] | 0.125 [0.121, 0.128] | 0.125 [0.121, 0.129] | 43 |
+| toyota | soh | all | 0 | nlinear | 0.933 [0.907, 0.955] | 0.915 [0.885, 0.941] | 0.177 [0.169, 0.186] | 0.157 [0.149, 0.166] | 43 |
+| toyota | soh | all | 0 | patchtst | 0.860 [0.850, 0.870] | 0.916 [0.905, 0.926] | 0.110 [0.087, 0.139] | 0.122 [0.099, 0.151] | 43 |
+| toyota | soh | all | 0 | rlinear | 0.797 [0.767, 0.826] | 0.907 [0.884, 0.928] | 0.154 [0.129, 0.182] | 0.183 [0.158, 0.211] | 43 |
+| toyota | soh | all | 0 | transformer | 0.929 [0.896, 0.955] | 0.922 [0.888, 0.951] | 0.211 [0.205, 0.218] | 0.193 [0.187, 0.200] | 43 |
+| toyota | soh | start_points | 0 | dlinear | 0.867 [0.797, 0.929] | 0.862 [0.787, 0.926] | 0.127 [0.113, 0.150] | 0.124 [0.110, 0.147] | 43 |
+| toyota | soh | start_points | 0 | elasticnet | 0.000 [0.000, 0.000] | 0.901 [0.831, 0.953] | 0.000 [0.000, 0.000] | 0.112 [0.112, 0.112] | 43 |
+| toyota | soh | start_points | 0 | gru | 0.895 [0.820, 0.957] | 0.894 [0.820, 0.956] | 0.113 [0.107, 0.120] | 0.114 [0.108, 0.121] | 43 |
+| toyota | soh | start_points | 0 | itransformer | 0.902 [0.844, 0.951] | 0.910 [0.856, 0.956] | 0.103 [0.079, 0.136] | 0.108 [0.083, 0.141] | 43 |
+| toyota | soh | start_points | 0 | itransformer_sc | 0.921 [0.874, 0.960] | 0.934 [0.891, 0.971] | 0.104 [0.078, 0.138] | 0.112 [0.086, 0.146] | 43 |
+| toyota | soh | start_points | 0 | lgbm | 0.849 [0.762, 0.924] | 0.872 [0.791, 0.936] | 0.095 [0.089, 0.103] | 0.106 [0.100, 0.114] | 43 |
+| toyota | soh | start_points | 0 | lstm | 0.886 [0.810, 0.949] | 0.887 [0.813, 0.949] | 0.116 [0.113, 0.120] | 0.117 [0.113, 0.120] | 43 |
+| toyota | soh | start_points | 0 | nlinear | 0.936 [0.898, 0.970] | 0.915 [0.870, 0.953] | 0.179 [0.158, 0.207] | 0.159 [0.138, 0.187] | 43 |
+| toyota | soh | start_points | 0 | patchtst | 0.902 [0.866, 0.936] | 0.948 [0.920, 0.973] | 0.109 [0.078, 0.144] | 0.121 [0.089, 0.156] | 43 |
+| toyota | soh | start_points | 0 | rlinear | 0.769 [0.705, 0.831] | 0.883 [0.830, 0.929] | 0.123 [0.070, 0.191] | 0.152 [0.099, 0.220] | 43 |
+| toyota | soh | start_points | 0 | transformer | 0.934 [0.883, 0.973] | 0.927 [0.873, 0.970] | 0.196 [0.192, 0.202] | 0.178 [0.173, 0.184] | 43 |
+| toyota | soh | all | 0 | dlinear | 0.983 [0.976, 0.989] | 0.983 [0.975, 0.989] | 0.114 [0.114, 0.114] | 0.110 [0.110, 0.110] | 40 |
+| toyota | soh | all | 0 | elasticnet | 0.000 [0.000, 0.000] | 0.972 [0.965, 0.977] | 0.000 [0.000, 0.000] | 0.112 [0.112, 0.112] | 40 |
+| toyota | soh | all | 0 | gru | 0.719 [0.682, 0.756] | 0.722 [0.686, 0.758] | 0.112 [0.107, 0.116] | 0.112 [0.108, 0.117] | 40 |
+| toyota | soh | all | 0 | itransformer | 0.771 [0.754, 0.790] | 0.818 [0.803, 0.834] | 0.085 [0.083, 0.087] | 0.089 [0.087, 0.091] | 40 |
+| toyota | soh | all | 0 | itransformer_sc | 0.719 [0.679, 0.759] | 0.834 [0.802, 0.865] | 0.109 [0.104, 0.113] | 0.117 [0.113, 0.121] | 40 |
+| toyota | soh | all | 0 | lgbm | 0.973 [0.965, 0.980] | 0.977 [0.969, 0.983] | 0.117 [0.114, 0.120] | 0.128 [0.125, 0.131] | 40 |
+| toyota | soh | all | 0 | lstm | 0.969 [0.958, 0.977] | 0.970 [0.960, 0.979] | 0.100 [0.099, 0.101] | 0.100 [0.099, 0.101] | 40 |
+| toyota | soh | all | 0 | nlinear | 0.987 [0.981, 0.992] | 0.985 [0.978, 0.990] | 0.152 [0.152, 0.153] | 0.133 [0.132, 0.133] | 40 |
+| toyota | soh | all | 0 | patchtst | 0.864 [0.858, 0.871] | 0.968 [0.962, 0.973] | 0.033 [0.030, 0.035] | 0.045 [0.042, 0.047] | 40 |
+| toyota | soh | all | 0 | rlinear | 0.891 [0.875, 0.906] | 0.983 [0.976, 0.989] | 0.062 [0.059, 0.066] | 0.091 [0.087, 0.094] | 40 |
+| toyota | soh | all | 0 | transformer | 0.989 [0.984, 0.992] | 0.987 [0.982, 0.992] | 0.227 [0.217, 0.239] | 0.209 [0.199, 0.221] | 40 |
+| toyota | soh | start_points | 0 | dlinear | 0.950 [0.906, 0.988] | 0.950 [0.906, 0.988] | 0.113 [0.112, 0.114] | 0.110 [0.109, 0.110] | 40 |
+| toyota | soh | start_points | 0 | elasticnet | 0.000 [0.000, 0.000] | 0.950 [0.906, 0.988] | 0.000 [0.000, 0.000] | 0.112 [0.112, 0.112] | 40 |
+| toyota | soh | start_points | 0 | gru | 0.650 [0.599, 0.700] | 0.649 [0.600, 0.698] | 0.103 [0.099, 0.108] | 0.104 [0.099, 0.109] | 40 |
+| toyota | soh | start_points | 0 | itransformer | 0.675 [0.628, 0.722] | 0.730 [0.688, 0.771] | 0.084 [0.081, 0.087] | 0.089 [0.085, 0.092] | 40 |
+| toyota | soh | start_points | 0 | itransformer_sc | 0.661 [0.591, 0.730] | 0.790 [0.730, 0.848] | 0.111 [0.106, 0.117] | 0.119 [0.114, 0.125] | 40 |
+| toyota | soh | start_points | 0 | lgbm | 0.950 [0.906, 0.988] | 0.950 [0.906, 0.988] | 0.118 [0.114, 0.121] | 0.129 [0.125, 0.132] | 40 |
+| toyota | soh | start_points | 0 | lstm | 0.938 [0.894, 0.974] | 0.940 [0.897, 0.976] | 0.094 [0.093, 0.095] | 0.094 [0.093, 0.095] | 40 |
+| toyota | soh | start_points | 0 | nlinear | 0.957 [0.921, 0.989] | 0.951 [0.907, 0.988] | 0.147 [0.146, 0.148] | 0.127 [0.126, 0.128] | 40 |
+| toyota | soh | start_points | 0 | patchtst | 0.811 [0.759, 0.863] | 0.935 [0.891, 0.971] | 0.026 [0.022, 0.030] | 0.038 [0.034, 0.042] | 40 |
+| toyota | soh | start_points | 0 | rlinear | 0.844 [0.787, 0.896] | 0.951 [0.909, 0.988] | 0.030 [0.026, 0.034] | 0.059 [0.055, 0.063] | 40 |
+| toyota | soh | start_points | 0 | transformer | 0.969 [0.940, 0.993] | 0.964 [0.929, 0.991] | 0.223 [0.212, 0.235] | 0.205 [0.194, 0.216] | 40 |
+
+![reliability](figures/benchmark_reliability_calce.png)
+![reliability](figures/benchmark_reliability_nasa.png)
+![reliability](figures/benchmark_reliability_toyota.png)
 
 ## Full tables
 
@@ -2777,189 +3477,490 @@
 
 </details>
 
-<details><summary>toyota_rul (180 rows)</summary>
+<details><summary>toyota_rul (330 rows)</summary>
 
 | split | policy | kind | metric | model | mean [95% CI] | vs best baseline | indep. (B0018) | n_cells | n_seeds | run_group |
 |---|---|---|---|---|---|---|---|---|---|---|
+| test1 | all | overall | rul_bias | dlinear | -44.260 [-99.273, 0.420] |  |  | 43 | 5 | c066ff8c |
 | test1 | all | overall | rul_bias | elasticnet | -12.528 [-64.015, 30.411] |  |  | 43 | 5 | 6228f90c |
 | test1 | all | overall | rul_bias | gru | -20.631 [-56.541, 11.310] |  |  | 43 | 5 | 68c083f5 |
-| test1 | all | overall | rul_bias | itransformer_sc | -28.972 [-62.351, -1.384] |  |  | 43 | 2 | 1f0731d5 |
+| test1 | all | overall | rul_bias | itransformer | -31.525 [-66.927, -2.215] |  |  | 43 | 5 | 1f7dadba |
+| test1 | all | overall | rul_bias | itransformer_sc | -28.416 [-61.221, -1.262] |  |  | 43 | 5 | 4a0a69dd |
+| test1 | all | overall | rul_bias | lgbm | -23.120 [-50.100, -0.588] |  |  | 43 | 5 | b88b5644 |
 | test1 | all | overall | rul_bias | lstm | -9.795 [-39.561, 17.630] |  |  | 43 | 5 | 7a6e2343 |
+| test1 | all | overall | rul_bias | nlinear | -44.156 [-99.174, 0.535] |  |  | 43 | 5 | f6a02b2d |
+| test1 | all | overall | rul_bias | patchtst | -95.532 [-162.099, -30.432] |  |  | 43 | 5 | 5b64c567 |
 | test1 | all | overall | rul_bias | rlinear | -301.601 [-368.495, -243.918] |  |  | 43 | 5 | aa9b25f1 |
 | test1 | all | overall | rul_bias | transformer | -12.996 [-50.053, 21.158] |  |  | 43 | 5 | cd2ed4cc |
+| test1 | all | overall | rul_mae | dlinear | 134.275 [96.428, 182.072] |  |  | 43 | 5 | c066ff8c |
 | test1 | all | overall | rul_mae | elasticnet | 110.004 [78.385, 150.217] |  |  | 43 | 5 | 6228f90c |
 | test1 | all | overall | rul_mae | gru | 80.826 [57.844, 108.591] |  |  | 43 | 5 | 68c083f5 |
-| test1 | all | overall | rul_mae | itransformer_sc | 77.203 [53.823, 106.896] |  |  | 43 | 2 | 1f0731d5 |
+| test1 | all | overall | rul_mae | itransformer | 78.362 [54.298, 108.739] |  |  | 43 | 5 | 1f7dadba |
+| test1 | all | overall | rul_mae | itransformer_sc | 76.097 [53.084, 105.406] |  |  | 43 | 5 | 4a0a69dd |
+| test1 | all | overall | rul_mae | lgbm | 57.869 [39.443, 80.381] |  |  | 43 | 5 | b88b5644 |
 | test1 | all | overall | rul_mae | lstm | 70.208 [51.137, 93.125] |  |  | 43 | 5 | 7a6e2343 |
+| test1 | all | overall | rul_mae | nlinear | 134.312 [96.475, 182.102] |  |  | 43 | 5 | f6a02b2d |
+| test1 | all | overall | rul_mae | patchtst | 250.500 [204.828, 304.197] |  |  | 43 | 5 | 5b64c567 |
 | test1 | all | overall | rul_mae | rlinear | 339.280 [287.944, 399.732] |  |  | 43 | 5 | aa9b25f1 |
 | test1 | all | overall | rul_mae | transformer | 88.107 [64.229, 115.516] |  |  | 43 | 5 | cd2ed4cc |
+| test1 | start_points | fixed:100 | rul_bias | dlinear | -221.932 [-343.355, -122.303] |  |  | 43 | 5 | c066ff8c |
 | test1 | start_points | fixed:100 | rul_bias | elasticnet | -62.499 [-161.917, 20.467] |  |  | 43 | 5 | 6228f90c |
 | test1 | start_points | fixed:100 | rul_bias | gru | -79.038 [-144.022, -25.414] |  |  | 43 | 5 | 68c083f5 |
-| test1 | start_points | fixed:100 | rul_bias | itransformer_sc | -111.405 [-215.724, -25.030] |  |  | 43 | 2 | 1f0731d5 |
+| test1 | start_points | fixed:100 | rul_bias | itransformer | -66.139 [-138.242, -5.664] |  |  | 43 | 5 | 1f7dadba |
+| test1 | start_points | fixed:100 | rul_bias | itransformer_sc | -112.070 [-215.391, -27.295] |  |  | 43 | 5 | 4a0a69dd |
+| test1 | start_points | fixed:100 | rul_bias | lgbm | -68.696 [-126.052, -22.520] |  |  | 43 | 5 | b88b5644 |
 | test1 | start_points | fixed:100 | rul_bias | lstm | -53.975 [-104.738, -11.548] |  |  | 43 | 5 | 7a6e2343 |
+| test1 | start_points | fixed:100 | rul_bias | nlinear | -221.837 [-343.272, -122.228] |  |  | 43 | 5 | f6a02b2d |
+| test1 | start_points | fixed:100 | rul_bias | patchtst | -457.366 [-587.807, -346.408] |  |  | 43 | 5 | 5b64c567 |
 | test1 | start_points | fixed:100 | rul_bias | rlinear | -595.083 [-723.749, -483.625] |  |  | 43 | 5 | aa9b25f1 |
 | test1 | start_points | fixed:100 | rul_bias | transformer | -65.516 [-143.081, 0.340] |  |  | 43 | 5 | cd2ed4cc |
+| test1 | start_points | fixed:100 | rul_mae | dlinear | 238.900 [142.043, 357.797] |  |  | 43 | 5 | c066ff8c |
 | test1 | start_points | fixed:100 | rul_mae | elasticnet | 186.727 [119.897, 270.325] |  |  | 43 | 5 | 6228f90c |
 | test1 | start_points | fixed:100 | rul_mae | gru | 126.724 [81.034, 183.905] |  |  | 43 | 5 | 68c083f5 |
-| test1 | start_points | fixed:100 | rul_mae | itransformer_sc | 198.186 [126.882, 289.363] |  |  | 43 | 2 | 1f0731d5 |
+| test1 | start_points | fixed:100 | rul_mae | itransformer | 151.913 [106.292, 210.226] |  |  | 43 | 5 | 1f7dadba |
+| test1 | start_points | fixed:100 | rul_mae | itransformer_sc | 192.952 [121.012, 283.806] |  |  | 43 | 5 | 4a0a69dd |
+| test1 | start_points | fixed:100 | rul_mae | lgbm | 102.137 [61.111, 154.631] |  |  | 43 | 5 | b88b5644 |
 | test1 | start_points | fixed:100 | rul_mae | lstm | 102.593 [68.017, 146.076] |  |  | 43 | 5 | 7a6e2343 |
+| test1 | start_points | fixed:100 | rul_mae | nlinear | 238.924 [142.090, 357.833] |  |  | 43 | 5 | f6a02b2d |
+| test1 | start_points | fixed:100 | rul_mae | patchtst | 459.701 [349.868, 589.065] |  |  | 43 | 5 | 5b64c567 |
 | test1 | start_points | fixed:100 | rul_mae | rlinear | 601.258 [493.876, 726.394] |  |  | 43 | 5 | aa9b25f1 |
 | test1 | start_points | fixed:100 | rul_mae | transformer | 147.868 [93.735, 214.277] |  |  | 43 | 5 | cd2ed4cc |
+| test1 | start_points | frac:0.3 | alpha_lambda_acc | dlinear | 0.558 [0.419, 0.698] |  |  | 43 | 5 | c066ff8c |
 | test1 | start_points | frac:0.3 | alpha_lambda_acc | elasticnet | 0.465 [0.326, 0.605] |  |  | 43 | 5 | 6228f90c |
 | test1 | start_points | frac:0.3 | alpha_lambda_acc | gru | 0.642 [0.512, 0.763] |  |  | 43 | 5 | 68c083f5 |
-| test1 | start_points | frac:0.3 | alpha_lambda_acc | itransformer_sc | 0.616 [0.477, 0.756] |  |  | 43 | 2 | 1f0731d5 |
+| test1 | start_points | frac:0.3 | alpha_lambda_acc | itransformer | 0.516 [0.377, 0.651] |  |  | 43 | 5 | 1f7dadba |
+| test1 | start_points | frac:0.3 | alpha_lambda_acc | itransformer_sc | 0.628 [0.488, 0.758] |  |  | 43 | 5 | 4a0a69dd |
+| test1 | start_points | frac:0.3 | alpha_lambda_acc | lgbm | 0.767 [0.628, 0.884] |  |  | 43 | 5 | b88b5644 |
 | test1 | start_points | frac:0.3 | alpha_lambda_acc | lstm | 0.679 [0.563, 0.791] |  |  | 43 | 5 | 7a6e2343 |
+| test1 | start_points | frac:0.3 | alpha_lambda_acc | nlinear | 0.558 [0.419, 0.698] |  |  | 43 | 5 | f6a02b2d |
+| test1 | start_points | frac:0.3 | alpha_lambda_acc | patchtst | 0.112 [0.042, 0.195] |  |  | 43 | 5 | 5b64c567 |
 | test1 | start_points | frac:0.3 | alpha_lambda_acc | rlinear | 0.000 [0.000, 0.000] |  |  | 43 | 5 | aa9b25f1 |
 | test1 | start_points | frac:0.3 | alpha_lambda_acc | transformer | 0.623 [0.488, 0.753] |  |  | 43 | 5 | cd2ed4cc |
+| test1 | start_points | frac:0.3 | rul_bias | dlinear | -118.150 [-201.153, -50.088] |  |  | 43 | 5 | c066ff8c |
 | test1 | start_points | frac:0.3 | rul_bias | elasticnet | -36.029 [-109.067, 25.285] |  |  | 43 | 5 | 6228f90c |
 | test1 | start_points | frac:0.3 | rul_bias | gru | -47.411 [-97.291, -5.165] |  |  | 43 | 5 | 68c083f5 |
-| test1 | start_points | frac:0.3 | rul_bias | itransformer_sc | -74.638 [-130.156, -27.203] |  |  | 43 | 2 | 1f0731d5 |
+| test1 | start_points | frac:0.3 | rul_bias | itransformer | -66.385 [-120.363, -20.905] |  |  | 43 | 5 | 1f7dadba |
+| test1 | start_points | frac:0.3 | rul_bias | itransformer_sc | -68.867 [-122.549, -22.612] |  |  | 43 | 5 | 4a0a69dd |
+| test1 | start_points | frac:0.3 | rul_bias | lgbm | -42.904 [-83.573, -8.743] |  |  | 43 | 5 | b88b5644 |
 | test1 | start_points | frac:0.3 | rul_bias | lstm | -38.338 [-80.467, -2.337] |  |  | 43 | 5 | 7a6e2343 |
+| test1 | start_points | frac:0.3 | rul_bias | nlinear | -118.300 [-201.497, -50.136] |  |  | 43 | 5 | f6a02b2d |
+| test1 | start_points | frac:0.3 | rul_bias | patchtst | -195.897 [-312.241, -65.806] |  |  | 43 | 5 | 5b64c567 |
 | test1 | start_points | frac:0.3 | rul_bias | rlinear | -473.832 [-561.165, -398.918] |  |  | 43 | 5 | aa9b25f1 |
 | test1 | start_points | frac:0.3 | rul_bias | transformer | -37.711 [-88.866, 8.550] |  |  | 43 | 5 | cd2ed4cc |
+| test1 | start_points | frac:0.3 | rul_mae | dlinear | 156.910 [95.383, 232.735] |  |  | 43 | 5 | c066ff8c |
 | test1 | start_points | frac:0.3 | rul_mae | elasticnet | 143.252 [96.348, 203.087] |  |  | 43 | 5 | 6228f90c |
 | test1 | start_points | frac:0.3 | rul_mae | gru | 98.879 [65.277, 141.517] |  |  | 43 | 5 | 68c083f5 |
-| test1 | start_points | frac:0.3 | rul_mae | itransformer_sc | 115.294 [75.163, 165.355] |  |  | 43 | 2 | 1f0731d5 |
+| test1 | start_points | frac:0.3 | rul_mae | itransformer | 111.156 [73.827, 157.804] |  |  | 43 | 5 | 1f7dadba |
+| test1 | start_points | frac:0.3 | rul_mae | itransformer_sc | 112.683 [74.474, 160.316] |  |  | 43 | 5 | 4a0a69dd |
+| test1 | start_points | frac:0.3 | rul_mae | lgbm | 78.801 [50.399, 114.186] |  |  | 43 | 5 | b88b5644 |
 | test1 | start_points | frac:0.3 | rul_mae | lstm | 87.672 [59.646, 122.986] |  |  | 43 | 5 | 7a6e2343 |
+| test1 | start_points | frac:0.3 | rul_mae | nlinear | 157.262 [95.640, 233.355] |  |  | 43 | 5 | f6a02b2d |
+| test1 | start_points | frac:0.3 | rul_mae | patchtst | 326.646 [242.859, 431.861] |  |  | 43 | 5 | 5b64c567 |
 | test1 | start_points | frac:0.3 | rul_mae | rlinear | 475.003 [400.781, 561.807] |  |  | 43 | 5 | aa9b25f1 |
 | test1 | start_points | frac:0.3 | rul_mae | transformer | 108.954 [73.026, 149.343] |  |  | 43 | 5 | cd2ed4cc |
+| test1 | start_points | frac:0.5 | alpha_lambda_acc | dlinear | 0.377 [0.237, 0.521] |  |  | 43 | 5 | c066ff8c |
 | test1 | start_points | frac:0.5 | alpha_lambda_acc | elasticnet | 0.488 [0.349, 0.628] |  |  | 43 | 5 | 6228f90c |
 | test1 | start_points | frac:0.5 | alpha_lambda_acc | gru | 0.507 [0.372, 0.642] |  |  | 43 | 5 | 68c083f5 |
-| test1 | start_points | frac:0.5 | alpha_lambda_acc | itransformer_sc | 0.628 [0.488, 0.767] |  |  | 43 | 2 | 1f0731d5 |
+| test1 | start_points | frac:0.5 | alpha_lambda_acc | itransformer | 0.581 [0.447, 0.712] |  |  | 43 | 5 | 1f7dadba |
+| test1 | start_points | frac:0.5 | alpha_lambda_acc | itransformer_sc | 0.633 [0.502, 0.758] |  |  | 43 | 5 | 4a0a69dd |
+| test1 | start_points | frac:0.5 | alpha_lambda_acc | lgbm | 0.744 [0.605, 0.860] |  |  | 43 | 5 | b88b5644 |
 | test1 | start_points | frac:0.5 | alpha_lambda_acc | lstm | 0.558 [0.433, 0.684] |  |  | 43 | 5 | 7a6e2343 |
+| test1 | start_points | frac:0.5 | alpha_lambda_acc | nlinear | 0.395 [0.256, 0.535] |  |  | 43 | 5 | f6a02b2d |
+| test1 | start_points | frac:0.5 | alpha_lambda_acc | patchtst | 0.260 [0.158, 0.367] |  |  | 43 | 5 | 5b64c567 |
 | test1 | start_points | frac:0.5 | alpha_lambda_acc | rlinear | 0.000 [0.000, 0.000] |  |  | 43 | 5 | aa9b25f1 |
 | test1 | start_points | frac:0.5 | alpha_lambda_acc | transformer | 0.558 [0.419, 0.698] |  |  | 43 | 5 | cd2ed4cc |
+| test1 | start_points | frac:0.5 | rul_bias | dlinear | -2.772 [-59.944, 44.409] |  |  | 43 | 5 | c066ff8c |
 | test1 | start_points | frac:0.5 | rul_bias | elasticnet | -6.969 [-58.528, 37.186] |  |  | 43 | 5 | 6228f90c |
 | test1 | start_points | frac:0.5 | rul_bias | gru | -7.035 [-48.662, 34.062] |  |  | 43 | 5 | 68c083f5 |
-| test1 | start_points | frac:0.5 | rul_bias | itransformer_sc | -6.134 [-28.428, 15.162] |  |  | 43 | 2 | 1f0731d5 |
+| test1 | start_points | frac:0.5 | rul_bias | itransformer | -34.528 [-67.655, -5.871] |  |  | 43 | 5 | 1f7dadba |
+| test1 | start_points | frac:0.5 | rul_bias | itransformer_sc | -5.665 [-26.964, 15.167] |  |  | 43 | 5 | 4a0a69dd |
+| test1 | start_points | frac:0.5 | rul_bias | lgbm | -18.908 [-40.903, 1.919] |  |  | 43 | 5 | b88b5644 |
 | test1 | start_points | frac:0.5 | rul_bias | lstm | -2.073 [-35.253, 28.910] |  |  | 43 | 5 | 7a6e2343 |
+| test1 | start_points | frac:0.5 | rul_bias | nlinear | -3.146 [-60.381, 43.973] |  |  | 43 | 5 | f6a02b2d |
+| test1 | start_points | frac:0.5 | rul_bias | patchtst | -82.847 [-148.458, -21.974] |  |  | 43 | 5 | 5b64c567 |
 | test1 | start_points | frac:0.5 | rul_bias | rlinear | -280.131 [-366.336, -192.709] |  |  | 43 | 5 | aa9b25f1 |
 | test1 | start_points | frac:0.5 | rul_bias | transformer | 8.906 [-23.632, 41.709] |  |  | 43 | 5 | cd2ed4cc |
+| test1 | start_points | frac:0.5 | rul_mae | dlinear | 113.537 [79.053, 157.557] |  |  | 43 | 5 | c066ff8c |
 | test1 | start_points | frac:0.5 | rul_mae | elasticnet | 103.068 [69.774, 144.333] |  |  | 43 | 5 | 6228f90c |
 | test1 | start_points | frac:0.5 | rul_mae | gru | 90.895 [62.212, 125.730] |  |  | 43 | 5 | 68c083f5 |
-| test1 | start_points | frac:0.5 | rul_mae | itransformer_sc | 55.949 [42.933, 70.908] |  |  | 43 | 2 | 1f0731d5 |
+| test1 | start_points | frac:0.5 | rul_mae | itransformer | 74.526 [52.755, 102.138] |  |  | 43 | 5 | 1f7dadba |
+| test1 | start_points | frac:0.5 | rul_mae | itransformer_sc | 56.386 [44.265, 69.592] |  |  | 43 | 5 | 4a0a69dd |
+| test1 | start_points | frac:0.5 | rul_mae | lgbm | 55.392 [41.383, 70.806] |  |  | 43 | 5 | b88b5644 |
 | test1 | start_points | frac:0.5 | rul_mae | lstm | 75.438 [54.867, 100.339] |  |  | 43 | 5 | 7a6e2343 |
+| test1 | start_points | frac:0.5 | rul_mae | nlinear | 113.261 [78.572, 157.412] |  |  | 43 | 5 | f6a02b2d |
+| test1 | start_points | frac:0.5 | rul_mae | patchtst | 177.111 [134.349, 227.543] |  |  | 43 | 5 | 5b64c567 |
 | test1 | start_points | frac:0.5 | rul_mae | rlinear | 350.356 [294.305, 414.218] |  |  | 43 | 5 | aa9b25f1 |
 | test1 | start_points | frac:0.5 | rul_mae | transformer | 80.815 [59.382, 104.355] |  |  | 43 | 5 | cd2ed4cc |
+| test1 | start_points | frac:0.7 | alpha_lambda_acc | dlinear | 0.070 [0.000, 0.163] |  |  | 43 | 5 | c066ff8c |
 | test1 | start_points | frac:0.7 | alpha_lambda_acc | elasticnet | 0.372 [0.233, 0.512] |  |  | 43 | 5 | 6228f90c |
 | test1 | start_points | frac:0.7 | alpha_lambda_acc | gru | 0.498 [0.367, 0.628] |  |  | 43 | 5 | 68c083f5 |
-| test1 | start_points | frac:0.7 | alpha_lambda_acc | itransformer_sc | 0.802 [0.686, 0.895] |  |  | 43 | 2 | 1f0731d5 |
+| test1 | start_points | frac:0.7 | alpha_lambda_acc | itransformer | 0.647 [0.516, 0.768] |  |  | 43 | 5 | 1f7dadba |
+| test1 | start_points | frac:0.7 | alpha_lambda_acc | itransformer_sc | 0.800 [0.693, 0.898] |  |  | 43 | 5 | 4a0a69dd |
+| test1 | start_points | frac:0.7 | alpha_lambda_acc | lgbm | 0.721 [0.581, 0.837] |  |  | 43 | 5 | b88b5644 |
 | test1 | start_points | frac:0.7 | alpha_lambda_acc | lstm | 0.642 [0.521, 0.758] |  |  | 43 | 5 | 7a6e2343 |
+| test1 | start_points | frac:0.7 | alpha_lambda_acc | nlinear | 0.070 [0.000, 0.163] |  |  | 43 | 5 | f6a02b2d |
+| test1 | start_points | frac:0.7 | alpha_lambda_acc | patchtst | 0.172 [0.102, 0.251] |  |  | 43 | 5 | 5b64c567 |
 | test1 | start_points | frac:0.7 | alpha_lambda_acc | rlinear | 0.051 [0.000, 0.126] |  |  | 43 | 5 | aa9b25f1 |
 | test1 | start_points | frac:0.7 | alpha_lambda_acc | transformer | 0.391 [0.256, 0.530] |  |  | 43 | 5 | cd2ed4cc |
+| test1 | start_points | frac:0.7 | rul_bias | dlinear | 84.322 [54.393, 109.057] |  |  | 43 | 5 | c066ff8c |
 | test1 | start_points | frac:0.7 | rul_bias | elasticnet | 10.120 [-22.591, 38.979] |  |  | 43 | 5 | 6228f90c |
 | test1 | start_points | frac:0.7 | rul_bias | gru | 3.607 [-21.427, 28.688] |  |  | 43 | 5 | 68c083f5 |
-| test1 | start_points | frac:0.7 | rul_bias | itransformer_sc | 12.275 [1.793, 24.254] |  |  | 43 | 2 | 1f0731d5 |
+| test1 | start_points | frac:0.7 | rul_bias | itransformer | -5.880 [-27.353, 12.341] |  |  | 43 | 5 | 1f7dadba |
+| test1 | start_points | frac:0.7 | rul_bias | itransformer_sc | 11.460 [1.661, 21.869] |  |  | 43 | 5 | 4a0a69dd |
+| test1 | start_points | frac:0.7 | rul_bias | lgbm | -3.162 [-20.607, 12.096] |  |  | 43 | 5 | b88b5644 |
 | test1 | start_points | frac:0.7 | rul_bias | lstm | -0.681 [-20.488, 17.617] |  |  | 43 | 5 | 7a6e2343 |
+| test1 | start_points | frac:0.7 | rul_bias | nlinear | 84.594 [54.688, 109.260] |  |  | 43 | 5 | f6a02b2d |
+| test1 | start_points | frac:0.7 | rul_bias | patchtst | 37.759 [-54.905, 157.418] |  |  | 43 | 5 | 5b64c567 |
 | test1 | start_points | frac:0.7 | rul_bias | rlinear | -167.023 [-211.163, -128.177] |  |  | 43 | 5 | aa9b25f1 |
 | test1 | start_points | frac:0.7 | rul_bias | transformer | 22.740 [-2.516, 51.240] |  |  | 43 | 5 | cd2ed4cc |
+| test1 | start_points | frac:0.7 | rul_mae | dlinear | 116.460 [103.160, 131.065] |  |  | 43 | 5 | c066ff8c |
 | test1 | start_points | frac:0.7 | rul_mae | elasticnet | 68.573 [47.095, 94.489] |  |  | 43 | 5 | 6228f90c |
 | test1 | start_points | frac:0.7 | rul_mae | gru | 52.646 [35.441, 74.315] |  |  | 43 | 5 | 68c083f5 |
-| test1 | start_points | frac:0.7 | rul_mae | itransformer_sc | 27.253 [19.655, 36.665] |  |  | 43 | 2 | 1f0731d5 |
+| test1 | start_points | frac:0.7 | rul_mae | itransformer | 39.725 [25.523, 57.737] |  |  | 43 | 5 | 1f7dadba |
+| test1 | start_points | frac:0.7 | rul_mae | itransformer_sc | 26.830 [20.173, 34.566] |  |  | 43 | 5 | 4a0a69dd |
+| test1 | start_points | frac:0.7 | rul_mae | lgbm | 34.074 [22.212, 48.577] |  |  | 43 | 5 | b88b5644 |
 | test1 | start_points | frac:0.7 | rul_mae | lstm | 39.367 [25.711, 55.823] |  |  | 43 | 5 | 7a6e2343 |
+| test1 | start_points | frac:0.7 | rul_mae | nlinear | 116.594 [103.365, 131.051] |  |  | 43 | 5 | f6a02b2d |
+| test1 | start_points | frac:0.7 | rul_mae | patchtst | 184.711 [107.691, 289.317] |  |  | 43 | 5 | 5b64c567 |
 | test1 | start_points | frac:0.7 | rul_mae | rlinear | 173.956 [138.698, 214.935] |  |  | 43 | 5 | aa9b25f1 |
 | test1 | start_points | frac:0.7 | rul_mae | transformer | 62.256 [44.501, 84.829] |  |  | 43 | 5 | cd2ed4cc |
+| test1 | start_points | overall | rul_bias | dlinear | -64.633 [-137.044, -5.768] |  |  | 43 | 5 | c066ff8c |
 | test1 | start_points | overall | rul_bias | elasticnet | -23.844 [-86.557, 27.948] |  |  | 43 | 5 | 6228f90c |
 | test1 | start_points | overall | rul_bias | gru | -32.469 [-75.761, 4.809] |  |  | 43 | 5 | 68c083f5 |
-| test1 | start_points | overall | rul_bias | itransformer_sc | -44.976 [-88.628, -8.358] |  |  | 43 | 2 | 1f0731d5 |
+| test1 | start_points | overall | rul_bias | itransformer | -43.233 [-84.291, -8.220] |  |  | 43 | 5 | 1f7dadba |
+| test1 | start_points | overall | rul_bias | itransformer_sc | -43.786 [-86.341, -7.933] |  |  | 43 | 5 | 4a0a69dd |
+| test1 | start_points | overall | rul_bias | lgbm | -33.418 [-65.451, -6.116] |  |  | 43 | 5 | b88b5644 |
 | test1 | start_points | overall | rul_bias | lstm | -23.767 [-58.708, 6.178] |  |  | 43 | 5 | 7a6e2343 |
+| test1 | start_points | overall | rul_bias | nlinear | -64.672 [-137.006, -5.787] |  |  | 43 | 5 | f6a02b2d |
+| test1 | start_points | overall | rul_bias | patchtst | -174.588 [-257.426, -95.738] |  |  | 43 | 5 | 5b64c567 |
 | test1 | start_points | overall | rul_bias | rlinear | -379.017 [-463.393, -305.701] |  |  | 43 | 5 | aa9b25f1 |
 | test1 | start_points | overall | rul_bias | transformer | -17.895 [-61.338, 22.204] |  |  | 43 | 5 | cd2ed4cc |
+| test1 | start_points | overall | rul_mae | dlinear | 156.452 [108.107, 217.042] |  |  | 43 | 5 | c066ff8c |
 | test1 | start_points | overall | rul_mae | elasticnet | 125.405 [85.423, 176.345] |  |  | 43 | 5 | 6228f90c |
 | test1 | start_points | overall | rul_mae | gru | 92.286 [64.128, 127.250] |  |  | 43 | 5 | 68c083f5 |
-| test1 | start_points | overall | rul_mae | itransformer_sc | 99.171 [70.006, 135.061] |  |  | 43 | 2 | 1f0731d5 |
+| test1 | start_points | overall | rul_mae | itransformer | 94.330 [67.393, 128.161] |  |  | 43 | 5 | 1f7dadba |
+| test1 | start_points | overall | rul_mae | itransformer_sc | 97.213 [68.566, 132.581] |  |  | 43 | 5 | 4a0a69dd |
+| test1 | start_points | overall | rul_mae | lgbm | 67.601 [45.610, 94.968] |  |  | 43 | 5 | b88b5644 |
 | test1 | start_points | overall | rul_mae | lstm | 76.267 [54.146, 104.259] |  |  | 43 | 5 | 7a6e2343 |
+| test1 | start_points | overall | rul_mae | nlinear | 156.510 [108.240, 217.209] |  |  | 43 | 5 | f6a02b2d |
+| test1 | start_points | overall | rul_mae | patchtst | 287.042 [234.037, 351.378] |  |  | 43 | 5 | 5b64c567 |
 | test1 | start_points | overall | rul_mae | rlinear | 400.143 [333.537, 478.880] |  |  | 43 | 5 | aa9b25f1 |
 | test1 | start_points | overall | rul_mae | transformer | 99.973 [71.229, 133.382] |  |  | 43 | 5 | cd2ed4cc |
+| test2 | all | overall | rul_bias | dlinear | -167.540 [-212.404, -127.387] |  |  | 40 | 5 | c066ff8c |
 | test2 | all | overall | rul_bias | elasticnet | -52.767 [-107.974, -1.619] |  |  | 40 | 5 | 6228f90c |
 | test2 | all | overall | rul_bias | gru | -144.993 [-197.063, -96.673] |  |  | 40 | 5 | 68c083f5 |
-| test2 | all | overall | rul_bias | itransformer_sc | -38.680 [-58.756, -19.343] |  |  | 40 | 2 | 1f0731d5 |
+| test2 | all | overall | rul_bias | itransformer | -36.230 [-71.422, -2.381] |  |  | 40 | 5 | 1f7dadba |
+| test2 | all | overall | rul_bias | itransformer_sc | -33.784 [-53.995, -14.294] |  |  | 40 | 5 | 4a0a69dd |
+| test2 | all | overall | rul_bias | lgbm | -171.747 [-215.617, -132.459] |  |  | 40 | 5 | b88b5644 |
 | test2 | all | overall | rul_bias | lstm | -129.934 [-177.772, -86.976] |  |  | 40 | 5 | 7a6e2343 |
+| test2 | all | overall | rul_bias | nlinear | -167.507 [-212.374, -127.358] |  |  | 40 | 5 | f6a02b2d |
+| test2 | all | overall | rul_bias | patchtst | -437.991 [-486.825, -393.945] |  |  | 40 | 5 | 5b64c567 |
 | test2 | all | overall | rul_bias | rlinear | -488.263 [-538.825, -441.936] |  |  | 40 | 5 | aa9b25f1 |
 | test2 | all | overall | rul_bias | transformer | -164.100 [-215.206, -118.095] |  |  | 40 | 5 | cd2ed4cc |
+| test2 | all | overall | rul_mae | dlinear | 228.638 [192.558, 270.241] |  |  | 40 | 5 | c066ff8c |
 | test2 | all | overall | rul_mae | elasticnet | 144.845 [111.655, 181.870] |  |  | 40 | 5 | 6228f90c |
 | test2 | all | overall | rul_mae | gru | 181.852 [144.439, 224.114] |  |  | 40 | 5 | 68c083f5 |
-| test2 | all | overall | rul_mae | itransformer_sc | 119.882 [101.183, 140.187] |  |  | 40 | 2 | 1f0731d5 |
+| test2 | all | overall | rul_mae | itransformer | 132.495 [114.716, 152.479] |  |  | 40 | 5 | 1f7dadba |
+| test2 | all | overall | rul_mae | itransformer_sc | 119.174 [101.336, 138.518] |  |  | 40 | 5 | 4a0a69dd |
+| test2 | all | overall | rul_mae | lgbm | 184.111 [146.696, 226.053] |  |  | 40 | 5 | b88b5644 |
 | test2 | all | overall | rul_mae | lstm | 162.489 [126.112, 203.447] |  |  | 40 | 5 | 7a6e2343 |
+| test2 | all | overall | rul_mae | nlinear | 228.602 [192.523, 270.195] |  |  | 40 | 5 | f6a02b2d |
+| test2 | all | overall | rul_mae | patchtst | 439.806 [396.156, 488.354] |  |  | 40 | 5 | 5b64c567 |
 | test2 | all | overall | rul_mae | rlinear | 500.895 [456.237, 550.052] |  |  | 40 | 5 | aa9b25f1 |
 | test2 | all | overall | rul_mae | transformer | 197.530 [158.876, 241.623] |  |  | 40 | 5 | cd2ed4cc |
+| test2 | start_points | fixed:100 | rul_bias | dlinear | -531.231 [-626.980, -444.332] |  |  | 40 | 5 | c066ff8c |
 | test2 | start_points | fixed:100 | rul_bias | elasticnet | -212.430 [-311.900, -121.472] |  |  | 40 | 5 | 6228f90c |
 | test2 | start_points | fixed:100 | rul_bias | gru | -349.316 [-444.789, -262.730] |  |  | 40 | 5 | 68c083f5 |
-| test2 | start_points | fixed:100 | rul_bias | itransformer_sc | -267.092 [-357.918, -184.754] |  |  | 40 | 2 | 1f0731d5 |
+| test2 | start_points | fixed:100 | rul_bias | itransformer | -120.283 [-223.484, -18.632] |  |  | 40 | 5 | 1f7dadba |
+| test2 | start_points | fixed:100 | rul_bias | itransformer_sc | -254.649 [-345.576, -171.233] |  |  | 40 | 5 | 4a0a69dd |
+| test2 | start_points | fixed:100 | rul_bias | lgbm | -414.917 [-505.041, -333.963] |  |  | 40 | 5 | b88b5644 |
 | test2 | start_points | fixed:100 | rul_bias | lstm | -353.845 [-449.767, -267.807] |  |  | 40 | 5 | 7a6e2343 |
+| test2 | start_points | fixed:100 | rul_bias | nlinear | -531.150 [-626.914, -444.215] |  |  | 40 | 5 | f6a02b2d |
+| test2 | start_points | fixed:100 | rul_bias | patchtst | -824.374 [-922.412, -736.061] |  |  | 40 | 5 | 5b64c567 |
 | test2 | start_points | fixed:100 | rul_bias | rlinear | -923.463 [-1022.108, -833.581] |  |  | 40 | 5 | aa9b25f1 |
 | test2 | start_points | fixed:100 | rul_bias | transformer | -404.021 [-498.547, -319.142] |  |  | 40 | 5 | cd2ed4cc |
+| test2 | start_points | fixed:100 | rul_mae | dlinear | 531.231 [444.332, 626.980] |  |  | 40 | 5 | c066ff8c |
 | test2 | start_points | fixed:100 | rul_mae | elasticnet | 263.586 [187.246, 350.342] |  |  | 40 | 5 | 6228f90c |
 | test2 | start_points | fixed:100 | rul_mae | gru | 360.466 [278.680, 452.241] |  |  | 40 | 5 | 68c083f5 |
-| test2 | start_points | fixed:100 | rul_mae | itransformer_sc | 281.503 [203.311, 368.174] |  |  | 40 | 2 | 1f0731d5 |
+| test2 | start_points | fixed:100 | rul_mae | itransformer | 284.060 [224.437, 350.281] |  |  | 40 | 5 | 1f7dadba |
+| test2 | start_points | fixed:100 | rul_mae | itransformer_sc | 273.979 [196.209, 359.777] |  |  | 40 | 5 | 4a0a69dd |
+| test2 | start_points | fixed:100 | rul_mae | lgbm | 414.917 [333.963, 505.041] |  |  | 40 | 5 | b88b5644 |
 | test2 | start_points | fixed:100 | rul_mae | lstm | 361.932 [279.115, 454.431] |  |  | 40 | 5 | 7a6e2343 |
+| test2 | start_points | fixed:100 | rul_mae | nlinear | 531.150 [444.215, 626.914] |  |  | 40 | 5 | f6a02b2d |
+| test2 | start_points | fixed:100 | rul_mae | patchtst | 824.374 [736.061, 922.412] |  |  | 40 | 5 | 5b64c567 |
 | test2 | start_points | fixed:100 | rul_mae | rlinear | 923.463 [833.581, 1022.108] |  |  | 40 | 5 | aa9b25f1 |
 | test2 | start_points | fixed:100 | rul_mae | transformer | 404.021 [319.142, 498.547] |  |  | 40 | 5 | cd2ed4cc |
+| test2 | start_points | frac:0.3 | alpha_lambda_acc | dlinear | 0.025 [0.000, 0.075] |  |  | 40 | 5 | c066ff8c |
 | test2 | start_points | frac:0.3 | alpha_lambda_acc | elasticnet | 0.450 [0.300, 0.600] |  |  | 40 | 5 | 6228f90c |
 | test2 | start_points | frac:0.3 | alpha_lambda_acc | gru | 0.270 [0.155, 0.390] |  |  | 40 | 5 | 68c083f5 |
-| test2 | start_points | frac:0.3 | alpha_lambda_acc | itransformer_sc | 0.550 [0.400, 0.700] |  |  | 40 | 2 | 1f0731d5 |
+| test2 | start_points | frac:0.3 | alpha_lambda_acc | itransformer | 0.475 [0.340, 0.615] |  |  | 40 | 5 | 1f7dadba |
+| test2 | start_points | frac:0.3 | alpha_lambda_acc | itransformer_sc | 0.540 [0.405, 0.675] |  |  | 40 | 5 | 4a0a69dd |
+| test2 | start_points | frac:0.3 | alpha_lambda_acc | lgbm | 0.175 [0.075, 0.300] |  |  | 40 | 5 | b88b5644 |
 | test2 | start_points | frac:0.3 | alpha_lambda_acc | lstm | 0.305 [0.190, 0.425] |  |  | 40 | 5 | 7a6e2343 |
+| test2 | start_points | frac:0.3 | alpha_lambda_acc | nlinear | 0.025 [0.000, 0.075] |  |  | 40 | 5 | f6a02b2d |
+| test2 | start_points | frac:0.3 | alpha_lambda_acc | patchtst | 0.000 [0.000, 0.000] |  |  | 40 | 5 | 5b64c567 |
 | test2 | start_points | frac:0.3 | alpha_lambda_acc | rlinear | 0.000 [0.000, 0.000] |  |  | 40 | 5 | aa9b25f1 |
 | test2 | start_points | frac:0.3 | alpha_lambda_acc | transformer | 0.240 [0.120, 0.370] |  |  | 40 | 5 | cd2ed4cc |
+| test2 | start_points | frac:0.3 | rul_bias | dlinear | -328.151 [-395.010, -267.941] |  |  | 40 | 5 | c066ff8c |
 | test2 | start_points | frac:0.3 | rul_bias | elasticnet | -112.012 [-190.197, -39.164] |  |  | 40 | 5 | 6228f90c |
 | test2 | start_points | frac:0.3 | rul_bias | gru | -239.075 [-312.254, -170.560] |  |  | 40 | 5 | 68c083f5 |
-| test2 | start_points | frac:0.3 | rul_bias | itransformer_sc | -62.501 [-113.971, -8.973] |  |  | 40 | 2 | 1f0731d5 |
+| test2 | start_points | frac:0.3 | rul_bias | itransformer | -89.291 [-156.457, -22.510] |  |  | 40 | 5 | 1f7dadba |
+| test2 | start_points | frac:0.3 | rul_bias | itransformer_sc | -43.804 [-98.573, 13.433] |  |  | 40 | 5 | 4a0a69dd |
+| test2 | start_points | frac:0.3 | rul_bias | lgbm | -286.864 [-353.866, -225.713] |  |  | 40 | 5 | b88b5644 |
 | test2 | start_points | frac:0.3 | rul_bias | lstm | -234.649 [-305.146, -169.889] |  |  | 40 | 5 | 7a6e2343 |
+| test2 | start_points | frac:0.3 | rul_bias | nlinear | -328.121 [-394.945, -267.912] |  |  | 40 | 5 | f6a02b2d |
+| test2 | start_points | frac:0.3 | rul_bias | patchtst | -645.687 [-711.650, -585.666] |  |  | 40 | 5 | 5b64c567 |
 | test2 | start_points | frac:0.3 | rul_bias | rlinear | -713.790 [-782.849, -650.971] |  |  | 40 | 5 | aa9b25f1 |
 | test2 | start_points | frac:0.3 | rul_bias | transformer | -276.122 [-346.355, -212.428] |  |  | 40 | 5 | cd2ed4cc |
+| test2 | start_points | frac:0.3 | rul_mae | dlinear | 328.151 [267.941, 395.010] |  |  | 40 | 5 | c066ff8c |
 | test2 | start_points | frac:0.3 | rul_mae | elasticnet | 194.827 [141.510, 254.214] |  |  | 40 | 5 | 6228f90c |
 | test2 | start_points | frac:0.3 | rul_mae | gru | 261.424 [202.263, 326.586] |  |  | 40 | 5 | 68c083f5 |
-| test2 | start_points | frac:0.3 | rul_mae | itransformer_sc | 148.843 [119.251, 182.824] |  |  | 40 | 2 | 1f0731d5 |
+| test2 | start_points | frac:0.3 | rul_mae | itransformer | 180.090 [136.261, 226.214] |  |  | 40 | 5 | 1f7dadba |
+| test2 | start_points | frac:0.3 | rul_mae | itransformer_sc | 153.074 [122.136, 188.236] |  |  | 40 | 5 | 4a0a69dd |
+| test2 | start_points | frac:0.3 | rul_mae | lgbm | 286.864 [225.713, 353.866] |  |  | 40 | 5 | b88b5644 |
 | test2 | start_points | frac:0.3 | rul_mae | lstm | 246.427 [186.554, 312.404] |  |  | 40 | 5 | 7a6e2343 |
+| test2 | start_points | frac:0.3 | rul_mae | nlinear | 328.121 [267.912, 394.945] |  |  | 40 | 5 | f6a02b2d |
+| test2 | start_points | frac:0.3 | rul_mae | patchtst | 645.687 [585.666, 711.650] |  |  | 40 | 5 | 5b64c567 |
 | test2 | start_points | frac:0.3 | rul_mae | rlinear | 713.790 [650.971, 782.849] |  |  | 40 | 5 | aa9b25f1 |
 | test2 | start_points | frac:0.3 | rul_mae | transformer | 278.064 [215.329, 347.469] |  |  | 40 | 5 | cd2ed4cc |
+| test2 | start_points | frac:0.5 | alpha_lambda_acc | dlinear | 0.500 [0.350, 0.650] |  |  | 40 | 5 | c066ff8c |
 | test2 | start_points | frac:0.5 | alpha_lambda_acc | elasticnet | 0.500 [0.350, 0.650] |  |  | 40 | 5 | 6228f90c |
 | test2 | start_points | frac:0.5 | alpha_lambda_acc | gru | 0.320 [0.205, 0.440] |  |  | 40 | 5 | 68c083f5 |
-| test2 | start_points | frac:0.5 | alpha_lambda_acc | itransformer_sc | 0.825 [0.713, 0.925] |  |  | 40 | 2 | 1f0731d5 |
+| test2 | start_points | frac:0.5 | alpha_lambda_acc | itransformer | 0.735 [0.600, 0.855] |  |  | 40 | 5 | 1f7dadba |
+| test2 | start_points | frac:0.5 | alpha_lambda_acc | itransformer_sc | 0.835 [0.725, 0.935] |  |  | 40 | 5 | 4a0a69dd |
+| test2 | start_points | frac:0.5 | alpha_lambda_acc | lgbm | 0.300 [0.150, 0.450] |  |  | 40 | 5 | b88b5644 |
 | test2 | start_points | frac:0.5 | alpha_lambda_acc | lstm | 0.515 [0.375, 0.650] |  |  | 40 | 5 | 7a6e2343 |
+| test2 | start_points | frac:0.5 | alpha_lambda_acc | nlinear | 0.500 [0.350, 0.650] |  |  | 40 | 5 | f6a02b2d |
+| test2 | start_points | frac:0.5 | alpha_lambda_acc | patchtst | 0.000 [0.000, 0.000] |  |  | 40 | 5 | 5b64c567 |
 | test2 | start_points | frac:0.5 | alpha_lambda_acc | rlinear | 0.000 [0.000, 0.000] |  |  | 40 | 5 | aa9b25f1 |
 | test2 | start_points | frac:0.5 | alpha_lambda_acc | transformer | 0.315 [0.185, 0.450] |  |  | 40 | 5 | cd2ed4cc |
+| test2 | start_points | frac:0.5 | rul_bias | dlinear | -129.164 [-175.722, -87.451] |  |  | 40 | 5 | c066ff8c |
 | test2 | start_points | frac:0.5 | rul_bias | elasticnet | -41.501 [-101.038, 14.105] |  |  | 40 | 5 | 6228f90c |
 | test2 | start_points | frac:0.5 | rul_bias | gru | -133.880 [-188.367, -82.858] |  |  | 40 | 5 | 68c083f5 |
-| test2 | start_points | frac:0.5 | rul_bias | itransformer_sc | 33.473 [11.168, 57.082] |  |  | 40 | 2 | 1f0731d5 |
+| test2 | start_points | frac:0.5 | rul_bias | itransformer | -22.427 [-51.954, 7.921] |  |  | 40 | 5 | 1f7dadba |
+| test2 | start_points | frac:0.5 | rul_bias | itransformer_sc | 30.412 [8.388, 54.008] |  |  | 40 | 5 | 4a0a69dd |
+| test2 | start_points | frac:0.5 | rul_bias | lgbm | -149.904 [-194.480, -109.729] |  |  | 40 | 5 | b88b5644 |
 | test2 | start_points | frac:0.5 | rul_bias | lstm | -110.106 [-158.928, -66.470] |  |  | 40 | 5 | 7a6e2343 |
+| test2 | start_points | frac:0.5 | rul_bias | nlinear | -129.157 [-175.716, -87.429] |  |  | 40 | 5 | f6a02b2d |
+| test2 | start_points | frac:0.5 | rul_bias | patchtst | -436.860 [-486.873, -392.026] |  |  | 40 | 5 | 5b64c567 |
 | test2 | start_points | frac:0.5 | rul_bias | rlinear | -504.974 [-554.827, -459.448] |  |  | 40 | 5 | aa9b25f1 |
 | test2 | start_points | frac:0.5 | rul_bias | transformer | -155.105 [-208.091, -106.597] |  |  | 40 | 5 | cd2ed4cc |
+| test2 | start_points | frac:0.5 | rul_mae | dlinear | 132.525 [91.722, 178.692] |  |  | 40 | 5 | c066ff8c |
 | test2 | start_points | frac:0.5 | rul_mae | elasticnet | 140.650 [102.924, 181.899] |  |  | 40 | 5 | 6228f90c |
 | test2 | start_points | frac:0.5 | rul_mae | gru | 170.414 [131.613, 213.953] |  |  | 40 | 5 | 68c083f5 |
-| test2 | start_points | frac:0.5 | rul_mae | itransformer_sc | 62.228 [47.311, 79.574] |  |  | 40 | 2 | 1f0731d5 |
+| test2 | start_points | frac:0.5 | rul_mae | itransformer | 75.052 [55.554, 96.928] |  |  | 40 | 5 | 1f7dadba |
+| test2 | start_points | frac:0.5 | rul_mae | itransformer_sc | 62.254 [47.654, 78.965] |  |  | 40 | 5 | 4a0a69dd |
+| test2 | start_points | frac:0.5 | rul_mae | lgbm | 153.251 [114.209, 196.369] |  |  | 40 | 5 | b88b5644 |
 | test2 | start_points | frac:0.5 | rul_mae | lstm | 132.427 [94.335, 175.666] |  |  | 40 | 5 | 7a6e2343 |
+| test2 | start_points | frac:0.5 | rul_mae | nlinear | 132.517 [91.717, 178.682] |  |  | 40 | 5 | f6a02b2d |
+| test2 | start_points | frac:0.5 | rul_mae | patchtst | 436.860 [392.026, 486.873] |  |  | 40 | 5 | 5b64c567 |
 | test2 | start_points | frac:0.5 | rul_mae | rlinear | 504.974 [459.448, 554.827] |  |  | 40 | 5 | aa9b25f1 |
 | test2 | start_points | frac:0.5 | rul_mae | transformer | 172.830 [131.188, 220.697] |  |  | 40 | 5 | cd2ed4cc |
+| test2 | start_points | frac:0.7 | alpha_lambda_acc | dlinear | 0.325 [0.200, 0.475] |  |  | 40 | 5 | c066ff8c |
 | test2 | start_points | frac:0.7 | alpha_lambda_acc | elasticnet | 0.400 [0.250, 0.550] |  |  | 40 | 5 | 6228f90c |
 | test2 | start_points | frac:0.7 | alpha_lambda_acc | gru | 0.370 [0.235, 0.510] |  |  | 40 | 5 | 68c083f5 |
-| test2 | start_points | frac:0.7 | alpha_lambda_acc | itransformer_sc | 0.450 [0.300, 0.600] |  |  | 40 | 2 | 1f0731d5 |
+| test2 | start_points | frac:0.7 | alpha_lambda_acc | itransformer | 0.570 [0.425, 0.710] |  |  | 40 | 5 | 1f7dadba |
+| test2 | start_points | frac:0.7 | alpha_lambda_acc | itransformer_sc | 0.480 [0.335, 0.625] |  |  | 40 | 5 | 4a0a69dd |
+| test2 | start_points | frac:0.7 | alpha_lambda_acc | lgbm | 0.775 [0.650, 0.900] |  |  | 40 | 5 | b88b5644 |
 | test2 | start_points | frac:0.7 | alpha_lambda_acc | lstm | 0.695 [0.550, 0.830] |  |  | 40 | 5 | 7a6e2343 |
+| test2 | start_points | frac:0.7 | alpha_lambda_acc | nlinear | 0.325 [0.200, 0.475] |  |  | 40 | 5 | f6a02b2d |
+| test2 | start_points | frac:0.7 | alpha_lambda_acc | patchtst | 0.020 [0.000, 0.055] |  |  | 40 | 5 | 5b64c567 |
 | test2 | start_points | frac:0.7 | alpha_lambda_acc | rlinear | 0.000 [0.000, 0.000] |  |  | 40 | 5 | aa9b25f1 |
 | test2 | start_points | frac:0.7 | alpha_lambda_acc | transformer | 0.380 [0.245, 0.520] |  |  | 40 | 5 | cd2ed4cc |
+| test2 | start_points | frac:0.7 | rul_bias | dlinear | 53.181 [28.374, 74.492] |  |  | 40 | 5 | c066ff8c |
 | test2 | start_points | frac:0.7 | rul_bias | elasticnet | 44.927 [6.337, 82.990] |  |  | 40 | 5 | 6228f90c |
 | test2 | start_points | frac:0.7 | rul_bias | gru | -22.034 [-59.496, 14.709] |  |  | 40 | 5 | 68c083f5 |
-| test2 | start_points | frac:0.7 | rul_bias | itransformer_sc | 72.775 [55.741, 90.437] |  |  | 40 | 2 | 1f0731d5 |
+| test2 | start_points | frac:0.7 | rul_bias | itransformer | 40.358 [22.458, 57.528] |  |  | 40 | 5 | 1f7dadba |
+| test2 | start_points | frac:0.7 | rul_bias | itransformer_sc | 70.290 [54.209, 86.978] |  |  | 40 | 5 | 4a0a69dd |
+| test2 | start_points | frac:0.7 | rul_bias | lgbm | -26.797 [-46.370, -9.032] |  |  | 40 | 5 | b88b5644 |
 | test2 | start_points | frac:0.7 | rul_bias | lstm | 8.838 [-15.835, 31.644] |  |  | 40 | 5 | 7a6e2343 |
+| test2 | start_points | frac:0.7 | rul_bias | nlinear | 53.146 [28.353, 74.493] |  |  | 40 | 5 | f6a02b2d |
+| test2 | start_points | frac:0.7 | rul_bias | patchtst | -273.524 [-306.655, -241.555] |  |  | 40 | 5 | 5b64c567 |
 | test2 | start_points | frac:0.7 | rul_bias | rlinear | -291.450 [-322.438, -262.715] |  |  | 40 | 5 | aa9b25f1 |
 | test2 | start_points | frac:0.7 | rul_bias | transformer | -28.197 [-64.400, 6.644] |  |  | 40 | 5 | cd2ed4cc |
+| test2 | start_points | frac:0.7 | rul_mae | dlinear | 83.593 [71.552, 95.448] |  |  | 40 | 5 | c066ff8c |
 | test2 | start_points | frac:0.7 | rul_mae | elasticnet | 99.159 [73.601, 126.482] |  |  | 40 | 5 | 6228f90c |
 | test2 | start_points | frac:0.7 | rul_mae | gru | 96.599 [74.584, 119.871] |  |  | 40 | 5 | 68c083f5 |
-| test2 | start_points | frac:0.7 | rul_mae | itransformer_sc | 73.837 [57.296, 91.078] |  |  | 40 | 2 | 1f0731d5 |
+| test2 | start_points | frac:0.7 | rul_mae | itransformer | 56.055 [43.534, 69.513] |  |  | 40 | 5 | 1f7dadba |
+| test2 | start_points | frac:0.7 | rul_mae | itransformer_sc | 71.219 [55.661, 87.519] |  |  | 40 | 5 | 4a0a69dd |
+| test2 | start_points | frac:0.7 | rul_mae | lgbm | 46.146 [32.550, 61.723] |  |  | 40 | 5 | b88b5644 |
 | test2 | start_points | frac:0.7 | rul_mae | lstm | 53.717 [37.636, 71.341] |  |  | 40 | 5 | 7a6e2343 |
+| test2 | start_points | frac:0.7 | rul_mae | nlinear | 83.569 [71.526, 95.436] |  |  | 40 | 5 | f6a02b2d |
+| test2 | start_points | frac:0.7 | rul_mae | patchtst | 273.524 [241.555, 306.655] |  |  | 40 | 5 | 5b64c567 |
 | test2 | start_points | frac:0.7 | rul_mae | rlinear | 291.450 [262.715, 322.438] |  |  | 40 | 5 | aa9b25f1 |
 | test2 | start_points | frac:0.7 | rul_mae | transformer | 90.868 [68.963, 114.663] |  |  | 40 | 5 | cd2ed4cc |
+| test2 | start_points | overall | rul_bias | dlinear | -233.841 [-292.308, -181.454] |  |  | 40 | 5 | c066ff8c |
 | test2 | start_points | overall | rul_bias | elasticnet | -80.254 [-148.039, -17.902] |  |  | 40 | 5 | 6228f90c |
 | test2 | start_points | overall | rul_bias | gru | -186.076 [-249.281, -127.247] |  |  | 40 | 5 | 68c083f5 |
-| test2 | start_points | overall | rul_bias | itransformer_sc | -55.836 [-86.237, -26.289] |  |  | 40 | 2 | 1f0731d5 |
+| test2 | start_points | overall | rul_bias | itransformer | -47.911 [-97.881, 0.480] |  |  | 40 | 5 | 1f7dadba |
+| test2 | start_points | overall | rul_bias | itransformer_sc | -49.438 [-80.460, -19.015] |  |  | 40 | 5 | 4a0a69dd |
+| test2 | start_points | overall | rul_bias | lgbm | -219.621 [-274.278, -170.523] |  |  | 40 | 5 | b88b5644 |
 | test2 | start_points | overall | rul_bias | lstm | -172.441 [-231.704, -119.336] |  |  | 40 | 5 | 7a6e2343 |
+| test2 | start_points | overall | rul_bias | nlinear | -233.820 [-292.287, -181.434] |  |  | 40 | 5 | f6a02b2d |
+| test2 | start_points | overall | rul_bias | patchtst | -545.111 [-604.655, -491.458] |  |  | 40 | 5 | 5b64c567 |
 | test2 | start_points | overall | rul_bias | rlinear | -608.419 [-670.555, -551.652] |  |  | 40 | 5 | aa9b25f1 |
 | test2 | start_points | overall | rul_bias | transformer | -215.862 [-278.503, -159.420] |  |  | 40 | 5 | cd2ed4cc |
+| test2 | start_points | overall | rul_mae | dlinear | 268.875 [221.856, 322.296] |  |  | 40 | 5 | c066ff8c |
 | test2 | start_points | overall | rul_mae | elasticnet | 174.555 [132.039, 222.183] |  |  | 40 | 5 | 6228f90c |
 | test2 | start_points | overall | rul_mae | gru | 222.226 [174.619, 275.988] |  |  | 40 | 5 | 68c083f5 |
-| test2 | start_points | overall | rul_mae | itransformer_sc | 141.603 [114.093, 172.256] |  |  | 40 | 2 | 1f0731d5 |
+| test2 | start_points | overall | rul_mae | itransformer | 148.814 [121.862, 178.203] |  |  | 40 | 5 | 1f7dadba |
+| test2 | start_points | overall | rul_mae | itransformer_sc | 140.132 [113.587, 169.878] |  |  | 40 | 5 | 4a0a69dd |
+| test2 | start_points | overall | rul_mae | lgbm | 225.294 [177.597, 278.713] |  |  | 40 | 5 | b88b5644 |
 | test2 | start_points | overall | rul_mae | lstm | 198.626 [151.921, 251.321] |  |  | 40 | 5 | 7a6e2343 |
+| test2 | start_points | overall | rul_mae | nlinear | 268.839 [221.819, 322.262] |  |  | 40 | 5 | f6a02b2d |
+| test2 | start_points | overall | rul_mae | patchtst | 545.111 [491.458, 604.655] |  |  | 40 | 5 | 5b64c567 |
 | test2 | start_points | overall | rul_mae | rlinear | 608.419 [551.652, 670.555] |  |  | 40 | 5 | aa9b25f1 |
 | test2 | start_points | overall | rul_mae | transformer | 236.446 [186.416, 293.541] |  |  | 40 | 5 | cd2ed4cc |
+
+</details>
+
+<details><summary>toyota_soh (144 rows)</summary>
+
+| split | policy | kind | metric | model | mean [95% CI] | vs best baseline | indep. (B0018) | n_cells | n_seeds | run_group |
+|---|---|---|---|---|---|---|---|---|---|---|
+| test1 | all | overall | rmse | dlinear | 0.126 [0.075, 0.186] | p=2.5e-12 (vs prev_soh) |  | 43 | 5 | 3ac7bfd2 |
+| test1 | all | overall | rmse | elasticnet | 0.129 [0.077, 0.189] | p=2.5e-12 (vs prev_soh) |  | 43 | 5 | 46575c2e |
+| test1 | all | overall | rmse | gru | 0.136 [0.082, 0.199] | p=2.5e-12 (vs prev_soh) |  | 43 | 5 | 3ddf16a8 |
+| test1 | all | overall | rmse | itransformer | 0.111 [0.067, 0.163] | p=2.5e-12 (vs prev_soh) |  | 43 | 5 | 86cda30d |
+| test1 | all | overall | rmse | itransformer_sc | 0.111 [0.067, 0.163] | p=2.5e-12 (vs prev_soh) |  | 43 | 5 | 38d1aefd |
+| test1 | all | overall | rmse | lgbm | 0.133 [0.079, 0.196] | p=2.5e-12 (vs prev_soh) |  | 43 | 5 | ac42ccf2 |
+| test1 | all | overall | rmse | lstm | 0.135 [0.082, 0.199] | p=2.5e-12 (vs prev_soh) |  | 43 | 5 | cd05dc09 |
+| test1 | all | overall | rmse | nlinear | 0.126 [0.075, 0.185] | p=2.5e-12 (vs prev_soh) |  | 43 | 5 | c114a71d |
+| test1 | all | overall | rmse | patchtst | 0.109 [0.066, 0.159] | p=2.5e-12 (vs prev_soh) |  | 43 | 5 | 93bc379a |
+| test1 | all | overall | rmse | prev_soh | 0.158 [0.106, 0.219] |  |  | 43 | 5 | 7e056afa |
+| test1 | all | overall | rmse | rlinear | 0.124 [0.073, 0.182] | p=2.5e-12 (vs prev_soh) |  | 43 | 5 | e63748eb |
+| test1 | all | overall | rmse | transformer | 0.139 [0.085, 0.202] | p=7.5e-12 (vs prev_soh) |  | 43 | 5 | 56c061b1 |
+| test1 | start_points | fixed:100 | rmse | dlinear | 0.010 [0.007, 0.015] | p=0.0395 (vs prev_soh) |  | 43 | 5 | 3ac7bfd2 |
+| test1 | start_points | fixed:100 | rmse | elasticnet | 0.016 [0.012, 0.020] | p=1 (vs prev_soh) |  | 43 | 5 | 46575c2e |
+| test1 | start_points | fixed:100 | rmse | gru | 0.016 [0.010, 0.023] | p=1 (vs prev_soh) |  | 43 | 5 | 3ddf16a8 |
+| test1 | start_points | fixed:100 | rmse | itransformer | 0.009 [0.006, 0.013] | p=0.0322 (vs prev_soh) |  | 43 | 5 | 86cda30d |
+| test1 | start_points | fixed:100 | rmse | itransformer_sc | 0.009 [0.005, 0.014] | p=0.00371 (vs prev_soh) |  | 43 | 5 | 38d1aefd |
+| test1 | start_points | fixed:100 | rmse | lgbm | 0.014 [0.009, 0.019] | p=1 (vs prev_soh) |  | 43 | 5 | ac42ccf2 |
+| test1 | start_points | fixed:100 | rmse | lstm | 0.015 [0.009, 0.023] | p=1 (vs prev_soh) |  | 43 | 5 | cd05dc09 |
+| test1 | start_points | fixed:100 | rmse | nlinear | 0.012 [0.009, 0.016] | p=1 (vs prev_soh) |  | 43 | 5 | c114a71d |
+| test1 | start_points | fixed:100 | rmse | patchtst | 0.008 [0.005, 0.012] | p=0.0018 (vs prev_soh) |  | 43 | 5 | 93bc379a |
+| test1 | start_points | fixed:100 | rmse | prev_soh | 0.017 [0.009, 0.026] |  |  | 43 | 5 | 7e056afa |
+| test1 | start_points | fixed:100 | rmse | rlinear | 0.009 [0.006, 0.013] | p=0.0127 (vs prev_soh) |  | 43 | 5 | e63748eb |
+| test1 | start_points | fixed:100 | rmse | transformer | 0.020 [0.015, 0.027] | p=0.0275 (vs prev_soh) |  | 43 | 5 | 56c061b1 |
+| test1 | start_points | frac:0.3 | rmse | dlinear | 0.026 [0.012, 0.050] | p=0.0624 (vs prev_soh) |  | 43 | 5 | 3ac7bfd2 |
+| test1 | start_points | frac:0.3 | rmse | elasticnet | 0.031 [0.015, 0.056] | p=0.657 (vs prev_soh) |  | 43 | 5 | 46575c2e |
+| test1 | start_points | frac:0.3 | rmse | gru | 0.031 [0.014, 0.059] | p=0.128 (vs prev_soh) |  | 43 | 5 | 3ddf16a8 |
+| test1 | start_points | frac:0.3 | rmse | itransformer | 0.018 [0.009, 0.032] | p=0.00058 (vs prev_soh) |  | 43 | 5 | 86cda30d |
+| test1 | start_points | frac:0.3 | rmse | itransformer_sc | 0.019 [0.010, 0.034] | p=0.003 (vs prev_soh) |  | 43 | 5 | 38d1aefd |
+| test1 | start_points | frac:0.3 | rmse | lgbm | 0.028 [0.011, 0.057] | p=0.0287 (vs prev_soh) |  | 43 | 5 | ac42ccf2 |
+| test1 | start_points | frac:0.3 | rmse | lstm | 0.031 [0.014, 0.059] | p=0.0426 (vs prev_soh) |  | 43 | 5 | cd05dc09 |
+| test1 | start_points | frac:0.3 | rmse | nlinear | 0.029 [0.014, 0.054] | p=0.628 (vs prev_soh) |  | 43 | 5 | c114a71d |
+| test1 | start_points | frac:0.3 | rmse | patchtst | 0.016 [0.009, 0.025] | p=0.000597 (vs prev_soh) |  | 43 | 5 | 93bc379a |
+| test1 | start_points | frac:0.3 | rmse | prev_soh | 0.033 [0.016, 0.060] |  |  | 43 | 5 | 7e056afa |
+| test1 | start_points | frac:0.3 | rmse | rlinear | 0.025 [0.012, 0.048] | p=0.0984 (vs prev_soh) |  | 43 | 5 | e63748eb |
+| test1 | start_points | frac:0.3 | rmse | transformer | 0.035 [0.017, 0.064] | p=0.657 (vs prev_soh) |  | 43 | 5 | 56c061b1 |
+| test1 | start_points | frac:0.5 | rmse | dlinear | 0.056 [0.018, 0.122] | p=0.144 (vs prev_soh) |  | 43 | 5 | 3ac7bfd2 |
+| test1 | start_points | frac:0.5 | rmse | elasticnet | 0.036 [0.017, 0.066] | p=0.193 (vs prev_soh) |  | 43 | 5 | 46575c2e |
+| test1 | start_points | frac:0.5 | rmse | gru | 0.028 [0.018, 0.042] | p=0.112 (vs prev_soh) |  | 43 | 5 | 3ddf16a8 |
+| test1 | start_points | frac:0.5 | rmse | itransformer | 0.026 [0.017, 0.038] | p=0.193 (vs prev_soh) |  | 43 | 5 | 86cda30d |
+| test1 | start_points | frac:0.5 | rmse | itransformer_sc | 0.022 [0.014, 0.033] | p=0.105 (vs prev_soh) |  | 43 | 5 | 38d1aefd |
+| test1 | start_points | frac:0.5 | rmse | lgbm | 0.023 [0.013, 0.037] | p=0.000423 (vs prev_soh) |  | 43 | 5 | ac42ccf2 |
+| test1 | start_points | frac:0.5 | rmse | lstm | 0.028 [0.017, 0.042] | p=0.0479 (vs prev_soh) |  | 43 | 5 | cd05dc09 |
+| test1 | start_points | frac:0.5 | rmse | nlinear | 0.072 [0.029, 0.129] | p=0.698 (vs prev_soh) |  | 43 | 5 | c114a71d |
+| test1 | start_points | frac:0.5 | rmse | patchtst | 0.027 [0.017, 0.039] | p=0.105 (vs prev_soh) |  | 43 | 5 | 93bc379a |
+| test1 | start_points | frac:0.5 | rmse | prev_soh | 0.034 [0.023, 0.047] |  |  | 43 | 5 | 7e056afa |
+| test1 | start_points | frac:0.5 | rmse | rlinear | 0.079 [0.019, 0.180] | p=0.218 (vs prev_soh) |  | 43 | 5 | e63748eb |
+| test1 | start_points | frac:0.5 | rmse | transformer | 0.031 [0.021, 0.044] | p=0.474 (vs prev_soh) |  | 43 | 5 | 56c061b1 |
+| test1 | start_points | frac:0.7 | rmse | dlinear | 0.034 [0.026, 0.042] | p=0.296 (vs prev_soh) |  | 43 | 5 | 3ac7bfd2 |
+| test1 | start_points | frac:0.7 | rmse | elasticnet | 0.034 [0.023, 0.046] | p=0.296 (vs prev_soh) |  | 43 | 5 | 46575c2e |
+| test1 | start_points | frac:0.7 | rmse | gru | 0.034 [0.025, 0.045] | p=0.296 (vs prev_soh) |  | 43 | 5 | 3ddf16a8 |
+| test1 | start_points | frac:0.7 | rmse | itransformer | 0.030 [0.022, 0.039] | p=0.0966 (vs prev_soh) |  | 43 | 5 | 86cda30d |
+| test1 | start_points | frac:0.7 | rmse | itransformer_sc | 0.034 [0.024, 0.045] | p=0.296 (vs prev_soh) |  | 43 | 5 | 38d1aefd |
+| test1 | start_points | frac:0.7 | rmse | lgbm | 0.028 [0.019, 0.038] | p=0.028 (vs prev_soh) |  | 43 | 5 | ac42ccf2 |
+| test1 | start_points | frac:0.7 | rmse | lstm | 0.034 [0.025, 0.044] | p=0.202 (vs prev_soh) |  | 43 | 5 | cd05dc09 |
+| test1 | start_points | frac:0.7 | rmse | nlinear | 0.034 [0.026, 0.042] | p=0.296 (vs prev_soh) |  | 43 | 5 | c114a71d |
+| test1 | start_points | frac:0.7 | rmse | patchtst | 0.035 [0.025, 0.045] | p=0.296 (vs prev_soh) |  | 43 | 5 | 93bc379a |
+| test1 | start_points | frac:0.7 | rmse | prev_soh | 0.044 [0.033, 0.055] |  |  | 43 | 5 | 7e056afa |
+| test1 | start_points | frac:0.7 | rmse | rlinear | 0.033 [0.025, 0.041] | p=0.202 (vs prev_soh) |  | 43 | 5 | e63748eb |
+| test1 | start_points | frac:0.7 | rmse | transformer | 0.036 [0.028, 0.046] | p=0.296 (vs prev_soh) |  | 43 | 5 | 56c061b1 |
+| test1 | start_points | overall | rmse | dlinear | 0.047 [0.025, 0.081] | p=0.00783 (vs prev_soh) |  | 43 | 5 | 3ac7bfd2 |
+| test1 | start_points | overall | rmse | elasticnet | 0.040 [0.026, 0.058] | p=0.029 (vs prev_soh) |  | 43 | 5 | 46575c2e |
+| test1 | start_points | overall | rmse | gru | 0.035 [0.023, 0.051] | p=0.00255 (vs prev_soh) |  | 43 | 5 | 3ddf16a8 |
+| test1 | start_points | overall | rmse | itransformer | 0.028 [0.021, 0.037] | p=0.00427 (vs prev_soh) |  | 43 | 5 | 86cda30d |
+| test1 | start_points | overall | rmse | itransformer_sc | 0.028 [0.020, 0.038] | p=0.00891 (vs prev_soh) |  | 43 | 5 | 38d1aefd |
+| test1 | start_points | overall | rmse | lgbm | 0.031 [0.019, 0.047] | p=6.17e-05 (vs prev_soh) |  | 43 | 5 | ac42ccf2 |
+| test1 | start_points | overall | rmse | lstm | 0.035 [0.023, 0.050] | p=0.00255 (vs prev_soh) |  | 43 | 5 | cd05dc09 |
+| test1 | start_points | overall | rmse | nlinear | 0.054 [0.031, 0.083] | p=0.138 (vs prev_soh) |  | 43 | 5 | c114a71d |
+| test1 | start_points | overall | rmse | patchtst | 0.028 [0.022, 0.037] | p=0.0081 (vs prev_soh) |  | 43 | 5 | 93bc379a |
+| test1 | start_points | overall | rmse | prev_soh | 0.041 [0.030, 0.056] |  |  | 43 | 5 | 7e056afa |
+| test1 | start_points | overall | rmse | rlinear | 0.057 [0.026, 0.109] | p=0.0085 (vs prev_soh) |  | 43 | 5 | e63748eb |
+| test1 | start_points | overall | rmse | transformer | 0.038 [0.027, 0.054] | p=0.138 (vs prev_soh) |  | 43 | 5 | 56c061b1 |
+| test2 | all | overall | rmse | dlinear | 0.016 [0.013, 0.018] | p=2e-11 (vs prev_soh) |  | 40 | 5 | 3ac7bfd2 |
+| test2 | all | overall | rmse | elasticnet | 0.024 [0.022, 0.026] | p=2.42e-10 (vs prev_soh) |  | 40 | 5 | 46575c2e |
+| test2 | all | overall | rmse | gru | 0.049 [0.045, 0.053] | p=3.12e-05 (vs prev_soh) |  | 40 | 5 | 3ddf16a8 |
+| test2 | all | overall | rmse | itransformer | 0.023 [0.022, 0.025] | p=1e-09 (vs prev_soh) |  | 40 | 5 | 86cda30d |
+| test2 | all | overall | rmse | itransformer_sc | 0.036 [0.033, 0.039] | p=0.9 (vs prev_soh) |  | 40 | 5 | 38d1aefd |
+| test2 | all | overall | rmse | lgbm | 0.024 [0.021, 0.026] | p=6e-10 (vs prev_soh) |  | 40 | 5 | ac42ccf2 |
+| test2 | all | overall | rmse | lstm | 0.024 [0.022, 0.026] | p=1e-09 (vs prev_soh) |  | 40 | 5 | cd05dc09 |
+| test2 | all | overall | rmse | nlinear | 0.017 [0.015, 0.020] | p=2e-11 (vs prev_soh) |  | 40 | 5 | c114a71d |
+| test2 | all | overall | rmse | patchtst | 0.014 [0.011, 0.016] | p=2e-11 (vs prev_soh) |  | 40 | 5 | 93bc379a |
+| test2 | all | overall | rmse | prev_soh | 0.036 [0.034, 0.038] |  |  | 40 | 5 | 7e056afa |
+| test2 | all | overall | rmse | rlinear | 0.015 [0.013, 0.018] | p=2e-11 (vs prev_soh) |  | 40 | 5 | e63748eb |
+| test2 | all | overall | rmse | transformer | 0.038 [0.035, 0.040] | p=0.443 (vs prev_soh) |  | 40 | 5 | 56c061b1 |
+| test2 | start_points | fixed:100 | rmse | dlinear | 0.012 [0.006, 0.021] | p=0.5 (vs prev_soh) |  | 40 | 5 | 3ac7bfd2 |
+| test2 | start_points | fixed:100 | rmse | elasticnet | 0.024 [0.016, 0.033] | p=3.32e-05 (vs prev_soh) |  | 40 | 5 | 46575c2e |
+| test2 | start_points | fixed:100 | rmse | gru | 0.037 [0.032, 0.043] | p=2.96e-07 (vs prev_soh) |  | 40 | 5 | 3ddf16a8 |
+| test2 | start_points | fixed:100 | rmse | itransformer | 0.024 [0.018, 0.031] | p=8.55e-05 (vs prev_soh) |  | 40 | 5 | 86cda30d |
+| test2 | start_points | fixed:100 | rmse | itransformer_sc | 0.030 [0.025, 0.037] | p=4.75e-06 (vs prev_soh) |  | 40 | 5 | 38d1aefd |
+| test2 | start_points | fixed:100 | rmse | lgbm | 0.014 [0.008, 0.023] | p=0.866 (vs prev_soh) |  | 40 | 5 | ac42ccf2 |
+| test2 | start_points | fixed:100 | rmse | lstm | 0.015 [0.008, 0.023] | p=0.866 (vs prev_soh) |  | 40 | 5 | cd05dc09 |
+| test2 | start_points | fixed:100 | rmse | nlinear | 0.014 [0.008, 0.023] | p=0.866 (vs prev_soh) |  | 40 | 5 | c114a71d |
+| test2 | start_points | fixed:100 | rmse | patchtst | 0.012 [0.005, 0.021] | p=0.206 (vs prev_soh) |  | 40 | 5 | 93bc379a |
+| test2 | start_points | fixed:100 | rmse | prev_soh | 0.013 [0.007, 0.023] |  |  | 40 | 5 | 7e056afa |
+| test2 | start_points | fixed:100 | rmse | rlinear | 0.013 [0.006, 0.021] | p=0.5 (vs prev_soh) |  | 40 | 5 | e63748eb |
+| test2 | start_points | fixed:100 | rmse | transformer | 0.029 [0.024, 0.035] | p=3.49e-06 (vs prev_soh) |  | 40 | 5 | 56c061b1 |
+| test2 | start_points | frac:0.3 | rmse | dlinear | 0.009 [0.004, 0.017] | p=0.00168 (vs prev_soh) |  | 40 | 5 | 3ac7bfd2 |
+| test2 | start_points | frac:0.3 | rmse | elasticnet | 0.019 [0.013, 0.027] | p=0.000144 (vs prev_soh) |  | 40 | 5 | 46575c2e |
+| test2 | start_points | frac:0.3 | rmse | gru | 0.043 [0.039, 0.048] | p=1.01e-06 (vs prev_soh) |  | 40 | 5 | 3ddf16a8 |
+| test2 | start_points | frac:0.3 | rmse | itransformer | 0.024 [0.021, 0.029] | p=0.00168 (vs prev_soh) |  | 40 | 5 | 86cda30d |
+| test2 | start_points | frac:0.3 | rmse | itransformer_sc | 0.038 [0.033, 0.042] | p=1.67e-05 (vs prev_soh) |  | 40 | 5 | 38d1aefd |
+| test2 | start_points | frac:0.3 | rmse | lgbm | 0.014 [0.010, 0.021] | p=0.132 (vs prev_soh) |  | 40 | 5 | ac42ccf2 |
+| test2 | start_points | frac:0.3 | rmse | lstm | 0.015 [0.010, 0.022] | p=0.036 (vs prev_soh) |  | 40 | 5 | cd05dc09 |
+| test2 | start_points | frac:0.3 | rmse | nlinear | 0.012 [0.007, 0.019] | p=0.162 (vs prev_soh) |  | 40 | 5 | c114a71d |
+| test2 | start_points | frac:0.3 | rmse | patchtst | 0.009 [0.004, 0.016] | p=0.00135 (vs prev_soh) |  | 40 | 5 | 93bc379a |
+| test2 | start_points | frac:0.3 | rmse | prev_soh | 0.012 [0.006, 0.019] |  |  | 40 | 5 | 7e056afa |
+| test2 | start_points | frac:0.3 | rmse | rlinear | 0.009 [0.004, 0.016] | p=0.00215 (vs prev_soh) |  | 40 | 5 | e63748eb |
+| test2 | start_points | frac:0.3 | rmse | transformer | 0.030 [0.026, 0.034] | p=5.28e-06 (vs prev_soh) |  | 40 | 5 | 56c061b1 |
+| test2 | start_points | frac:0.5 | rmse | dlinear | 0.013 [0.006, 0.022] | p=0.00447 (vs prev_soh) |  | 40 | 5 | 3ac7bfd2 |
+| test2 | start_points | frac:0.5 | rmse | elasticnet | 0.018 [0.011, 0.028] | p=0.136 (vs prev_soh) |  | 40 | 5 | 46575c2e |
+| test2 | start_points | frac:0.5 | rmse | gru | 0.051 [0.043, 0.059] | p=4.07e-08 (vs prev_soh) |  | 40 | 5 | 3ddf16a8 |
+| test2 | start_points | frac:0.5 | rmse | itransformer | 0.026 [0.022, 0.030] | p=0.00479 (vs prev_soh) |  | 40 | 5 | 86cda30d |
+| test2 | start_points | frac:0.5 | rmse | itransformer_sc | 0.045 [0.041, 0.051] | p=4.75e-06 (vs prev_soh) |  | 40 | 5 | 38d1aefd |
+| test2 | start_points | frac:0.5 | rmse | lgbm | 0.022 [0.014, 0.033] | p=0.0122 (vs prev_soh) |  | 40 | 5 | ac42ccf2 |
+| test2 | start_points | frac:0.5 | rmse | lstm | 0.023 [0.015, 0.033] | p=0.0175 (vs prev_soh) |  | 40 | 5 | cd05dc09 |
+| test2 | start_points | frac:0.5 | rmse | nlinear | 0.015 [0.008, 0.024] | p=0.397 (vs prev_soh) |  | 40 | 5 | c114a71d |
+| test2 | start_points | frac:0.5 | rmse | patchtst | 0.009 [0.005, 0.016] | p=0.00406 (vs prev_soh) |  | 40 | 5 | 93bc379a |
+| test2 | start_points | frac:0.5 | rmse | prev_soh | 0.016 [0.008, 0.026] |  |  | 40 | 5 | 7e056afa |
+| test2 | start_points | frac:0.5 | rmse | rlinear | 0.012 [0.005, 0.021] | p=0.00479 (vs prev_soh) |  | 40 | 5 | e63748eb |
+| test2 | start_points | frac:0.5 | rmse | transformer | 0.038 [0.031, 0.048] | p=7.84e-08 (vs prev_soh) |  | 40 | 5 | 56c061b1 |
+| test2 | start_points | frac:0.7 | rmse | dlinear | 0.007 [0.004, 0.012] | p=1.15e-05 (vs prev_soh) |  | 40 | 5 | 3ac7bfd2 |
+| test2 | start_points | frac:0.7 | rmse | elasticnet | 0.012 [0.008, 0.017] | p=0.111 (vs prev_soh) |  | 40 | 5 | 46575c2e |
+| test2 | start_points | frac:0.7 | rmse | gru | 0.054 [0.048, 0.060] | p=2e-11 (vs prev_soh) |  | 40 | 5 | 3ddf16a8 |
+| test2 | start_points | frac:0.7 | rmse | itransformer | 0.019 [0.016, 0.022] | p=0.249 (vs prev_soh) |  | 40 | 5 | 86cda30d |
+| test2 | start_points | frac:0.7 | rmse | itransformer_sc | 0.038 [0.033, 0.043] | p=0.000108 (vs prev_soh) |  | 40 | 5 | 38d1aefd |
+| test2 | start_points | frac:0.7 | rmse | lgbm | 0.023 [0.018, 0.029] | p=0.111 (vs prev_soh) |  | 40 | 5 | ac42ccf2 |
+| test2 | start_points | frac:0.7 | rmse | lstm | 0.019 [0.014, 0.026] | p=0.283 (vs prev_soh) |  | 40 | 5 | cd05dc09 |
+| test2 | start_points | frac:0.7 | rmse | nlinear | 0.010 [0.007, 0.014] | p=0.0014 (vs prev_soh) |  | 40 | 5 | c114a71d |
+| test2 | start_points | frac:0.7 | rmse | patchtst | 0.005 [0.004, 0.007] | p=1.15e-05 (vs prev_soh) |  | 40 | 5 | 93bc379a |
+| test2 | start_points | frac:0.7 | rmse | prev_soh | 0.016 [0.012, 0.021] |  |  | 40 | 5 | 7e056afa |
+| test2 | start_points | frac:0.7 | rmse | rlinear | 0.007 [0.004, 0.011] | p=1.71e-05 (vs prev_soh) |  | 40 | 5 | e63748eb |
+| test2 | start_points | frac:0.7 | rmse | transformer | 0.037 [0.032, 0.043] | p=6e-10 (vs prev_soh) |  | 40 | 5 | 56c061b1 |
+| test2 | start_points | overall | rmse | dlinear | 0.015 [0.009, 0.021] | p=1.04e-06 (vs prev_soh) |  | 40 | 5 | 3ac7bfd2 |
+| test2 | start_points | overall | rmse | elasticnet | 0.022 [0.016, 0.029] | p=0.00673 (vs prev_soh) |  | 40 | 5 | 46575c2e |
+| test2 | start_points | overall | rmse | gru | 0.049 [0.045, 0.054] | p=1.1e-09 (vs prev_soh) |  | 40 | 5 | 3ddf16a8 |
+| test2 | start_points | overall | rmse | itransformer | 0.025 [0.022, 0.029] | p=0.02 (vs prev_soh) |  | 40 | 5 | 86cda30d |
+| test2 | start_points | overall | rmse | itransformer_sc | 0.040 [0.036, 0.044] | p=1.43e-06 (vs prev_soh) |  | 40 | 5 | 38d1aefd |
+| test2 | start_points | overall | rmse | lgbm | 0.023 [0.018, 0.030] | p=0.00357 (vs prev_soh) |  | 40 | 5 | ac42ccf2 |
+| test2 | start_points | overall | rmse | lstm | 0.022 [0.017, 0.029] | p=0.024 (vs prev_soh) |  | 40 | 5 | cd05dc09 |
+| test2 | start_points | overall | rmse | nlinear | 0.016 [0.011, 0.023] | p=0.024 (vs prev_soh) |  | 40 | 5 | c114a71d |
+| test2 | start_points | overall | rmse | patchtst | 0.012 [0.007, 0.018] | p=6.1e-08 (vs prev_soh) |  | 40 | 5 | 93bc379a |
+| test2 | start_points | overall | rmse | prev_soh | 0.018 [0.013, 0.025] |  |  | 40 | 5 | 7e056afa |
+| test2 | start_points | overall | rmse | rlinear | 0.014 [0.009, 0.021] | p=7.67e-06 (vs prev_soh) |  | 40 | 5 | e63748eb |
+| test2 | start_points | overall | rmse | transformer | 0.037 [0.033, 0.042] | p=1.27e-09 (vs prev_soh) |  | 40 | 5 | 56c061b1 |
 
 </details>

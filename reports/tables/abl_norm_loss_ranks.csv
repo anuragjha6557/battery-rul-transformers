@@ -1,0 +1,7 @@
+model,mean_rank,n_conditions,n_missing
+itransformer[loss=huber],1.9583333333333333,24,0
+itransformer[loss=mse],2.0,24,0
+lstm[revin=True],3.625,24,0
+"lstm[quantiles=None,loss=huber]",3.9583333333333335,24,0
+transformer,4.375,24,0
+"lstm[quantiles=None,loss=mse]",5.083333333333333,24,0

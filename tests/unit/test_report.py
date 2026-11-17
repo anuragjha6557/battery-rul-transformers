@@ -113,3 +113,19 @@ def test_toyota_wilcoxon_over_cells_and_rank() -> None:
 
     ranks = rank_table(tabs).set_index("model")["mean_rank"]
     assert ranks["good"] == 1.0 and ranks["persistence"] == 2.0 and ranks["last_slope"] == 3.0
+
+
+def test_arm_labels_split_ablation_arms_only() -> None:
+    from battery_rul.eval.report import with_arm_labels
+
+    runs = pd.DataFrame(
+        {
+            "params.task": ["forecast"] * 4 + ["soh"],
+            "params.model": ["lstm", "lstm", "lstm", "gru", "lstm"],
+            "params.model.loss": ["huber", "mse", None, "mse", "mse"],
+            "params.model.revin": [None, None, "True", None, None],
+            "params.model.hidden": ["64"] * 5,
+        }
+    )
+    arms = with_arm_labels(runs)["arm"].tolist()
+    assert arms == ["lstm[loss=huber]", "lstm[loss=mse]", "lstm[revin=True]", "gru", "lstm"]

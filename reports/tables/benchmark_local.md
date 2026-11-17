@@ -110,6 +110,41 @@
 | param_exp2 | 2.69 | 16 | 0 |
 | param_linear | 3.12 | 16 | 0 |
 
+## Calibration (90 % intervals; PICP target 0.90 +/- 0.05; MPIW in %SOH or cycles)
+
+Raw = stored (0.05, 0.95) quantiles; cal = CQR with pooled inner-val residuals (PROTOCOL §3/§5). Models without inner-val predictions (GPR) have raw only. mean [95% cluster-bootstrap CI over cells].
+
+| dataset | task | policy | horizon | model | PICP raw | PICP cal | MPIW raw | MPIW cal | cells |
+|---|---|---|---|---|---|---|---|---|---|
+| calce | forecast | start_points | 1 | gpr | 1.000 [1.000, 1.000] | - | 6.499 [6.100, 6.774] | - | 4 |
+| calce | forecast | start_points | 10 | gpr | 0.950 [0.850, 1.000] | - | 6.967 [6.856, 7.088] | - | 4 |
+| calce | forecast | start_points | 25 | gpr | 1.000 [1.000, 1.000] | - | 7.639 [7.533, 7.750] | - | 4 |
+| calce | forecast | start_points | 50 | gpr | 0.950 [0.850, 1.000] | - | 8.503 [8.015, 8.956] | - | 4 |
+| calce | forecast | start_points | 100 | gpr | 0.600 [0.400, 0.850] | - | 9.909 [8.824, 10.948] | - | 4 |
+| calce | rul | start_points | 0 | gpr | 0.250 [0.000, 0.500] | - | 499.024 [205.212, 774.029] | - | 4 |
+| nasa | forecast | start_points | 1 | gpr | 0.700 [0.600, 0.800] | - | 2.593 [1.927, 3.411] | - | 4 |
+| nasa | forecast | start_points | 10 | gpr | 0.500 [0.300, 0.700] | - | 5.325 [4.063, 6.895] | - | 4 |
+| nasa | forecast | start_points | 25 | gpr | 0.350 [0.100, 0.650] | - | 7.308 [5.247, 9.861] | - | 4 |
+| nasa | forecast | start_points | 50 | gpr | 0.500 [0.100, 0.900] | - | 10.376 [6.738, 14.611] | - | 4 |
+| nasa | forecast | start_points | 100 | gpr | 0.375 [0.000, 0.750] | - | 16.337 [6.098, 26.575] | - | 4 |
+| nasa | rul | start_points | 0 | gpr | 0.550 [0.200, 0.900] | - | 53.713 [40.137, 63.055] | - | 4 |
+| toyota | forecast | start_points | 1 | gpr | 0.942 [0.907, 0.971] | - | 0.287 [0.177, 0.415] | - | 43 |
+| toyota | forecast | start_points | 10 | gpr | 0.831 [0.785, 0.878] | - | 0.642 [0.505, 0.797] | - | 43 |
+| toyota | forecast | start_points | 50 | gpr | 0.517 [0.442, 0.593] | - | 2.029 [1.625, 2.465] | - | 43 |
+| toyota | forecast | start_points | 100 | gpr | 0.355 [0.291, 0.419] | - | 2.878 [2.257, 3.555] | - | 43 |
+| toyota | forecast | start_points | 200 | gpr | 0.206 [0.129, 0.288] | - | 3.335 [2.552, 4.174] | - | 42 |
+| toyota | forecast | start_points | 1 | gpr | 0.900 [0.856, 0.938] | - | 0.047 [0.040, 0.054] | - | 40 |
+| toyota | forecast | start_points | 10 | gpr | 0.887 [0.844, 0.931] | - | 0.160 [0.150, 0.172] | - | 40 |
+| toyota | forecast | start_points | 50 | gpr | 0.681 [0.606, 0.756] | - | 0.713 [0.635, 0.792] | - | 40 |
+| toyota | forecast | start_points | 100 | gpr | 0.344 [0.281, 0.412] | - | 1.181 [1.036, 1.332] | - | 40 |
+| toyota | forecast | start_points | 200 | gpr | 0.202 [0.156, 0.250] | - | 1.777 [1.551, 2.017] | - | 40 |
+| toyota | rul | start_points | 0 | gpr | 0.012 [0.000, 0.029] | - | 723.825 [527.731, 928.286] | - | 43 |
+| toyota | rul | start_points | 0 | gpr | 0.000 [0.000, 0.000] | - | 810.804 [639.129, 990.541] | - | 40 |
+
+![reliability](figures/benchmark_local_reliability_calce.png)
+![reliability](figures/benchmark_local_reliability_nasa.png)
+![reliability](figures/benchmark_local_reliability_toyota.png)
+
 ## Full tables
 
 <details><summary>calce_forecast (120 rows)</summary>

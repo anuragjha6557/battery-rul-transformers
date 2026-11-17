@@ -68,7 +68,27 @@ def _runs(experiment_name: str, tracking_uri: str) -> pd.DataFrame:
     )
     if df.empty or "tags.unit_key" not in df:
         raise ValueError(f"no finished unit runs in experiment {experiment_name!r}")
-    return df[df["tags.unit_key"].notna()]
+    return with_arm_labels(df[df["tags.unit_key"].notna()])
+
+
+def with_arm_labels(runs: pd.DataFrame) -> pd.DataFrame:
+    """Add ``arm``: the model name, plus the ``model.*`` params that differ between runs of the
+    same (task, model). Ablations run one model in several arms (e.g. Huber vs MSE); grouping by
+    model name alone would pool them. Benchmark entries (one config per task/model) keep the
+    bare name."""
+    runs = runs.copy()
+    runs["arm"] = runs["params.model"].astype(str)
+    pcols = [c for c in runs.columns if c.startswith("params.model.")]
+    for _, g in runs.groupby(["params.task", "params.model"], sort=False):
+        varying = [c for c in pcols if len(set(g[c].fillna("<default>"))) > 1]
+        if not varying:
+            continue
+        for idx, r in g.iterrows():
+            tag = ",".join(
+                f"{c.removeprefix('params.model.')}={r[c]}" for c in varying if pd.notna(r[c])
+            )
+            runs.loc[idx, "arm"] = f"{r['params.model']}[{tag or 'default'}]"
+    return runs
 
 
 # --------------------------------------------------------------------------------------
@@ -147,7 +167,7 @@ def _long(runs: pd.DataFrame) -> pd.DataFrame:
         cm = cm.assign(
             dataset=r["params.dataset"],
             task=r["params.task"],
-            model=r["params.model"],
+            model=r.get("arm", r["params.model"]),
             seed=int(r["params.seed"]),
             run_id=r["run_id"],
         )
@@ -397,7 +417,7 @@ def calibration_long(runs: pd.DataFrame) -> pd.DataFrame:
             merged.assign(
                 dataset=r["params.dataset"],
                 task=task,
-                model=r["params.model"],
+                model=r.get("arm", r["params.model"]),
                 seed=int(r["params.seed"]),
                 run_id=r["run_id"],
             )
@@ -468,7 +488,9 @@ def reliability_long(runs: pd.DataFrame) -> pd.DataFrame:
             continue
         parts.append(
             pd.read_parquet(path).assign(
-                dataset=r["params.dataset"], task=r["params.task"], model=r["params.model"]
+                dataset=r["params.dataset"],
+                task=r["params.task"],
+                model=r.get("arm", r["params.model"]),
             )
         )
     return pd.concat(parts, ignore_index=True) if parts else pd.DataFrame()

@@ -16,6 +16,6 @@ Format and rules: [ADR-0001](0001-record-architecture-decisions.md). Experiment-
 | [0010](0010-direct-vs-recursive.md) | Direct multi-horizon vs recursive rollout | Accepted: direct wins at h ≥ 25 |
 | [0011](0011-uq-method.md) | Uncertainty: CQR vs deep ensemble vs GPR | Proposed (pre-registered) |
 | [0012](0012-toyota-transfer.md) | Toyota (LFP) pre-training → NASA/CALCE transfer | Proposed (pre-registered) |
-| [0013](0013-normalisation-and-loss.md) | Instance normalisation; Huber vs MSE | Proposed (pre-registered) |
+| [0013](0013-normalisation-and-loss.md) | Instance normalisation; Huber vs MSE | Accepted: neither adopted |
 
 Planned (docs/PLAN.md §12): 0014 final model selection · 0015 deployment target & input contract.
