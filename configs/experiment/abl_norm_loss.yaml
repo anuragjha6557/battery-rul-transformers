@@ -1,0 +1,27 @@
+# @package _global_
+# ADR-0013: RevIN for Transformer/LSTM (E) and Huber loss for iTransformer/LSTM (F), forecast task, tuned params otherwise (baselines = `benchmark`).
+# Run: battery-rul benchmark --config abl_norm_loss --n-jobs 4
+defaults:
+  - /experiment_schema
+  - _self_
+
+name: abl_norm_loss
+tasks: [forecast]
+models:
+  - tuned: transformer__forecast
+    params: {revin: true}
+  - tuned: lstm__forecast
+    params: {revin: true}
+  - tuned: itransformer__forecast
+    params: {loss: huber, quantiles: null}
+  - tuned: itransformer__forecast
+    params: {loss: mse, quantiles: null}  # matched point-mode MSE arm for the Huber comparison
+  - tuned: lstm__forecast
+    params: {loss: huber, quantiles: null}
+  - tuned: lstm__forecast
+    params: {loss: mse, quantiles: null}
+datasets: [nasa, calce, toyota]
+seeds: [0, 1, 2, 3, 4]
+lookback: 32
+eval_origins: [start_points, all]
+train_stride: {toyota: 4}

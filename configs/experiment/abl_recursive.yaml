@@ -1,0 +1,22 @@
+# @package _global_
+# ADR-0010 arm (b): recursive iTransformer with the tuned iTransformer-forecast params (direct arm = `benchmark`).
+# Run: battery-rul benchmark --config abl_recursive --n-jobs 4
+defaults:
+  - /experiment_schema
+  - _self_
+
+name: abl_recursive
+tasks: [forecast]
+models:
+  - name: recursive
+    params:
+      base_name: itransformer
+      lookback: 32
+      base_params: {channels: all, d_model: 64, dropout: 0.20992750800627935, lr: 0.00010014510964563198,
+  n_heads: 2, n_layers: 2, use_tab: true, weight_decay: 6.027974864334257e-08}
+allow_untuned: true  # wrapper has no own hyperparameters; base params come from the tuned iTransformer
+datasets: [nasa, calce, toyota]
+seeds: [0, 1, 2, 3, 4]
+lookback: 32
+eval_origins: [start_points, all]
+train_stride: {toyota: 4}

@@ -1,0 +1,20 @@
+# @package _global_
+# ADR-0009 arm mc_curve (mc arm = experiment `benchmark`, identical tuned params).
+# Run: battery-rul benchmark --config abl_curve --n-jobs 4
+defaults:
+  - /experiment_schema
+  - _self_
+
+name: abl_curve
+tasks: [forecast, soh]
+feature_set: mc_curve
+models:
+  - tuned: lgbm__forecast
+  - tuned: lgbm__soh
+  - tuned: itransformer__forecast
+  - tuned: itransformer__soh
+datasets: [nasa, calce, toyota]
+seeds: [0, 1, 2, 3, 4]
+lookback: 32
+eval_origins: [start_points, all]
+train_stride: {toyota: 4}
