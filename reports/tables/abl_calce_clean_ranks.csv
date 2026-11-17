@@ -1,0 +1,8 @@
+model,mean_rank,n_conditions,n_missing
+lgbm,2.125,8,0
+itransformer,2.375,8,0
+itransformer_sc,2.375,8,0
+lstm,4.375,8,0
+elasticnet,5.25,8,0
+nlinear,5.375,8,0
+persistence,5.833333333333333,6,2
