@@ -12,7 +12,7 @@ Format and rules: [ADR-0001](0001-record-architecture-decisions.md). Experiment-
 | [0006](0006-equal-budget-tuning.md) | Equal tuning budget for every model, selected on Toyota | Accepted |
 | [0007](0007-compute-strategy.md) | Compute strategy: MPS for neural, CPU for classical (measured) | Accepted |
 | [0008](0008-baseline-findings.md) | Benchmark findings: dataset-dependent ranking, calibration, limitations | Accepted |
-| [0009](0009-curve-features.md) | Curve features ablation (ICA, ΔQ(V)) | Proposed (pre-registered) |
+| [0009](0009-curve-features.md) | Curve features ablation (ICA, ΔQ(V)) | Accepted: mc_curve not adopted |
 | [0010](0010-direct-vs-recursive.md) | Direct multi-horizon vs recursive rollout | Accepted: direct wins at h ≥ 25 |
 | [0011](0011-uq-method.md) | Uncertainty: CQR vs deep ensemble vs GPR | Proposed (pre-registered) |
 | [0012](0012-toyota-transfer.md) | Toyota (LFP) pre-training → NASA/CALCE transfer | Proposed (pre-registered) |

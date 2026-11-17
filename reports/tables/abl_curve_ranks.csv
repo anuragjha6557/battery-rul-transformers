@@ -1,0 +1,3 @@
+model,mean_rank,n_conditions,n_missing
+itransformer,1.3125,32,0
+lgbm,1.6875,32,0

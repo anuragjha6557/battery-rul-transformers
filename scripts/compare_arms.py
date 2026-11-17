@@ -41,6 +41,8 @@ def arm_long(arm: str, task: str, metric: str, policy: str) -> pd.DataFrame:
         raise SystemExit(f"no runs for {arm} ({task})")
     lg = _long(runs)
     lg = lg[(lg["metric"] == metric) & (lg["policy"] == policy) & (lg["kind"] == "overall")]
+    if lg.empty:
+        raise SystemExit(f"metric {metric!r} (policy {policy!r}) not in per-cell tables for {arm}")
     return lg[["dataset", "split", "cell", "seed", "value"]]
 
 
