@@ -47,5 +47,6 @@ docs/paper/*.txt
 # tuning logs (results live in MLflow + configs/tuned)
 reports/tuning/
 artifacts/pretrained/
+artifacts/deploy/
 reports/benchmark/
 reports/ablations/

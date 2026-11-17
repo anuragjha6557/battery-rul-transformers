@@ -1,0 +1,25 @@
+name: Deploy Space
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          python-version: "3.12"
+
+      - name: Upload app to the Hugging Face Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        # the script needs only huggingface_hub; skip installing the torch stack
+        run: uv run --no-project --with huggingface_hub==2.4.0 python scripts/push_to_hub.py --space

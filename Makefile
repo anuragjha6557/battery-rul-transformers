@@ -37,14 +37,17 @@ data:  ## Download + build canonical parquet for all datasets
 	$(UV) run battery-rul download all
 	$(UV) run battery-rul build-data all
 
-bench:  ## Full benchmark (long; resumable)
+bench:  ## Full frozen benchmark (long; resumable) + CQR + reports + README tables
 	$(UV) run battery-rul benchmark --config final
+	bash scripts/post_benchmark.sh
+	$(UV) run python scripts/make_figures.py
+	$(UV) run python scripts/make_readme_tables.py
 
 mlflow:  ## Launch the MLflow UI on the local store
 	$(UV) run mlflow ui --backend-store-uri sqlite:///mlflow.db
 
 app:  ## Run the Gradio demo locally
-	$(UV) run python app/gradio_app.py
+	BATTERY_RUL_WEIGHTS=artifacts/deploy $(UV) run python app/app.py
 
 clean:  ## Remove caches (keeps data and mlruns)
 	rm -rf .pytest_cache .ruff_cache .mypy_cache .hypothesis htmlcov .coverage

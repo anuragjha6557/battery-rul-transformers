@@ -1,0 +1,9 @@
+# @package _global_
+# Phase 7 frozen benchmark (ADR-0014). No Phase 6 change was adopted (ADR-0009..0013), so the
+# final configuration IS the benchmark configuration: this file reuses it and keeps the
+# experiment name "benchmark", so `make bench` is resumable and skips every finished unit
+# (identical config hashes). iTransformer-v2 = entries `itransformer` / `itransformer_sc`
+# (direct multi-horizon quantile heads) + CQR applied by `battery-rul calibrate`.
+defaults:
+  - benchmark
+  - _self_
