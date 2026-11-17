@@ -181,3 +181,29 @@ def test_leakage_free_scaler_per_dataset() -> None:
     prep = prepare_cycles(ctx.cycles, ("n0", "n1", "n2"), "shared")
     assert prep.scaler is not None
     assert prep.scaler.fitted_cells_ == ("n0", "n1", "n2")
+
+
+def test_rul_transfer_arms_run(tmp_path: Any) -> None:
+    pre_rul = pretrain(
+        "itransformer",
+        PARAMS,
+        "rul",
+        tmp_path,
+        lookback=LOOKBACK,
+        ctx=_ctx("toyota", 6),
+        log_mlflow=False,
+    )
+    b = build_bundle(_ctx("nasa", 4, seed=3), "nasa", "n0", "rul", LOOKBACK)
+    for arm in ("scratch", "zero_shot", "ft_full"):
+        res = run_arm(
+            arm, b, model_name="itransformer", params=PARAMS, pretrained=pre_rul.path, seed=0
+        )
+        assert np.isfinite(res.predictions.filter(like="point").to_numpy()).all()
+        assert (res.predictions.filter(like="point").to_numpy() >= 0).all()  # cycles
+
+
+def test_rul_rejects_few_shot() -> None:
+    from battery_rul.train.transfer import run_transfer
+
+    with pytest.raises(ValueError, match="few_shot"):
+        run_transfer(task="rul", arms=("scratch", "few_shot"))

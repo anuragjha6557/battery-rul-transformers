@@ -59,6 +59,14 @@ Pre-training on 124 LFP cells, then fine-tuning on the 3 LOCO training cells, be
 - It requires improvement on both NASA and CALCE, and CALCE gets worse.
 - The Toyota leg is not applicable, because Toyota is the source.
 
+## Amendment 1: Task C (RUL) transfer, registered 2026-11-17 before the run
+- **Arms:** scratch, zero_shot and ft_full; 5 seeds; NASA and CALCE LOCO; tuned `itransformer__rul` parameters.
+  - A separate Toyota RUL checkpoint is pre-trained (`artifacts/pretrained/itransformer__rul.pt`).
+  - `ft_head` is dropped to save compute, since it was dominated in Task B.
+  - `few_shot` is undefined for RUL: labels on the test cell's own cycles ≤ T_p require its future EOL. The code rejects it.
+- **Hypothesis:** ft_full beats scratch on NASA (scarce data, as in Task B), but not on CALCE. Zero-shot is worse than scratch, because Toyota lives (≈ 150–2 300 cycles, LFP) set the RUL scale.
+- **Metrics:** RUL MAE (cycles) and α-λ accuracy at the fixed start points, plus all-origin MAE. The comparison method is the same as for Task B.
+
 ## Decision
 - **iTransformer-v2 does not use Toyota pre-training by default.**
 - **The NASA result is reported as a positive, bounded finding:** transfer from a large LFP corpus helps a data-starved target at long horizons. It is offered as an option (`battery-rul transfer`).

@@ -109,7 +109,7 @@ def benchmark(
 
 @app.command()
 def transfer(
-    task: str = typer.Option("forecast", help="Task (forecast only; ADR-0012)"),
+    task: str = typer.Option("forecast", help="Task: forecast or rul (ADR-0012)"),
     datasets: str = typer.Option("nasa,calce", help="Target datasets, comma separated"),
     seeds: str = typer.Option("0,1,2,3,4", help="Seeds, comma separated"),
     arms: str = typer.Option(

@@ -588,8 +588,11 @@ def run_transfer(
         git_info,
     )
 
-    if task != "forecast":
-        raise NotImplementedError("transfer is pre-registered for Task B (forecast) first")
+    if task not in ("forecast", "rul"):
+        raise NotImplementedError("transfer supports Task B (forecast) and Task C (rul)")
+    if task == "rul" and "few_shot" in arms:
+        # RUL labels of the test cell's own cycles <= T_p need its future EOL: not leakage-free.
+        raise ValueError("few_shot is undefined for rul (its labels need the test cell's EOL)")
     pdir = processed_dir or str(PROCESSED_DIR)
     uri = tracking_uri or default_tracking_uri()
     params, lookback, src = load_params(model_name, task)
