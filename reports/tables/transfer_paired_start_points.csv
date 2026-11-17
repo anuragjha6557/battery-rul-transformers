@@ -1,0 +1,17 @@
+candidate,reference,dataset,split,metric,policy,cand_mean,ref_mean,delta,ci_lo,ci_hi,k_cells,k_pairs,wilcoxon_p,n_seeds
+transfer:itransformer+ft_full,transfer:itransformer+scratch,calce,loco,rmse_h50,start_points,1.631321307216244,1.490408139254361,0.14091316796188313,-0.10087968775809389,0.3458355143402623,1/4,5/20,,5
+transfer:itransformer+ft_full,transfer:itransformer+scratch,nasa,loco,rmse_h50,start_points,4.153201407504723,5.727173055761435,-1.573971648256711,-3.1252830193597054,-0.02266027715371637,3/4,15/20,,5
+transfer:itransformer+zero_shot,transfer:itransformer+scratch,calce,loco,rmse_h50,start_points,1.8812547430345596,1.490408139254361,0.3908466037801988,-0.06843743948195939,0.7564999261802827,1/4,5/20,,5
+transfer:itransformer+zero_shot,transfer:itransformer+scratch,nasa,loco,rmse_h50,start_points,8.10164155176562,5.727173055761435,2.374468496004187,0.33217121816719486,4.577301905385428,1/4,5/20,,5
+transfer:itransformer+ft_head,transfer:itransformer+scratch,calce,loco,rmse_h50,start_points,1.8905556849603484,1.490408139254361,0.4001475457059874,0.1571331930507478,0.6455945673831959,0/4,2/20,,5
+transfer:itransformer+ft_head,transfer:itransformer+scratch,nasa,loco,rmse_h50,start_points,7.656317395652119,5.727173055761435,1.9291443398906858,0.17969632990291678,3.3722998959419987,1/4,5/20,,5
+transfer:itransformer+few_shot,transfer:itransformer+ft_full,calce,loco,rmse_h50,start_points,1.6045513069216448,1.631321307216244,-0.026770000294599805,-0.13847518803023084,0.04712821188977766,1/4,8/20,,5
+transfer:itransformer+few_shot,transfer:itransformer+ft_full,nasa,loco,rmse_h50,start_points,4.05088477742512,4.153201407504723,-0.10231663007960301,-0.11447314728664275,-0.0939005782022158,4/4,19/20,,5
+transfer:itransformer+ft_full,transfer:itransformer+scratch,calce,loco,rmse_h10,start_points,1.1014658599577738,1.0421552584249045,0.059310601532868976,0.010519284721586614,0.1112357529636407,1/4,6/20,,5
+transfer:itransformer+ft_full,transfer:itransformer+scratch,nasa,loco,rmse_h10,start_points,2.1445441418759748,1.7878422356556762,0.3567019062202991,-0.023865158260054455,0.7640791663255897,1/4,5/20,,5
+transfer:itransformer+zero_shot,transfer:itransformer+scratch,calce,loco,rmse_h10,start_points,1.194420945957334,1.0421552584249045,0.1522656875324291,-0.013944971352127068,0.2843185599287733,1/4,5/20,,5
+transfer:itransformer+zero_shot,transfer:itransformer+scratch,nasa,loco,rmse_h10,start_points,2.9486469521969445,1.7878422356556762,1.160804716541269,0.7629314559269365,1.54517400283027,0/4,0/20,,5
+transfer:itransformer+ft_head,transfer:itransformer+scratch,calce,loco,rmse_h10,start_points,1.1212320969209648,1.0421552584249045,0.07907683849606015,-0.011998102375555963,0.15399306606416455,1/4,5/20,,5
+transfer:itransformer+ft_head,transfer:itransformer+scratch,nasa,loco,rmse_h10,start_points,2.0717259193905546,1.7878422356556762,0.28388368373487916,-0.05128510496372139,0.5866689589968249,1/4,5/20,,5
+transfer:itransformer+few_shot,transfer:itransformer+ft_full,calce,loco,rmse_h10,start_points,1.0893745909588584,1.1014658599577738,-0.012091268998915466,-0.022456954767250646,0.0016632903199905013,3/4,15/20,,5
+transfer:itransformer+few_shot,transfer:itransformer+ft_full,nasa,loco,rmse_h10,start_points,2.1074211164771874,2.1445441418759748,-0.03712302539878769,-0.07047825720211345,-0.005655825855983898,3/4,16/20,,5
