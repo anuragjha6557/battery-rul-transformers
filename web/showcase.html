@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Battery RUL Benchmark</title>
+<meta name="description" content="End-to-end showcase: data, EDA, method, leakage-free benchmark of 18 models on 3 battery datasets, calibrated uncertainty, ablations, transfer and deployment.">
+<style>
+:root{
+  --bg:#fbfbfa;--surface-1:#fcfcfb;--surface-2:#ffffff;--text-primary:#0b0b0b;--text-secondary:#52514e;--grid:#e4e3df;--line:#e4e3df;--accent:#2a78d6;
+  --series-1:#2a78d6;--series-2:#eb6834;--series-3:#1baf7a;--series-4:#eda100;--series-5:#e87ba4;--series-6:#008300;--series-7:#6250d6;--series-8:#e34948;--other:#b9b8b2;
+  --good-bg:#eaf5ee;--good-ink:#215c35;--warn-bg:#fff4e0;--warn-ink:#7a4a00;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#141413;--surface-1:#1a1a19;--surface-2:#222220;--text-primary:#f0efec;--text-secondary:#c3c2b7;--grid:#34332f;--line:#34332f;--accent:#3987e5;
+  --series-1:#3987e5;--series-2:#d95926;--series-3:#199e70;--series-4:#c98500;--series-5:#d55181;--series-6:#008300;--series-7:#9085e9;--series-8:#e66767;--other:#5c5b56;
+  --good-bg:#16301f;--good-ink:#9bd9b0;--warn-bg:#3a2c12;--warn-ink:#f3cf8a;}}
+:root[data-theme="dark"]{
+  --bg:#141413;--surface-1:#1a1a19;--surface-2:#222220;--text-primary:#f0efec;--text-secondary:#c3c2b7;--grid:#34332f;--line:#34332f;--accent:#3987e5;
+  --series-1:#3987e5;--series-2:#d95926;--series-3:#199e70;--series-4:#c98500;--series-5:#d55181;--series-6:#008300;--series-7:#9085e9;--series-8:#e66767;--other:#5c5b56;
+  --good-bg:#16301f;--good-ink:#9bd9b0;--warn-bg:#3a2c12;--warn-ink:#f3cf8a;}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text-primary);font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+header.top{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+header.top .in{max-width:1120px;margin:0 auto;padding:10px 16px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+header.top b{font-size:.95rem}
+header.top nav{display:flex;gap:14px;flex-wrap:wrap;font-size:.88rem}
+header.top a{color:var(--text-secondary);text-decoration:none}
+header.top a:hover{color:var(--text-primary)}
+header.top .sp{flex:1}
+button.theme{font:inherit;font-size:.85rem;background:none;border:1px solid var(--line);color:var(--text-secondary);border-radius:6px;padding:3px 10px;cursor:pointer}
+main{max-width:1120px;margin:0 auto;padding:8px 16px 64px}
+h1{font-size:2rem;line-height:1.2;margin:32px 0 8px}
+h2{font-size:1.45rem;margin:56px 0 6px;padding-top:8px}
+h3{font-size:1.08rem;margin:28px 0 4px}
+.lede{font-size:1.1rem;color:var(--text-secondary);max-width:820px}
+p,li{max-width:860px}
+.muted{color:var(--text-secondary);font-size:.9rem}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:24px 0}
+.tile{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.tile .v{font-size:1.6rem;font-weight:650;font-variant-numeric:tabular-nums;line-height:1.2}
+.tile .k{color:var(--text-secondary);font-size:.85rem}
+.chart{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:8px;margin:12px 0 4px}
+.chart > div{width:100%;height:420px}
+.chart.tall > div{height:560px}
+.chart.short > div{height:340px}
+.cap{color:var(--text-secondary);font-size:.88rem;margin:4px 2px 18px;max-width:900px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:820px){.grid2{grid-template-columns:1fr}}
+.callout{border-left:3px solid var(--accent);background:var(--surface-2);padding:10px 14px;border-radius:0 8px 8px 0;margin:16px 0;max-width:900px}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:.92rem}
+th,td{text-align:right;padding:6px 10px;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+.scroll{overflow-x:auto}
+#eda-table td,#eda-table th{text-align:left;vertical-align:top}
+#eda-table td:nth-child(n+3):nth-child(-n+5),#eda-table th:nth-child(n+3):nth-child(-n+5){text-align:right}
+a{color:var(--accent)}
+code{font-size:.9em;background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:0 4px}
+svg.pipe text{fill:var(--text-primary);font:13px system-ui,sans-serif}
+svg.pipe .box{fill:var(--surface-2);stroke:var(--line)}
+svg.pipe .sub{fill:var(--text-secondary);font-size:11.5px}
+svg.pipe .arrow{stroke:var(--text-secondary);fill:none;stroke-width:1.5}
+.cta{display:inline-block;background:var(--accent);color:var(--bg);text-decoration:none;font-weight:600;border-radius:8px;padding:10px 18px;margin:8px 8px 0 0}
+.cta.alt{background:none;color:var(--accent);border:1px solid var(--accent)}
+.err{color:#b22222}
+</style>
+</head>
+<body>
+<header class="top"><div class="in">
+  <b>Battery RUL Benchmark</b>
+  <nav>
+    <a href="#problem">Problem</a><a href="#data">Data &amp; EDA</a><a href="#method">Method</a>
+    <a href="#results">Results</a><a href="#uq">Uncertainty</a><a href="#ablations">What didn't work</a>
+    <a href="#deploy">Demo</a>
+  </nav>
+  <span class="sp"></span>
+  <button class="theme" id="theme">Theme</button>
+</div></header>
+<main>
+
+<section id="problem">
+  <h1>How long will this battery last? A leakage-free benchmark with calibrated uncertainty</h1>
+  <p class="lede">An end-to-end rebuild of an IEEE ITEC 2024 paper on iTransformer-based battery remaining-useful-life prediction. It covers three public datasets, 18 model configurations under one honest protocol, conformal prediction intervals and a live demo.</p>
+  <div class="tiles" id="hero-tiles"></div>
+  <p><b>The question.</b> A lithium-ion cell loses capacity every charge–discharge cycle. Operators want three answers:</p>
+  <ul>
+    <li><b>State of health now:</b> SOH estimation, i.e. capacity as a % of new.</li>
+    <li><b>SOH over the next 1–200 cycles:</b> forecasting.</li>
+    <li><b>Cycles until SOH hits 80 %:</b> remaining useful life (RUL).</li>
+  </ul>
+  <p>The source paper reported large gains for iTransformer on 4 NASA and 4 CALCE cells. Those numbers were treated as untrusted. This project rebuilds the evaluation from scratch, so the answer to "does inverted attention help?" can be defended.</p>
+  <div class="callout"><b>Headline.</b> iTransformer has the best mean rank across 40 dataset × task × metric conditions and leads in-distribution on Toyota (124 cells). On the tiny NASA and CALCE sets, a tuned LightGBM is as good or better. The page shows each claim with its evidence, including what didn't work.</div>
+</section>
+
+<section id="data">
+  <h2>1 · Data and exploratory analysis</h2>
+  <p>Three public datasets, kept separate throughout. The cells use different chemistries, form factors and test protocols, which is what makes cross-dataset generalisation hard.</p>
+  <div class="scroll" id="eda-table"></div>
+  <h3>Capacity fade: every cell, every cycle</h3>
+  <div class="chart tall"><div id="eda-soh"></div></div>
+  <p class="cap">SOH = capacity ÷ mean of the cell's first 5 cycles. Cycles to 80 % SOH: NASA 61–125, CALCE 499–607 (cycled on to ~900–1 000), Toyota 148–2 237. Hover a line to identify the cell; click legend items to toggle.</p>
+  <div class="grid2">
+    <div><h3>Toyota: cycle life varies 15× across cells</h3><div class="chart short"><div id="eda-life"></div></div>
+      <p class="cap">Cycle life (provider label) of the 124 cells by official split. Cells in test 2 come from a later batch, which acts as a mild distribution shift.</p></div>
+    <div><h3>Life is predictable early (Severson 2019)</h3><div class="chart short"><div id="eda-early"></div></div>
+      <p class="cap">The log-variance of ΔQ(V) between cycles 100 and 10 against cycle life on Toyota train cells. This is the strongest single early-life signal, and our feature reproduction matches the paper's.</p></div>
+  </div>
+  <h3>Data quirks that change the answer</h3>
+  <div class="grid2">
+    <div><div class="chart short"><div id="eda-nasa-regen"></div></div>
+      <p class="cap"><b>NASA:</b> capacity "regenerates" after long rests (marked). Cells B0005–B0007 share one rig and the same rest schedule, so their jumps line up. B0018 is the only independent NASA test cell.</p></div>
+    <div><div class="chart short"><div id="eda-calce-dips"></div></div>
+      <p class="cap"><b>CALCE:</b> about 3 % of cycles lose 13–16 % of capacity because the charger's constant-voltage step ended after one sample (marked). This is an equipment artifact, not ageing, and it sets a 1–2 % SOH noise floor for any forecaster.</p></div>
+  </div>
+  <h3>End-of-life labelling: a hidden degree of freedom</h3>
+  <div class="chart short"><div id="eda-eol"></div></div>
+  <p class="cap">On CALCE, the first raw crossing of 80 % SOH happens on an artifact dip, hundreds of cycles before the cell truly ages out. This benchmark labels EOL as the first <i>sustained</i> crossing (5 consecutive cycles, artifacts masked). That one choice moves CALCE RUL labels by 200–500 cycles; the paper never states its rule.</p>
+  <h3>Which per-cycle signals track health?</h3>
+  <div class="chart short"><div id="eda-corr"></div></div>
+  <p class="cap">Spearman correlation of each per-cycle charge feature with SOH, by dataset. Charge-phase features are allowed as inputs because they are measured before the discharge that defines capacity (leakage rule: discharge quantities of cycle k are the target itself).</p>
+</section>
+
+<section id="method">
+  <h2>2 · Method: an honest protocol first, models second</h2>
+  <svg class="pipe" id="pipeline" viewBox="0 0 1080 150" width="100%" role="img" aria-label="Pipeline: raw data, canonical schema, tasks and labels, leakage-safe splits, 18 models with equal-budget tuning, evaluation with statistics, conformal calibration, deployment"></svg>
+  <h3>Three tasks, never mixed</h3>
+  <div class="chart short"><div id="method-tasks"></div></div>
+  <p class="cap">At a prediction origin (cycle T<sub>p</sub>) the model sees only cycles ≤ T<sub>p</sub> (the shaded look-back window):
+    <b>A</b> estimates today's SOH from today's charge;
+    <b>B</b> forecasts SOH directly at h = 1…100 (200 on Toyota) cycles ahead;
+    <b>C</b> predicts the cycles until 80 % SOH.</p>
+  <ul>
+    <li><b>Splits.</b> NASA and CALCE use leave-one-cell-out, with inner cross-fitting for early stopping and calibration. Toyota uses the official 41 / 43 / 40 train / test 1 / test 2 split, so the numbers are comparable with the literature.</li>
+    <li><b>No leakage.</b> Scalers are fitted on training cells only; no future cycles are used; no absolute cycle index is an input. Seven leakage rules are enforced by unit tests, which were checked by injecting leaks and confirming the tests catch them.</li>
+    <li><b>Fair tuning.</b> Every learned model got the same Optuna budget: 50 trials on Toyota training cells with Hyperband pruning. Hyperparameters then transfer unchanged to NASA and CALCE (no winner's curse on 4 cells). 5 seeds per configuration.</li>
+    <li><b>Statistics.</b> 95 % cluster-bootstrap CIs over test cells, Holm-corrected Wilcoxon tests on Toyota, and "k / 4 cells" direction consistency on NASA and CALCE. Every number traces to an MLflow run.</li>
+    <li><b>Models.</b>
+      <ul>
+        <li>Naive: persistence, last slope.</li>
+        <li>Classical: linear / double-exponential / power-law fits, Gaussian process.</li>
+        <li>Tabular: ElasticNet, LightGBM.</li>
+        <li>Linear deep: N/D/RLinear.</li>
+        <li>Recurrent: LSTM, GRU.</li>
+        <li>Attention: Transformer, PatchTST, iTransformer in single-channel (SC) and multi-channel (MC) variants.</li>
+      </ul></li>
+  </ul>
+</section>
+
+<section id="results">
+  <h2>3 · Results</h2>
+  <h3>Overall standing</h3>
+  <div class="chart short"><div id="res-rank"></div></div>
+  <p class="cap">Mean rank over 40 conditions (dataset/split × task × headline metric); lower is better. Ranks hide magnitudes, so the charts below show the actual errors.</p>
+
+  <h3>Forecast error grows with horizon, and the ranking depends on the dataset</h3>
+  <div class="chart tall"><div id="res-horizon"></div></div>
+  <p class="cap">RMSE (% SOH) against forecast horizon on held-out cells, all prediction origins, mean over 5 seeds. Highlighted: the strongest methods and the persistence baseline; grey lines are the remaining models (hover to identify). Note the different y-scales: Toyota errors are ~10× smaller than NASA's.</p>
+  <div class="callout" id="res-horizon-note"></div>
+
+  <h3>What a forecast actually looks like</h3>
+  <div class="chart tall"><div id="res-fan"></div></div>
+  <p class="cap">Multi-horizon forecasts issued at the benchmark's start points (vertical line), with calibrated 90 % intervals. Black = measured SOH. Each panel is a held-out test cell. Use the legend to compare methods.</p>
+
+  <h3>Why NASA is hard: history length</h3>
+  <div class="chart short"><div id="res-history"></div></div>
+  <p class="cap">h = 50 forecast error on NASA by how many cycles of history the model had. With 40 cycles of history or fewer, iTransformer extrapolates poorly (≈ 8 % SOH), because its hyperparameters were tuned on long-lived Toyota cells. From about 60 cycles it matches LightGBM, and beyond 80 cycles it is the most accurate model shown. 5 seeds pooled.</p>
+
+  <h3>Every test cell, not just the average</h3>
+  <div class="chart short"><div id="res-cells"></div></div>
+  <p class="cap">h = 50 RMSE per held-out cell (dots = seeds) on NASA and CALCE; persistence is hidden by default (click it in the legend). With 4 cells, one hard cell can decide a ranking, which is why Toyota's 83 test cells carry the statistical weight.</p>
+
+  <h3>SOH estimation (task A)</h3>
+  <div class="chart"><div id="res-soh"></div></div>
+  <p class="cap">RMSE (% SOH) of estimating the current SOH from the current charge, with 95 % CIs over held-out cells. Models sorted by overall mean rank.</p>
+  <h3>Remaining useful life (task C)</h3>
+  <div class="chart"><div id="res-rul"></div></div>
+  <p class="cap">RUL mean absolute error (cycles) at the fixed start points, with 95 % CIs. Diamonds are the classical curve-fit baselines; off-scale values sit at the edge with ▶ (hover for the true value). Curve fits that never cross 80 % are scored at the censoring cap, hence the huge errors.</p>
+  <h3>RUL predictions against truth</h3>
+  <div class="chart"><div id="res-rul-scatter"></div></div>
+  <p class="cap">Predicted vs true RUL on Toyota test cells at cycle 100, for the best models. The diagonal is perfect; the band is ±20 %. Points below the diagonal are early (conservative) predictions.</p>
+</section>
+
+<section id="uq">
+  <h2>4 · Uncertainty you can trust</h2>
+  <p>A point forecast is not enough for maintenance planning. Each quantile model predicts the 5–95 % range, then <b>conformalized quantile regression (CQR)</b> widens or narrows that range using errors measured on held-out training cells. The interval then covers the truth about 90 % of the time, as long as the new cell resembles the training cells.</p>
+  <div class="chart"><div id="res-calib"></div></div>
+  <p class="cap">Coverage of the nominal 90 % interval at h = 50: raw model quantiles (hollow) vs after CQR (filled). Target band 85–95 % shaded. CQR fixes severe under-coverage (NASA iTransformer: 46 % → 90 %). It cannot fix distribution shift: on Toyota test 2, GRU, LSTM and LightGBM stay under target, and the demo's out-of-distribution check exists for that reason.</p>
+  <div class="chart short"><div id="res-width"></div></div>
+  <p class="cap">The price of coverage: mean interval width (% SOH) before and after calibration.</p>
+</section>
+
+<section id="ablations">
+  <h2>5 · What didn't work (pre-registered, reported anyway)</h2>
+  <p>Five improvements were pre-registered with a decision rule before running. A change is kept only if it improves Toyota with a CI excluding zero <i>and</i> wins on at least 3 of 4 cells on both NASA and CALCE.</p>
+  <div class="chart tall"><div id="res-ablation"></div></div>
+  <p class="cap">Paired change in error (h = 50 forecast RMSE, or SOH RMSE for the SOH rows, in % SOH) from each ablation vs its baseline, with 95 % cluster-bootstrap CIs; left of zero = better. Same cells and seeds are compared. Note the "point MSE vs quantile head" row is red: the quantile head wins, so it was kept. No other change passed the rule on every dataset. Off-scale points sit at the edge (hover for values).</p>
+  <h3>Direct heads beat recursive rollout</h3>
+  <div class="chart"><div id="res-recursive"></div></div>
+  <p class="cap">RMSE (% SOH, log scale) against horizon for iTransformer with direct multi-horizon heads vs one-step recursive rollout. Recursion compounds its own errors: on NASA it diverges at h = 100.</p>
+  <h3>Cross-chemistry transfer is conditional</h3>
+  <div class="chart short"><div id="res-transfer"></div></div>
+  <p class="cap">Left: h = 50 forecast RMSE at the benchmark start points for each transfer arm. Pre-training on 124 Toyota LFP cells then fully fine-tuning cuts NASA error by about 27 % (28 % over all origins). It slightly hurts CALCE, whose long-lived cells already give enough training data. Right: the same idea does not help RUL. Zero-shot transfer fails on both.</p>
+</section>
+
+<section id="deploy">
+  <h2>6 · Try it</h2>
+  <p>The served model is the single-channel iTransformer-v2, so it needs only <code>cycle_idx, capacity_ah</code>. It is trained on all three datasets and calibrated on cells it never saw. It runs entirely in your browser via ONNX Runtime Web, so no data leaves the page. An out-of-distribution check warns when intervals should not be trusted.</p>
+  <a class="cta" href="index.html">Open the live demo</a>
+  <a class="cta alt" href="https://github.com/anuragjha6557/battery-rul-transformers">Code, ADRs and full tables</a>
+  <p class="muted" style="margin-top:24px">Source paper: Jha, Dorkar, Biswas, Emadi, “iTransformer Network Based Approach for Accurate Remaining Useful Life Prediction in Lithium-Ion Batteries,” IEEE ITEC 2024, doi:10.1109/ITEC60657.2024.10598898. Data: NASA PCoE; CALCE (University of Maryland); Severson et al., Nature Energy 2019. All figures are generated from the benchmark's MLflow runs by <code>scripts/showcase/</code>.</p>
+</section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js"></script>
+<script type="module" src="showcase/main.mjs"></script>
+</body>
+</html>

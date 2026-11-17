@@ -7,6 +7,8 @@ A leakage-free benchmark for lithium-ion battery **State-of-Health (SOH) estimat
 
 The project was rebuilt from scratch from the idea in Jha, Dorkar, Biswas & Emadi, *iTransformer Network Based Approach for Accurate Remaining Useful Life Prediction in Lithium-Ion Batteries*, IEEE ITEC 2024 ([doi:10.1109/ITEC60657.2024.10598898](https://doi.org/10.1109/ITEC60657.2024.10598898)). The paper's reported numbers were deliberately **not** used as a target.
 
+**📊 Project showcase (EDA → method → results → uncertainty → ablations):** [interactive page](https://anurag6557-battery-rul-itransformer-v2.static.hf.space/showcase.html)
+
 **▶ Try it:** [huggingface.co/spaces/anurag6557/battery-rul-itransformer-v2](https://huggingface.co/spaces/anurag6557/battery-rul-itransformer-v2). Upload a `cycle_idx,capacity_ah` CSV (or pick a demo cell) and get an SOH forecast and a RUL estimate with calibrated 90 % intervals, plus an out-of-distribution warning. The model runs in your browser (ONNX Runtime Web), so your data never leaves the page.
 
 ## What this project shows
@@ -50,7 +52,7 @@ uv run python scripts/train_deploy.py && make app   # train the served model and
 |---|---|
 | `src/battery_rul/data` | Loaders (NASA `.mat`, CALCE `.xlsx`, Toyota HDF5) → one pandera-validated schema |
 | `src/battery_rul/tasks`, `splits` | Label construction (EOL rules, censoring), causal windowing, LOCO / Severson splits, train-only scaling |
-| `src/battery_rul/models` | 19 model configurations behind one `Model` protocol: persistence, parametric fits, GPR, ElasticNet, LightGBM, N/D/RLinear, LSTM/GRU, Transformer, PatchTST, iTransformer |
+| `src/battery_rul/models` | 18 model configurations behind one `Model` protocol: persistence, parametric fits, GPR, ElasticNet, LightGBM, N/D/RLinear, LSTM/GRU, Transformer, PatchTST, iTransformer |
 | `src/battery_rul/uq`, `eval` | CQR, ensembles, interval metrics; RMSE/MAE/α-λ, cluster bootstrap, Wilcoxon + Holm, mean rank |
 | `src/battery_rul/train` | Runner (MLflow, resumable, OpenMP-isolated workers), Optuna tuning, Toyota transfer |
 | `src/battery_rul/serve`, `web/`, `app/` | Predictor (input validation, CQR intervals, OOD check); the in-browser demo (ONNX, JS port tested for parity); a local Gradio app |
