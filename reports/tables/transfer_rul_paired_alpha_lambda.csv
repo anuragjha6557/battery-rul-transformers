@@ -1,0 +1,5 @@
+candidate,reference,dataset,split,metric,policy,kind,cand_mean,ref_mean,delta,ci_lo,ci_hi,k_cells,k_pairs,wilcoxon_p,n_seeds
+transfer:itransformer+ft_full,transfer:itransformer+scratch,calce,loco,alpha_lambda_acc,start_points,frac:0.5,0.75,0.55,0.2,0.0,0.6,1/4,4/20,,5
+transfer:itransformer+ft_full,transfer:itransformer+scratch,nasa,loco,alpha_lambda_acc,start_points,frac:0.5,0.25,0.1,0.15,0.0,0.45,1/4,3/20,,5
+transfer:itransformer+zero_shot,transfer:itransformer+scratch,calce,loco,alpha_lambda_acc,start_points,frac:0.5,0.0,0.55,-0.55,-1.0,-0.1,0/4,0/20,,5
+transfer:itransformer+zero_shot,transfer:itransformer+scratch,nasa,loco,alpha_lambda_acc,start_points,frac:0.5,0.0,0.1,-0.1,-0.3,0.0,0/4,0/20,,5

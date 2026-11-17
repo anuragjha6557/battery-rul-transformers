@@ -1,8 +1,8 @@
 # Benchmark tables: transfer
 
 - Protocol version: 1.1
-- Git SHA: 3a823886bb
-- Seeds: 5  |  unit runs: 200
+- Git SHA: 0faa8bea89, 3a823886bb
+- Seeds: 5  |  unit runs: 320
 - Note: n = 4 cells per NASA/CALCE dataset, so the 95 % cluster-bootstrap CI is wide by construction. Toyota rows are over test cells (test1 / test2 separately) with a cell-level bootstrap CI and a Holm-adjusted Wilcoxon p vs the best baseline. All metrics are computed per cell from the logged predictions.
 
 ## Headline (kind = overall; RMSE in %SOH, RUL MAE in cycles)
@@ -39,6 +39,17 @@
 | loco | start_points | overall | rmse_h50 | itransformer+scratch | 1.490 [0.932, 2.088] |  |  | 4 | 5 | 3f3d5cde |
 | loco | start_points | overall | rmse_h50 | itransformer+zero_shot | 1.881 [1.189, 2.712] |  |  | 4 | 5 | 4c422200 |
 
+### calce_rul
+
+| split | policy | kind | metric | model | mean [95% CI] | vs best baseline | indep. (B0018) | n_cells | n_seeds | run_group |
+|---|---|---|---|---|---|---|---|---|---|---|
+| loco | all | overall | rul_mae | itransformer+ft_full | 95.767 [67.117, 124.417] |  |  | 4 | 5 | b342171a |
+| loco | all | overall | rul_mae | itransformer+scratch | 67.386 [44.187, 96.945] |  |  | 4 | 5 | 32ce8aaf |
+| loco | all | overall | rul_mae | itransformer+zero_shot | 250.221 [218.587, 273.233] |  |  | 4 | 5 | 445f661c |
+| loco | start_points | overall | rul_mae | itransformer+ft_full | 85.694 [49.952, 115.504] |  |  | 4 | 5 | b342171a |
+| loco | start_points | overall | rul_mae | itransformer+scratch | 72.675 [45.620, 111.539] |  |  | 4 | 5 | 32ce8aaf |
+| loco | start_points | overall | rul_mae | itransformer+zero_shot | 349.360 [201.082, 466.693] |  |  | 4 | 5 | 445f661c |
+
 ### nasa_forecast
 
 | split | policy | kind | metric | model | mean [95% CI] | vs best baseline | indep. (B0018) | n_cells | n_seeds | run_group |
@@ -71,15 +82,26 @@
 | loco | start_points | overall | rmse_h50 | itransformer+scratch | 5.727 [4.082, 7.419] |  | 3.324 | 4 | 5 | 404d5aeb |
 | loco | start_points | overall | rmse_h50 | itransformer+zero_shot | 8.102 [6.641, 9.631] |  | 8.690 | 4 | 5 | e40d77b4 |
 
+### nasa_rul
+
+| split | policy | kind | metric | model | mean [95% CI] | vs best baseline | indep. (B0018) | n_cells | n_seeds | run_group |
+|---|---|---|---|---|---|---|---|---|---|---|
+| loco | all | overall | rul_mae | itransformer+ft_full | 16.863 [13.358, 20.188] |  | 21.507 | 4 | 5 | 857965a7 |
+| loco | all | overall | rul_mae | itransformer+scratch | 16.805 [9.422, 24.188] |  | 11.188 | 4 | 5 | b7fdf394 |
+| loco | all | overall | rul_mae | itransformer+zero_shot | 40.033 [31.177, 48.890] |  | 34.919 | 4 | 5 | 4e26a625 |
+| loco | start_points | overall | rul_mae | itransformer+ft_full | 18.755 [14.763, 23.977] |  | 26.441 | 4 | 5 | 857965a7 |
+| loco | start_points | overall | rul_mae | itransformer+scratch | 15.805 [9.268, 22.343] |  | 11.148 | 4 | 5 | b7fdf394 |
+| loco | start_points | overall | rul_mae | itransformer+zero_shot | 47.303 [24.496, 68.080] |  | 41.394 | 4 | 5 | 4e26a625 |
+
 ## Mean rank (dataset x task x split x policy x headline metric)
 
 | model | mean rank | conditions | missing |
 |---|---|---|---|
-| itransformer+scratch | 1.58 | 12 | 0 |
-| itransformer+few_shot | 2.50 | 6 | 6 |
-| itransformer+ft_full | 2.58 | 12 | 0 |
-| itransformer+ft_head | 3.00 | 12 | 0 |
-| itransformer+zero_shot | 4.08 | 12 | 0 |
+| itransformer+scratch | 1.44 | 16 | 0 |
+| itransformer+ft_full | 2.44 | 16 | 0 |
+| itransformer+few_shot | 2.50 | 6 | 10 |
+| itransformer+ft_head | 3.00 | 12 | 4 |
+| itransformer+zero_shot | 3.81 | 16 | 0 |
 
 ## Full tables
 
@@ -260,6 +282,64 @@
 
 </details>
 
+<details><summary>calce_rul (51 rows)</summary>
+
+| split | policy | kind | metric | model | mean [95% CI] | vs best baseline | indep. (B0018) | n_cells | n_seeds | run_group |
+|---|---|---|---|---|---|---|---|---|---|---|
+| loco | all | overall | rul_bias | itransformer+ft_full | 3.961 [-76.658, 80.523] |  |  | 4 | 5 | b342171a |
+| loco | all | overall | rul_bias | itransformer+scratch | 16.973 [-35.514, 81.974] |  |  | 4 | 5 | 32ce8aaf |
+| loco | all | overall | rul_bias | itransformer+zero_shot | 36.283 [-6.992, 74.166] |  |  | 4 | 5 | 445f661c |
+| loco | all | overall | rul_mae | itransformer+ft_full | 95.767 [67.117, 124.417] |  |  | 4 | 5 | b342171a |
+| loco | all | overall | rul_mae | itransformer+scratch | 67.386 [44.187, 96.945] |  |  | 4 | 5 | 32ce8aaf |
+| loco | all | overall | rul_mae | itransformer+zero_shot | 250.221 [218.587, 273.233] |  |  | 4 | 5 | 445f661c |
+| loco | start_points | fixed:200 | rul_bias | itransformer+ft_full | -15.592 [-117.502, 103.441] |  |  | 4 | 5 | b342171a |
+| loco | start_points | fixed:200 | rul_bias | itransformer+scratch | 6.072 [-60.030, 100.819] |  |  | 4 | 5 | 32ce8aaf |
+| loco | start_points | fixed:200 | rul_bias | itransformer+zero_shot | 478.078 [284.983, 671.173] |  |  | 4 | 5 | 445f661c |
+| loco | start_points | fixed:200 | rul_mae | itransformer+ft_full | 90.196 [32.715, 147.677] |  |  | 4 | 5 | b342171a |
+| loco | start_points | fixed:200 | rul_mae | itransformer+scratch | 75.788 [40.323, 124.805] |  |  | 4 | 5 | 32ce8aaf |
+| loco | start_points | fixed:200 | rul_mae | itransformer+zero_shot | 478.078 [284.983, 671.173] |  |  | 4 | 5 | 445f661c |
+| loco | start_points | fixed:400 | rul_bias | itransformer+ft_full | 50.697 [-53.490, 162.451] |  |  | 4 | 5 | b342171a |
+| loco | start_points | fixed:400 | rul_bias | itransformer+scratch | 27.783 [-37.850, 94.332] |  |  | 4 | 5 | 32ce8aaf |
+| loco | start_points | fixed:400 | rul_bias | itransformer+zero_shot | 204.393 [-43.158, 451.945] |  |  | 4 | 5 | 445f661c |
+| loco | start_points | fixed:400 | rul_mae | itransformer+ft_full | 98.966 [32.086, 178.715] |  |  | 4 | 5 | b342171a |
+| loco | start_points | fixed:400 | rul_mae | itransformer+scratch | 67.145 [27.781, 109.314] |  |  | 4 | 5 | 32ce8aaf |
+| loco | start_points | fixed:400 | rul_mae | itransformer+zero_shot | 247.551 [43.158, 451.945] |  |  | 4 | 5 | 445f661c |
+| loco | start_points | frac:0.3 | alpha_lambda_acc | itransformer+ft_full | 0.350 [0.000, 0.750] |  |  | 4 | 5 | b342171a |
+| loco | start_points | frac:0.3 | alpha_lambda_acc | itransformer+scratch | 0.450 [0.200, 0.800] |  |  | 4 | 5 | 32ce8aaf |
+| loco | start_points | frac:0.3 | alpha_lambda_acc | itransformer+zero_shot | 0.000 [0.000, 0.000] |  |  | 4 | 5 | 445f661c |
+| loco | start_points | frac:0.3 | rul_bias | itransformer+ft_full | -47.921 [-130.193, 49.859] |  |  | 4 | 5 | b342171a |
+| loco | start_points | frac:0.3 | rul_bias | itransformer+scratch | -13.672 [-87.175, 59.832] |  |  | 4 | 5 | 32ce8aaf |
+| loco | start_points | frac:0.3 | rul_bias | itransformer+zero_shot | 152.281 [-220.951, 595.891] |  |  | 4 | 5 | 445f661c |
+| loco | start_points | frac:0.3 | rul_mae | itransformer+ft_full | 94.747 [57.418, 139.237] |  |  | 4 | 5 | b342171a |
+| loco | start_points | frac:0.3 | rul_mae | itransformer+scratch | 73.503 [50.194, 91.999] |  |  | 4 | 5 | 32ce8aaf |
+| loco | start_points | frac:0.3 | rul_mae | itransformer+zero_shot | 373.233 [177.349, 684.565] |  |  | 4 | 5 | 445f661c |
+| loco | start_points | frac:0.5 | alpha_lambda_acc | itransformer+ft_full | 0.750 [0.250, 1.000] |  |  | 4 | 5 | b342171a |
+| loco | start_points | frac:0.5 | alpha_lambda_acc | itransformer+scratch | 0.550 [0.100, 1.000] |  |  | 4 | 5 | 32ce8aaf |
+| loco | start_points | frac:0.5 | alpha_lambda_acc | itransformer+zero_shot | 0.000 [0.000, 0.000] |  |  | 4 | 5 | 445f661c |
+| loco | start_points | frac:0.5 | rul_bias | itransformer+ft_full | 36.716 [-24.651, 132.989] |  |  | 4 | 5 | b342171a |
+| loco | start_points | frac:0.5 | rul_bias | itransformer+scratch | 47.456 [-6.907, 105.530] |  |  | 4 | 5 | 32ce8aaf |
+| loco | start_points | frac:0.5 | rul_bias | itransformer+zero_shot | 230.961 [-119.575, 616.453] |  |  | 4 | 5 | 445f661c |
+| loco | start_points | frac:0.5 | rul_mae | itransformer+ft_full | 56.672 [6.588, 135.484] |  |  | 4 | 5 | b342171a |
+| loco | start_points | frac:0.5 | rul_mae | itransformer+scratch | 66.674 [23.913, 109.434] |  |  | 4 | 5 | 32ce8aaf |
+| loco | start_points | frac:0.5 | rul_mae | itransformer+zero_shot | 350.536 [119.575, 676.241] |  |  | 4 | 5 | 445f661c |
+| loco | start_points | frac:0.7 | alpha_lambda_acc | itransformer+ft_full | 0.250 [0.000, 0.750] |  |  | 4 | 5 | b342171a |
+| loco | start_points | frac:0.7 | alpha_lambda_acc | itransformer+scratch | 0.350 [0.100, 0.650] |  |  | 4 | 5 | 32ce8aaf |
+| loco | start_points | frac:0.7 | alpha_lambda_acc | itransformer+zero_shot | 0.250 [0.000, 0.750] |  |  | 4 | 5 | 445f661c |
+| loco | start_points | frac:0.7 | rul_bias | itransformer+ft_full | 45.659 [-38.425, 129.742] |  |  | 4 | 5 | b342171a |
+| loco | start_points | frac:0.7 | rul_bias | itransformer+scratch | 39.722 [-41.932, 124.836] |  |  | 4 | 5 | 32ce8aaf |
+| loco | start_points | frac:0.7 | rul_bias | itransformer+zero_shot | 261.557 [-35.845, 558.960] |  |  | 4 | 5 | 445f661c |
+| loco | start_points | frac:0.7 | rul_mae | itransformer+ft_full | 87.887 [38.012, 129.742] |  |  | 4 | 5 | b342171a |
+| loco | start_points | frac:0.7 | rul_mae | itransformer+scratch | 80.268 [40.691, 134.756] |  |  | 4 | 5 | 32ce8aaf |
+| loco | start_points | frac:0.7 | rul_mae | itransformer+zero_shot | 297.403 [35.845, 558.960] |  |  | 4 | 5 | 445f661c |
+| loco | start_points | overall | rul_bias | itransformer+ft_full | 13.912 [-62.110, 89.933] |  |  | 4 | 5 | b342171a |
+| loco | start_points | overall | rul_bias | itransformer+scratch | 21.472 [-43.404, 93.093] |  |  | 4 | 5 | 32ce8aaf |
+| loco | start_points | overall | rul_bias | itransformer+zero_shot | 265.454 [122.476, 400.333] |  |  | 4 | 5 | 445f661c |
+| loco | start_points | overall | rul_mae | itransformer+ft_full | 85.694 [49.952, 115.504] |  |  | 4 | 5 | b342171a |
+| loco | start_points | overall | rul_mae | itransformer+scratch | 72.675 [45.620, 111.539] |  |  | 4 | 5 | 32ce8aaf |
+| loco | start_points | overall | rul_mae | itransformer+zero_shot | 349.360 [201.082, 466.693] |  |  | 4 | 5 | 445f661c |
+
+</details>
+
 <details><summary>nasa_forecast (170 rows)</summary>
 
 | split | policy | kind | metric | model | mean [95% CI] | vs best baseline | indep. (B0018) | n_cells | n_seeds | run_group |
@@ -434,5 +514,63 @@
 | loco | start_points | overall | rmse_h50 | itransformer+ft_head | 7.656 [6.198, 9.293] |  | 7.235 | 4 | 5 | 1d41798d |
 | loco | start_points | overall | rmse_h50 | itransformer+scratch | 5.727 [4.082, 7.419] |  | 3.324 | 4 | 5 | 404d5aeb |
 | loco | start_points | overall | rmse_h50 | itransformer+zero_shot | 8.102 [6.641, 9.631] |  | 8.690 | 4 | 5 | e40d77b4 |
+
+</details>
+
+<details><summary>nasa_rul (51 rows)</summary>
+
+| split | policy | kind | metric | model | mean [95% CI] | vs best baseline | indep. (B0018) | n_cells | n_seeds | run_group |
+|---|---|---|---|---|---|---|---|---|---|---|
+| loco | all | overall | rul_bias | itransformer+ft_full | 2.868 [-7.045, 13.499] |  | -2.610 | 4 | 5 | 857965a7 |
+| loco | all | overall | rul_bias | itransformer+scratch | -0.268 [-16.306, 16.170] |  | -4.212 | 4 | 5 | b7fdf394 |
+| loco | all | overall | rul_bias | itransformer+zero_shot | 7.513 [-3.617, 18.642] |  | -7.268 | 4 | 5 | 4e26a625 |
+| loco | all | overall | rul_mae | itransformer+ft_full | 16.863 [13.358, 20.188] |  | 21.507 | 4 | 5 | 857965a7 |
+| loco | all | overall | rul_mae | itransformer+scratch | 16.805 [9.422, 24.188] |  | 11.188 | 4 | 5 | b7fdf394 |
+| loco | all | overall | rul_mae | itransformer+zero_shot | 40.033 [31.177, 48.890] |  | 34.919 | 4 | 5 | 4e26a625 |
+| loco | start_points | fixed:30 | rul_bias | itransformer+ft_full | -9.711 [-28.501, 7.549] |  | -40.123 | 4 | 5 | 857965a7 |
+| loco | start_points | fixed:30 | rul_bias | itransformer+scratch | -4.925 [-25.158, 13.993] |  | -6.999 | 4 | 5 | b7fdf394 |
+| loco | start_points | fixed:30 | rul_bias | itransformer+zero_shot | 39.552 [-19.282, 98.385] |  | -48.000 | 4 | 5 | 4e26a625 |
+| loco | start_points | fixed:30 | rul_mae | itransformer+ft_full | 17.261 [7.549, 32.275] |  | 40.123 | 4 | 5 | 857965a7 |
+| loco | start_points | fixed:30 | rul_mae | itransformer+scratch | 16.006 [4.782, 27.230] |  | 6.999 | 4 | 5 | b7fdf394 |
+| loco | start_points | fixed:30 | rul_mae | itransformer+zero_shot | 63.552 [28.718, 98.385] |  | 48.000 | 4 | 5 | 4e26a625 |
+| loco | start_points | fixed:50 | rul_bias | itransformer+ft_full | 2.816 [-16.257, 13.617] |  | 14.765 | 4 | 5 | 857965a7 |
+| loco | start_points | fixed:50 | rul_bias | itransformer+scratch | -1.446 [-15.989, 13.096] |  | -12.978 | 4 | 5 | b7fdf394 |
+| loco | start_points | fixed:50 | rul_bias | itransformer+zero_shot | -11.939 [-51.236, 28.570] |  | 43.193 | 4 | 5 | 4e26a625 |
+| loco | start_points | fixed:50 | rul_mae | itransformer+ft_full | 15.733 [11.089, 22.492] |  | 14.765 | 4 | 5 | 857965a7 |
+| loco | start_points | fixed:50 | rul_mae | itransformer+scratch | 14.543 [12.488, 17.495] |  | 12.978 | 4 | 5 | b7fdf394 |
+| loco | start_points | fixed:50 | rul_mae | itransformer+zero_shot | 33.535 [13.149, 53.921] |  | 43.193 | 4 | 5 | 4e26a625 |
+| loco | start_points | frac:0.3 | alpha_lambda_acc | itransformer+ft_full | 0.250 [0.000, 0.750] |  | 0.000 | 4 | 5 | 857965a7 |
+| loco | start_points | frac:0.3 | alpha_lambda_acc | itransformer+scratch | 0.400 [0.000, 0.800] |  | 0.600 | 4 | 5 | b7fdf394 |
+| loco | start_points | frac:0.3 | alpha_lambda_acc | itransformer+zero_shot | 0.000 [0.000, 0.000] |  | 0.000 | 4 | 5 | 4e26a625 |
+| loco | start_points | frac:0.3 | rul_bias | itransformer+ft_full | 6.447 [-22.373, 38.334] |  | -30.624 | 4 | 5 | 857965a7 |
+| loco | start_points | frac:0.3 | rul_bias | itransformer+scratch | -3.515 [-20.518, 13.778] |  | -9.515 | 4 | 5 | b7fdf394 |
+| loco | start_points | frac:0.3 | rul_bias | itransformer+zero_shot | 41.987 [-37.490, 141.074] |  | -55.000 | 4 | 5 | 4e26a625 |
+| loco | start_points | frac:0.3 | rul_mae | itransformer+ft_full | 28.819 [14.417, 45.543] |  | 30.624 | 4 | 5 | 857965a7 |
+| loco | start_points | frac:0.3 | rul_mae | itransformer+scratch | 15.857 [6.946, 24.767] |  | 9.515 | 4 | 5 | b7fdf394 |
+| loco | start_points | frac:0.3 | rul_mae | itransformer+zero_shot | 79.477 [28.736, 158.112] |  | 55.000 | 4 | 5 | 4e26a625 |
+| loco | start_points | frac:0.5 | alpha_lambda_acc | itransformer+ft_full | 0.250 [0.000, 0.750] |  | 0.000 | 4 | 5 | 857965a7 |
+| loco | start_points | frac:0.5 | alpha_lambda_acc | itransformer+scratch | 0.100 [0.000, 0.300] |  | 0.000 | 4 | 5 | b7fdf394 |
+| loco | start_points | frac:0.5 | alpha_lambda_acc | itransformer+zero_shot | 0.000 [0.000, 0.000] |  | 0.000 | 4 | 5 | 4e26a625 |
+| loco | start_points | frac:0.5 | rul_bias | itransformer+ft_full | -8.011 [-20.820, 4.798] |  | -24.828 | 4 | 5 | 857965a7 |
+| loco | start_points | frac:0.5 | rul_bias | itransformer+scratch | -1.390 [-20.100, 17.320] |  | -15.145 | 4 | 5 | b7fdf394 |
+| loco | start_points | frac:0.5 | rul_bias | itransformer+zero_shot | -28.037 [-41.398, -3.019] |  | -39.000 | 4 | 5 | 4e26a625 |
+| loco | start_points | frac:0.5 | rul_mae | itransformer+ft_full | 12.920 [5.021, 20.820] |  | 24.828 | 4 | 5 | 857965a7 |
+| loco | start_points | frac:0.5 | rul_mae | itransformer+scratch | 18.710 [14.397, 23.023] |  | 15.145 | 4 | 5 | b7fdf394 |
+| loco | start_points | frac:0.5 | rul_mae | itransformer+zero_shot | 32.756 [17.174, 41.398] |  | 39.000 | 4 | 5 | 4e26a625 |
+| loco | start_points | frac:0.7 | alpha_lambda_acc | itransformer+ft_full | 0.100 [0.000, 0.300] |  | 0.000 | 4 | 5 | 857965a7 |
+| loco | start_points | frac:0.7 | alpha_lambda_acc | itransformer+scratch | 0.200 [0.000, 0.600] |  | 0.000 | 4 | 5 | b7fdf394 |
+| loco | start_points | frac:0.7 | alpha_lambda_acc | itransformer+zero_shot | 0.000 [0.000, 0.000] |  | 0.000 | 4 | 5 | 4e26a625 |
+| loco | start_points | frac:0.7 | rul_bias | itransformer+ft_full | 8.176 [-10.834, 23.733] |  | 21.865 | 4 | 5 | 857965a7 |
+| loco | start_points | frac:0.7 | rul_bias | itransformer+scratch | -3.712 [-17.594, 10.170] |  | -11.101 | 4 | 5 | b7fdf394 |
+| loco | start_points | frac:0.7 | rul_bias | itransformer+zero_shot | -16.306 [-34.500, 8.332] |  | 21.776 | 4 | 5 | 4e26a625 |
+| loco | start_points | frac:0.7 | rul_mae | itransformer+ft_full | 19.043 [10.696, 24.634] |  | 21.865 | 4 | 5 | 857965a7 |
+| loco | start_points | frac:0.7 | rul_mae | itransformer+scratch | 13.911 [7.288, 20.840] |  | 11.101 | 4 | 5 | b7fdf394 |
+| loco | start_points | frac:0.7 | rul_mae | itransformer+zero_shot | 27.194 [19.888, 34.500] |  | 21.776 | 4 | 5 | 4e26a625 |
+| loco | start_points | overall | rul_bias | itransformer+ft_full | -0.057 [-15.127, 15.013] |  | -11.789 | 4 | 5 | 857965a7 |
+| loco | start_points | overall | rul_bias | itransformer+scratch | -2.998 [-18.534, 12.539] |  | -11.148 | 4 | 5 | b7fdf394 |
+| loco | start_points | overall | rul_bias | itransformer+zero_shot | 5.051 [-11.621, 29.920] |  | -15.406 | 4 | 5 | 4e26a625 |
+| loco | start_points | overall | rul_mae | itransformer+ft_full | 18.755 [14.763, 23.977] |  | 26.441 | 4 | 5 | 857965a7 |
+| loco | start_points | overall | rul_mae | itransformer+scratch | 15.805 [9.268, 22.343] |  | 11.148 | 4 | 5 | b7fdf394 |
+| loco | start_points | overall | rul_mae | itransformer+zero_shot | 47.303 [24.496, 68.080] |  | 41.394 | 4 | 5 | 4e26a625 |
 
 </details>

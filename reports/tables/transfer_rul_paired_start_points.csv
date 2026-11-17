@@ -1,0 +1,5 @@
+candidate,reference,dataset,split,metric,policy,kind,cand_mean,ref_mean,delta,ci_lo,ci_hi,k_cells,k_pairs,wilcoxon_p,n_seeds
+transfer:itransformer+ft_full,transfer:itransformer+scratch,calce,loco,rul_mae,start_points,overall,85.69370352168878,72.67549655960252,13.018206962086259,-4.721168432633084,30.757582356805596,2/4,5/20,,5
+transfer:itransformer+ft_full,transfer:itransformer+scratch,nasa,loco,rul_mae,start_points,overall,18.755267322634655,15.805217271794874,2.9500500508397804,-6.345941582918169,12.246041684597728,2/4,10/20,,5
+transfer:itransformer+zero_shot,transfer:itransformer+scratch,calce,loco,rul_mae,start_points,overall,349.3602042533457,72.67549655960252,276.68470769374323,140.53428917191923,355.57452961823594,0/4,0/20,,5
+transfer:itransformer+zero_shot,transfer:itransformer+scratch,nasa,loco,rul_mae,start_points,overall,47.302733311429634,15.805217271794874,31.49751603963474,3.94201576297482,59.75210913387436,1/4,5/20,,5

@@ -31,7 +31,7 @@ URI = os.environ.get("MLFLOW_TRACKING_URI", f"sqlite:///{Path.cwd() / 'mlflow.db
 _cache: dict[str, pd.DataFrame] = {}
 
 
-def arm_long(arm: str, task: str, metric: str, policy: str) -> pd.DataFrame:
+def arm_long(arm: str, task: str, metric: str, policy: str, kind: str = "overall") -> pd.DataFrame:
     exp, label = arm.split(":", 1)
     if exp not in _cache:
         _cache[exp] = _runs(exp, URI)
@@ -40,14 +40,16 @@ def arm_long(arm: str, task: str, metric: str, policy: str) -> pd.DataFrame:
     if runs.empty:
         raise SystemExit(f"no runs for {arm} ({task})")
     lg = _long(runs)
-    lg = lg[(lg["metric"] == metric) & (lg["policy"] == policy) & (lg["kind"] == "overall")]
+    lg = lg[(lg["metric"] == metric) & (lg["policy"] == policy) & (lg["kind"] == kind)]
     if lg.empty:
         raise SystemExit(f"metric {metric!r} (policy {policy!r}) not in per-cell tables for {arm}")
     return lg[["dataset", "split", "cell", "seed", "value"]]
 
 
-def compare(cand: str, ref: str, task: str, metric: str, policy: str) -> list[dict]:
-    a, b = arm_long(cand, task, metric, policy), arm_long(ref, task, metric, policy)
+def compare(
+    cand: str, ref: str, task: str, metric: str, policy: str, kind: str = "overall"
+) -> list[dict]:
+    a, b = arm_long(cand, task, metric, policy, kind), arm_long(ref, task, metric, policy, kind)
     m = a.merge(b, on=["dataset", "split", "cell", "seed"], suffixes=("_c", "_r"))
     out = []
     for (ds, split), g in m.groupby(["dataset", "split"], sort=True):
@@ -58,7 +60,8 @@ def compare(cand: str, ref: str, task: str, metric: str, policy: str) -> list[di
         ref_by = {c: cg["value_r"].to_numpy() for c, cg in g.groupby("cell")}
         delta = {c: cand_by[c] - ref_by[c] for c in cand_by}
         ci = cluster_bootstrap_ci(delta)
-        cons = direction_consistency(cand_by, ref_by)
+        hib = metric in ("alpha_lambda_acc",)
+        cons = direction_consistency(cand_by, ref_by, lower_is_better=not hib)
         per_cell = np.array([d.mean() for d in delta.values()])
         p = float(wilcoxon(per_cell).pvalue) if len(per_cell) >= 10 else np.nan
         out.append(
@@ -69,6 +72,7 @@ def compare(cand: str, ref: str, task: str, metric: str, policy: str) -> list[di
                 "split": split,
                 "metric": metric,
                 "policy": policy,
+                "kind": kind,
                 "cand_mean": float(np.mean(np.concatenate(list(cand_by.values())))),
                 "ref_mean": float(np.mean(np.concatenate(list(ref_by.values())))),
                 "delta": ci.estimate,
@@ -88,6 +92,7 @@ def main() -> None:
     ap.add_argument("--task", required=True)
     ap.add_argument("--metric", action="append", required=True)
     ap.add_argument("--policy", default="all")
+    ap.add_argument("--kind", default="overall", help="start kind, e.g. frac:0.5")
     ap.add_argument("--pair", nargs=2, action="append", metavar=("CAND", "REF"), required=True)
     ap.add_argument("--out", required=True)
     args = ap.parse_args()
@@ -95,7 +100,7 @@ def main() -> None:
         r
         for metric in args.metric
         for cand, ref in args.pair
-        for r in compare(cand, ref, args.task, metric, args.policy)
+        for r in compare(cand, ref, args.task, metric, args.policy, args.kind)
     ]
     df = pd.DataFrame(rows)
     out = Path("reports/tables") / args.out

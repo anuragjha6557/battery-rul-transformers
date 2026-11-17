@@ -67,6 +67,26 @@ Pre-training on 124 LFP cells, then fine-tuning on the 3 LOCO training cells, be
 - **Hypothesis:** ft_full beats scratch on NASA (scarce data, as in Task B), but not on CALCE. Zero-shot is worse than scratch, because Toyota lives (≈ 150–2 300 cycles, LFP) set the RUL scale.
 - **Metrics:** RUL MAE (cycles) and α-λ accuracy at the fixed start points, plus all-origin MAE. The comparison method is the same as for Task B.
 
+### Amendment 1 outcome (2026-11-17)
+- **Evidence:**
+  - MLflow experiment `transfer`, `params.task = rul`: 120 runs, 0 failures. Pre-training: 208 s, 79 epochs.
+  - Tables: `reports/tables/transfer_rul_paired_{all,start_points,alpha_lambda}.{md,csv}`.
+
+| Arm vs scratch | NASA Δ MAE, cycles (cells better) | CALCE Δ MAE, cycles (cells better) |
+|---|---|---|
+| ft_full, all origins | +0.1 [−7.0, +7.1] (2/4) | **+28.4 [+6.1, +56.1]** (1/4) |
+| ft_full, start points | +3.0 [−6.3, +12.2] (2/4) | +13.0 [−4.7, +30.8] (2/4) |
+| zero_shot, all origins | +23.2 [+9.3, +37.0] (0/4) | +182.8 [+117.2, +226.7] (0/4) |
+
+- **α-λ accuracy at λ = 0.5** (higher is better; there is one start per cell, so each cell-seed scores 0 or 1):
+  - ft_full: 0.25 vs 0.10 on NASA and 0.75 vs 0.55 on CALCE. The CIs touch 0, and only 1/4 cells improve.
+  - zero_shot scores 0.00 on both datasets.
+- **Reading:**
+  - The pre-registered NASA gain does **not** appear for RUL. ft_full ties scratch on NASA (scratch already reaches about 17 cycles MAE on 130–170-cycle cells) and is worse on CALCE.
+  - Zero-shot is far off. The Toyota RUL scale (lives of 150–2 300 cycles) does not carry over without retraining.
+  - The forecasting benefit on NASA (−28 % at h = 50) therefore comes from the long-horizon fade shape. It does not turn into better end-of-life timing.
+- **Decision:** unchanged. Transfer is not the default for any task.
+
 ## Decision
 - **iTransformer-v2 does not use Toyota pre-training by default.**
 - **The NASA result is reported as a positive, bounded finding:** transfer from a large LFP corpus helps a data-starved target at long horizons. It is offered as an option (`battery-rul transfer`).
