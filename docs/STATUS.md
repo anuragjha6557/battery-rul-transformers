@@ -1,22 +1,24 @@
 # Project status
 
-_Last updated: 2026-11-15 (Opus 5.5 lead)_
+_Last updated: 2026-11-17 (Opus 5.5 lead)_
 
 ## State
-- **Phase 0 complete** (`8020ca4`): uv/Python 3.12 env (torch 2.15 + MPS, lightgbm 4.7, mlflow 3.18, optuna 5.0, gradio 6.32, pandera 0.36), package skeleton, typer CLI, Makefile, pre-commit, GitHub Actions CI, data contract (`data/schema.py`, `data/io.py`), checksummed downloader, ADR-0001..0003. Local gate green.
-  - GitHub: public repo `anuragjha6557/battery-rul-transformers` (paper PDF stripped from history before first push; cited by DOI). ADR-0007 done (`8b1d038`): measured MPS-first for neural models.
-- **Phase 1 in progress**
-  - NASA loader merged (`b574ccc`): 4 cells, 636 cycles, 2.08 M curve rows, build ≈ 5.5 s; 11 unit + 5 real-data tests.
-  - CALCE loader merged (`fe825f4`): 4 cells, 3 911 cycles (880/970/1036/1025), 1.07 M curve rows, build ≈ 30 s (python-calamine); 22 unit + 5 real-data tests. Lead review fix: `ir_ohm` restricted to the charge window (leakage).
-  - `battery-rul build-data all` builds NASA + CALCE (`44af569`).
-  - Toyota loader merged (`dd3b70a`): 124 cells (41/43/40 official split), 100 456 cycles, 10.0 M curve rows; Severson cleaning verified step by step against the raw data.
-  - **Phase 1 gate passed:** `battery-rul build-data all` builds all three datasets in 65 s, peak RSS 5.3 GB; 133 unit tests + real-data tests green.
-- Data on disk: NASA ✓, CALCE ✓, Toyota ✓ (46/48/46 raw cells).
-- **Phase 2 done** (`b0db219`, ADR-0005 `40c95ad` + amendment `a66fe54`): `reports/data_quality.md`; EOL = masked+sustained(5) for NASA/CALCE, provider cycle life for Toyota; fixed starts NASA {30,50}, CALCE {200,400}, Toyota {100}. TODO: add Toyota to the data-quality report; flag 45 pause-inflated Toyota charge_time_s cycles (>4000 s).
-- **Phase 3 started early:** PROTOCOL.md v1.0 + ADR-0004/0006 committed (`26d2866`) — **owner review gate**; Model contract + persistence baselines (`eace9b0`); metrics/stats/splits merged (`97b9515`); EOL labels + leakage-safe sample builder + executable leakage tests (`39e7bba`, mutation-checked: 3 injected leaks all caught); shared NeuralModel trainer (`083596b`). Runner + MLflow + report: Sonnet agent running.
-- **Phase 3 done:** runner + MLflow + report merged; smoke benchmark (18 units, 8 s) and `smoke_mixed` (torch + LightGBM in one experiment) run end to end.
-- **Phase 4 wave 1 merged:** extrapolators (PrevSOH, ParamFit linear/exp2/power, GPR; H_max = 2x longest training RUL), tabular (ElasticNet, LightGBM+quantiles; Severson repro: variance model 14.8%/11.4% matches the paper, full model 26.8% on test2 because of the temperature proxy — note for ADR-0008), neural (NLinear/DLinear/RLinear, LSTM/GRU, time-token Transformer). Registry lazy with OpenMP isolation (`4269157`). Search spaces committed in `configs/model/*.yaml` before any sweep (ADR-0006).
-- **Next (Phase 4 wave 2 + Phase 5):** `train/tune.py` (Optuna on Toyota, equal budget, boundary-hit check, writes tuned configs with `tuned_from`); per-cell metrics so Toyota gets CIs/Wilcoxon; iTransformer (lead) + PatchTST; then the baseline sweep + Table 1 + ADR-0008.
+- **Phases 0–6 complete.** Phase 7 (freeze iTransformer-v2, final benchmark, README tables) is next.
+- **Phase 4/5 (ADR-0008):**
+  - Benchmark: 1 620 runs, 0 failures, plus `benchmark_local` (72 runs). Tuned with 50 Optuna trials per (model, task) on Toyota (ADR-0006, amendments 1–3).
+  - Mean rank: iTransformer 3.08, iTransformer-SC 3.95, LightGBM 4.55, PatchTST 4.65.
+  - The ranking depends on the dataset: iTransformer leads in-distribution (Toyota); LightGBM/ElasticNet lead on NASA/CALCE.
+- **Phase 6 ablations:** all outcomes recorded, and every proposed change was rejected under PLAN §6.5.
+  - ADR-0010: direct heads beat recursive rollout.
+  - ADR-0013: RevIN and Huber not adopted; the quantile head beats a point MSE head on Toyota.
+  - ADR-0009: `mc_curve` features not adopted; LightGBM gains only on Toyota.
+  - ADR-0012: Toyota pre-training plus full fine-tuning gives −28 % h50 on NASA but is worse on CALCE, so it is not the default.
+  - ADR-0011: CQR is the primary UQ method (30/40 h50 conditions in the target band; ensemble+CQR 32/40). Toyota test2 under-covers under shift.
+- **iTransformer-v2 (Phase 6 gate):** iTransformer MC with `mc` features, direct multi-horizon quantile heads (pinball loss), train-set scaling and CQR calibration, with no pre-training. The contribution is the protocol, calibrated UQ and honest transfer analysis, not a new architecture.
+- **Tools added:**
+  - `scripts/compare_arms.py`: paired arm comparison.
+  - `scripts/uq_ensemble.py`: ensemble UQ arm.
+  - The report now splits ablation arms (`with_arm_labels`).
 
 ## Findings to carry forward (Phase 2 data-quality report / Phase 3 protocol)
 1. **B0005/06/07 were cycled on one rig with identical timestamps** (same rest schedule). Regeneration jumps co-occur at the same cycles (e.g. 20, 31, 48 after rests > 1e5 s; cycle 90 has no paired charge on all three). → LOCO among these three is **not independent on the time axis**; time/rest-derived features carry shared exogenous information. PROTOCOL.md / ADR-0004 must address this (options: report B0018 as the only fully independent NASA test cell; treat rest schedule as known exogenous input vs unknown future; or group-split). Strong interview point.
@@ -29,11 +31,13 @@ _Last updated: 2026-11-15 (Opus 5.5 lead)_
 8. **Feature-availability rule (enforce in `tasks/` + leakage tests):** per-cycle quantities measured during discharge k (`discharge_time_s`, `discharge_energy_wh`, `discharge_temp_max_c`, discharge curves) are ≈ the target `capacity_k` itself. For Task A (estimate SOH_k) only charge-phase features of cycle k (+ history < k) are allowed; for Tasks B/C anything at cycles ≤ T_p. CALCE `ir_ohm` was changed in review to use the charge window only for this reason (NASA `ir_ohm` already uses the latest EIS *before* the charge).
 
 ## Next actions
-1. ~~Review/merge CALCE loader~~ done.
-2. Launch Toyota loader agent when batch 1 is complete; wire `build-data toyota`.
-3. Re-run `scripts/bench_cpu_vs_mps.py` on an idle machine → ADR-0007.
-4. Phase 1 gate: `make data` builds all three; schema tests pass; counts NASA 4, CALCE 4, Toyota ≈ 124.
-5. Phase 2: EDA + `reports/data_quality.md` + ADR-0005 (EOL rule, SOH normalization, anomaly flags).
+1. **Phase 7:**
+   - Write `configs/experiment/final.yaml` with the frozen v2 and the reference models.
+   - Save the trained weights for deployment.
+   - Run the final benchmark, `scripts/make_readme_tables.py`, and ADR-0014 (final model selection).
+2. **Phase 8:** HF Space (predictor, Gradio app, ONNX export, OOD warning, deploy workflow). Needs the owner's HF account and token.
+3. **Phase 9:** model card, interview notes, ADR index.
+4. **Owner reminder:** re-enable sleep with `sudo pmset -a disablesleep 0`.
 
 ## Open risks
 - HF free tier availability at deploy time (re-check in Phase 8 day 1; fallback Streamlit Community Cloud).
@@ -42,7 +46,7 @@ _Last updated: 2026-11-15 (Opus 5.5 lead)_
 | Phase | Status | Gate evidence |
 |---|---|---|
 | 0 Bootstrap | done | CI green on GitHub (run 43755416295); ADR-0007 measured |
-| 1 Data | in progress (NASA ✓, CALCE ✓, Toyota queued) | NASA 168/168/168/132; CALCE 880/970/1036/1025 cycles |
+| 1 Data | done |  NASA 168/168/168/132; CALCE 880/970/1036/1025 cycles |
 | 2 EDA | not started | |
 | 3 Eval harness | not started | |
 | 4 Baselines | not started | |
@@ -51,3 +55,6 @@ _Last updated: 2026-11-15 (Opus 5.5 lead)_
 | 7 Final benchmark | not started | |
 | 8 Deployment | not started | |
 | 9 Docs | not started | |
+| 2–3 EDA, protocol, harness | done | `reports/data_quality.md`; PROTOCOL v1.1; leakage tests mutation-checked |
+| 4–5 Baselines, iTransformer, PatchTST | done | ADR-0008; `reports/tables/benchmark*` |
+| 6 Improvements | done | ADR-0009–0013 outcomes; v2 config frozen |
