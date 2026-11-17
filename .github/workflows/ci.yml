@@ -40,5 +40,8 @@ jobs:
       - name: LightGBM unit tests (separate process, mirrors macOS OpenMP isolation)
         run: uv run pytest -o addopts="-ra --strict-markers -m 'not data and not slow'" tests/lgbm
 
+      - name: Browser demo parity test (JS port of the predictor vs Python vectors)
+        run: node tests/web/test_core.mjs
+
       - name: CLI smoke test
         run: uv run battery-rul --help

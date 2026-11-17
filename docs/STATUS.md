@@ -3,7 +3,7 @@
 _Last updated: 2026-11-17 (Opus 5.5 lead)_
 
 ## State
-- **Phases 0–7 complete; Phase 8 built and tested locally, waiting on the owner's Hugging Face token to publish.**
+- **Phases 0–8 complete.** Live demo: https://huggingface.co/spaces/anurag6557/battery-rul-itransformer-v2. It is a static in-browser Space (ADR-0015 amendment 1) because Gradio hosting needs HF PRO.
 - **Phase 4/5 (ADR-0008):**
   - Benchmark: 1 620 runs, 0 failures, plus `benchmark_local` (72 runs). Tuned with 50 Optuna trials per (model, task) on Toyota (ADR-0006, amendments 1–3).
   - Mean rank: iTransformer 3.08, iTransformer-SC 3.95, LightGBM 4.55, PatchTST 4.65.
@@ -31,11 +31,7 @@ _Last updated: 2026-11-17 (Opus 5.5 lead)_
 8. **Feature-availability rule (enforce in `tasks/` + leakage tests):** per-cycle quantities measured during discharge k (`discharge_time_s`, `discharge_energy_wh`, `discharge_temp_max_c`, discharge curves) are ≈ the target `capacity_k` itself. For Task A (estimate SOH_k) only charge-phase features of cycle k (+ history < k) are allowed; for Tasks B/C anything at cycles ≤ T_p. CALCE `ir_ohm` was changed in review to use the charge window only for this reason (NASA `ir_ohm` already uses the latest EIS *before* the charge).
 
 ## Next actions
-1. **Phase 8 publish (owner):**
-   - Run `uv run hf auth login` with a write token.
-   - The lead then runs `scripts/push_to_hub.py --weights` and `--space`.
-   - Smoke-test the live Space.
-   - Add the `HF_TOKEN` repository secret for `deploy-space.yml`.
+1. Add the `HF_TOKEN` repository secret on GitHub so `deploy-space.yml` can republish on `v*` tags (optional).
 2. **Phase 9:** MODEL_CARD.md, `docs/interview_notes.md`, CONTRIBUTING, architecture diagram.
 3. **Owner reminder:** re-enable sleep with `sudo pmset -a disablesleep 0`.
 
@@ -59,4 +55,4 @@ _Last updated: 2026-11-17 (Opus 5.5 lead)_
 | 4–5 Baselines, iTransformer, PatchTST | done | ADR-0008; `reports/tables/benchmark*` |
 | 6 Improvements | done | ADR-0009–0013 outcomes (incl. RUL transfer, ADR-0012 amendment 1); v2 config frozen |
 | 7 Final benchmark and report | done | ADR-0014; `configs/experiment/final.yaml` ≡ benchmark; README results generated |
-| 8 Deployment | built and tested locally; publish pending HF token | ADR-0015; `app/`, `serve/predictor.py`, 430 + 13 tests green |
+| 8 Deployment | done: live static Space + HF model repo | ADR-0015; `app/`, `serve/predictor.py`, 430 + 13 tests green |

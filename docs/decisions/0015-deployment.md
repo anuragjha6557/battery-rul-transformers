@@ -28,3 +28,23 @@ The plan's deliverable is a public demo on Hugging Face Spaces, where anyone upl
 1. `scripts/train_deploy.py` trains the served weights and writes `artifacts/deploy/` (seeded; under 1 min on MPS).
 2. `scripts/push_to_hub.py --weights | --space` publishes the weights and the app.
 3. `.github/workflows/deploy-space.yml` republishes the Space on `v*` tags (`HF_TOKEN` repository secret).
+
+## Amendment 1 (2026-11-17): static, in-browser Space
+- **What happened:** creating the Gradio Space failed with HTTP 402. Hugging Face now requires a PRO subscription to host Gradio and Docker Spaces on free CPU; only static Spaces are free.
+- **Options considered:**
+  1. HF PRO ($9/month). Rejected by the owner because of the recurring cost.
+  2. Streamlit Community Cloud. The app sleeps when idle, and the UI would need porting.
+  3. **A static Space with ONNX Runtime Web.** Chosen by the owner.
+- **Change from the original decision:** the "state_dict, no ONNX" row above is reversed **for the public demo only**.
+- **How the static Space works:**
+  - `scripts/export_onnx.py` folds the model-side transforms into each graph: tab standardisation, the residual-to-SOH step and RUL scaling, and quantile sorting.
+  - The browser therefore only builds the SOH window and the five causal summaries (`web/core.mjs`), then applies CQR and the OOD check exactly as `serve/predictor.py` does.
+- **Parity, checked by tests:**
+  - ONNX vs PyTorch: max |Δ| is 5e-8 SOH (forecast) and 3e-4 cycles (RUL). The export script enforces this.
+  - JS vs Python predictor: identical windows, summaries, intervals, RUL and OOD on the three demo cells. `node tests/web/test_core.mjs` runs in CI.
+- **Consequences:**
+  - Uploaded data never leaves the user's browser, there are no cold starts, and hosting is free.
+  - The Gradio app (`app/`) remains for local use (`make app`).
+- **Live:**
+  - Demo: https://huggingface.co/spaces/anurag6557/battery-rul-itransformer-v2. The `?demo=<cell>` URL runs a demo directly.
+  - Weights and ONNX: https://huggingface.co/anurag6557/battery-rul-itransformer-v2.

@@ -49,6 +49,12 @@ mlflow:  ## Launch the MLflow UI on the local store
 app:  ## Run the Gradio demo locally
 	BATTERY_RUL_WEIGHTS=artifacts/deploy $(UV) run python app/app.py
 
+web:  ## Export ONNX and serve the static browser demo on http://localhost:8000
+	$(UV) run python scripts/export_onnx.py
+	node tests/web/test_core.mjs
+	rm -rf artifacts/site && mkdir -p artifacts/site && cp web/* artifacts/web/*.onnx artifacts/web/serve_meta.json artifacts/site/ && cp -r app/examples artifacts/site/
+	cd artifacts/site && python3 -m http.server 8000
+
 clean:  ## Remove caches (keeps data and mlruns)
 	rm -rf .pytest_cache .ruff_cache .mypy_cache .hypothesis htmlcov .coverage
 	find . -name __pycache__ -type d -prune -exec rm -rf {} +

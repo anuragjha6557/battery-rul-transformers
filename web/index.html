@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Battery RUL Forecaster</title>
+<meta name="description" content="Forecast lithium-ion battery state of health and remaining useful life with calibrated 90% intervals. Runs entirely in your browser.">
+<style>
+:root{--bg:#fbfbfa;--panel:#fff;--ink:#1d1f23;--muted:#5f6670;--line:#e3e5e8;--accent:#1f5f99;--warn-bg:#fff4e0;--warn-ink:#7a4a00;--ok-bg:#eaf5ee;--ok-ink:#215c35;--err-bg:#fde8e8;--err-ink:#8a1f1f}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15171a;--panel:#1d2024;--ink:#e8e9eb;--muted:#a3a9b1;--line:#30343a;--accent:#7fb3e6;--warn-bg:#3a2c12;--warn-ink:#f3cf8a;--ok-bg:#16301f;--ok-ink:#9bd9b0;--err-bg:#3a1717;--err-ink:#f2a7a7}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:1040px;margin:0 auto;padding:24px 16px 48px}
+h1{font-size:1.55rem;margin:0 0 4px}
+.sub{color:var(--muted);margin:0 0 20px}
+nav{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:20px;flex-wrap:wrap}
+nav button{background:none;border:0;border-bottom:2px solid transparent;padding:8px 12px;color:var(--muted);font:inherit;cursor:pointer}
+nav button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent);font-weight:600}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:16px}
+.controls{display:flex;flex-wrap:wrap;gap:12px;align-items:end}
+label{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--muted)}
+select,input[type=file]{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;max-width:100%}
+button.primary{font:inherit;background:var(--accent);color:var(--bg);border:0;border-radius:6px;padding:8px 16px;cursor:pointer;font-weight:600}
+button.primary:disabled{opacity:.5;cursor:wait}
+.banner{border-radius:8px;padding:10px 14px;margin-bottom:12px}
+.banner.warn{background:var(--warn-bg);color:var(--warn-ink)}
+.banner.ok{background:var(--ok-bg);color:var(--ok-ink)}
+.banner.err{background:var(--err-bg);color:var(--err-ink)}
+.banner ul{margin:6px 0 0;padding-left:20px}
+#plot{width:100%;height:440px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:12px}
+.kpi{border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.kpi .v{font-size:1.35rem;font-weight:650;font-variant-numeric:tabular-nums}
+.kpi .k{color:var(--muted);font-size:.8rem}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{text-align:right;padding:6px 10px;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+.scroll{overflow-x:auto}
+code{background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:0 4px}
+a{color:var(--accent)}
+.hidden{display:none}
+.muted{color:var(--muted);font-size:.85rem}
+</style>
+</head>
+<body>
+<main>
+  <h1>Battery RUL Forecaster</h1>
+  <p class="sub">State-of-health forecast and remaining useful life with calibrated 90% intervals. iTransformer-v2, running entirely in your browser; your data never leaves this page.</p>
+  <nav role="tablist">
+    <button role="tab" aria-selected="true" data-tab="predict">Predict</button>
+    <button role="tab" aria-selected="false" data-tab="format">Data format</button>
+    <button role="tab" aria-selected="false" data-tab="about">About</button>
+  </nav>
+
+  <section id="tab-predict">
+    <div class="panel controls">
+      <label>Demo cell (never seen in training)
+        <select id="demo"><option value="">Upload my own CSV</option></select>
+      </label>
+      <label id="upload-wrap">Your CSV (cycle_idx, capacity_ah)
+        <input type="file" id="file" accept=".csv,text/csv">
+      </label>
+      <button class="primary" id="run" disabled>Loading model…</button>
+    </div>
+    <div id="msg"></div>
+    <div id="result" class="hidden">
+      <div class="panel"><div id="plot"></div></div>
+      <div class="kpis" id="kpis"></div>
+      <div class="panel scroll"><table id="ftable"></table>
+        <p class="muted">Forecast intervals are conformalized quantile regression (CQR) at 90%. Their coverage was checked on held-out cells; it holds only for cells that resemble the training data.</p></div>
+    </div>
+  </section>
+
+  <section id="tab-format" class="hidden">
+    <div class="panel">
+      <p>Upload a CSV with <b>one row per charge/discharge cycle</b> and these columns (extra columns are ignored):</p>
+      <ul>
+        <li><code>cycle_idx</code>: cycle number (integers, increasing; gaps are fine)</li>
+        <li><code>capacity_ah</code>: measured discharge capacity of that cycle, in Ah</li>
+      </ul>
+      <p>At least 10 cycles are required; 64 or more give the model its full input window. State of health is computed as capacity divided by the mean of the <b>first 5 cycles</b>, so start the file at the beginning of life.</p>
+      <p>Remaining useful life is the number of cycles until SOH falls to <b>80%</b>.</p>
+      <p><a id="template" download="battery_template.csv" href="#">Download a template</a></p>
+    </div>
+  </section>
+
+  <section id="tab-about" class="hidden">
+    <div class="panel">
+      <p><b>Model.</b> iTransformer-v2: single-channel iTransformer (inverted, variate-token attention) with direct multi-horizon quantile heads (h = 1, 10, 25, 50, 100 cycles) and a direct RUL quantile head. Intervals are calibrated with conformalized quantile regression on cells the model never trained on.</p>
+      <p><b>Training data.</b> NASA PCoE (B0005–B0018), CALCE CS2 (LiCoO₂) and Toyota/MIT-Stanford (Severson 2019, 124 LFP cells), pooled; inputs are SOH history only, so any cycler's capacity log works.</p>
+      <p><b>Limitations.</b> Intervals are distribution-free only when your cell resembles the training cells; the page warns when it does not (out-of-distribution check). RUL for chemistries, temperatures or protocols far from the training data is unreliable. The demo cells show both hits and misses.</p>
+      <p><b>Evidence.</b> Leakage-free benchmark of 19 model configurations on 3 datasets, design decisions and negative results: <a href="https://github.com/anuragjha6557/battery-rul-transformers">github.com/anuragjha6557/battery-rul-transformers</a>.</p>
+      <p><b>Paper.</b> Jha, Dorkar, Biswas, Emadi, “iTransformer Network Based Approach for Accurate Remaining Useful Life Prediction in Lithium-Ion Batteries,” IEEE ITEC 2024, <a href="https://doi.org/10.1109/ITEC60657.2024.10598898">doi:10.1109/ITEC60657.2024.10598898</a>.</p>
+    </div>
+  </section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.19.2/dist/ort.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js"></script>
+<script type="module" src="app.mjs"></script>
+</body>
+</html>

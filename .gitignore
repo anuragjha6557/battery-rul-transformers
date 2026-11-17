@@ -48,5 +48,7 @@ docs/paper/*.txt
 reports/tuning/
 artifacts/pretrained/
 artifacts/deploy/
+artifacts/web/
 reports/benchmark/
 reports/ablations/
+artifacts/site/
