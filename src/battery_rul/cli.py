@@ -108,6 +108,40 @@ def benchmark(
 
 
 @app.command()
+def transfer(
+    task: str = typer.Option("forecast", help="Task (forecast only; ADR-0012)"),
+    datasets: str = typer.Option("nasa,calce", help="Target datasets, comma separated"),
+    seeds: str = typer.Option("0,1,2,3,4", help="Seeds, comma separated"),
+    arms: str = typer.Option(
+        "scratch,zero_shot,ft_head,ft_full,few_shot", help="Transfer arms to run"
+    ),
+    folds: str = typer.Option("", help="Restrict to these test cells (default: all)"),
+    pretrain: bool = typer.Option(False, "--pretrain", help="(Re-)pretrain on Toyota first"),
+    model: str = typer.Option("itransformer", help="Neural model name"),
+) -> None:
+    """Toyota -> NASA/CALCE transfer experiment (ADR-0012); logs to MLflow experiment `transfer`."""
+    from battery_rul.train.transfer import run_transfer
+
+    out = run_transfer(
+        task=task,
+        datasets=tuple(d for d in datasets.split(",") if d),
+        seeds=tuple(int(s) for s in seeds.split(",") if s),
+        arms=tuple(a for a in arms.split(",") if a),
+        folds=tuple(f for f in folds.split(",") if f) or None,
+        do_pretrain=pretrain,
+        model_name=model,
+    )
+    pr = out["pretrain"]
+    if pr is not None:
+        console.print(
+            f"[green]pretrained[/] {pr.path} in {pr.fit_seconds:.0f}s ({pr.info.epochs} epochs)"
+        )
+    console.print(
+        f"[green]transfer:[/] {len(out['runs'])} runs logged (params: {out['params_source']})"
+    )
+
+
+@app.command()
 def tune(
     model: str = typer.Option(..., help="Model config name (configs/model/<name>.yaml)"),
     task: str = typer.Option(..., help="soh | forecast | rul"),
