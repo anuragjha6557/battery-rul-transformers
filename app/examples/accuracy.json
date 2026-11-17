@@ -1,0 +1,23 @@
+{
+ "rule": "cut-off = max(50% of life, 64 cycles); calibration cells (never trained on)",
+ "datasets": {
+  "nasa": {
+   "n_cells": 1,
+   "median_abs_err": 11.524521011859179,
+   "median_rel_err": 0.8231800722756556,
+   "coverage": 1.0
+  },
+  "calce": {
+   "n_cells": 1,
+   "median_abs_err": 74.87106505036354,
+   "median_rel_err": 0.24709922458865854,
+   "coverage": 1.0
+  },
+  "toyota": {
+   "n_cells": 25,
+   "median_abs_err": 56.98989003896713,
+   "median_rel_err": 0.14971943003066043,
+   "coverage": 0.84
+  }
+ }
+}

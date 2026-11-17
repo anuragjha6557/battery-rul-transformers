@@ -54,7 +54,7 @@ a{color:var(--accent)}
 
   <section id="tab-predict">
     <div class="panel controls">
-      <label>Demo cell (never seen in training)
+      <label>Demo cell (held out from training)
         <select id="demo"><option value="">Upload my own CSV</option></select>
       </label>
       <label id="upload-wrap">Your CSV (cycle_idx, capacity_ah)
@@ -62,6 +62,7 @@ a{color:var(--accent)}
       </label>
       <button class="primary" id="run" disabled>Loading model…</button>
     </div>
+    <p class="muted" id="accuracy"></p>
     <div id="msg"></div>
     <div id="result" class="hidden">
       <div class="panel"><div id="plot"></div></div>
@@ -88,7 +89,7 @@ a{color:var(--accent)}
     <div class="panel">
       <p><b>Model.</b> iTransformer-v2: single-channel iTransformer (inverted, variate-token attention) with direct multi-horizon quantile heads (h = 1, 10, 25, 50, 100 cycles) and a direct RUL quantile head. Intervals are calibrated with conformalized quantile regression on cells the model never trained on.</p>
       <p><b>Training data.</b> NASA PCoE (B0005–B0018), CALCE CS2 (LiCoO₂) and Toyota/MIT-Stanford (Severson 2019, 124 LFP cells), pooled; inputs are SOH history only, so any cycler's capacity log works.</p>
-      <p><b>Limitations.</b> Intervals are distribution-free only when your cell resembles the training cells; the page warns when it does not (out-of-distribution check). RUL for chemistries, temperatures or protocols far from the training data is unreliable. The demo cells show both hits and misses.</p>
+      <p><b>Limitations.</b> Intervals are distribution-free only when your cell resembles the training cells; the page warns when it does not (out-of-distribution check). RUL for chemistries, temperatures or protocols far from the training data is unreliable. Demo cells are cut at half of their life (at least 64 cycles); the Toyota demo is the held-out cell with the median error, so it is typical rather than best-case.</p>
       <p><b>Evidence.</b> Leakage-free benchmark of 19 model configurations on 3 datasets, design decisions and negative results: <a href="https://github.com/anuragjha6557/battery-rul-transformers">github.com/anuragjha6557/battery-rul-transformers</a>.</p>
       <p><b>Paper.</b> Jha, Dorkar, Biswas, Emadi, “iTransformer Network Based Approach for Accurate Remaining Useful Life Prediction in Lithium-Ion Batteries,” IEEE ITEC 2024, <a href="https://doi.org/10.1109/ITEC60657.2024.10598898">doi:10.1109/ITEC60657.2024.10598898</a>.</p>
     </div>

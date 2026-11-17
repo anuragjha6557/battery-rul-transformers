@@ -1,0 +1,14 @@
+[
+ {
+  "name": "nasa_B0018",
+  "label": "NASA B0018 (18650, LiCoO\u2082-type)"
+ },
+ {
+  "name": "calce_CS2_38",
+  "label": "CALCE CS2_38 (LiCoO\u2082 prismatic)"
+ },
+ {
+  "name": "toyota_b3c44",
+  "label": "Toyota/MIT b3c44 (LFP, fast charge)"
+ }
+]

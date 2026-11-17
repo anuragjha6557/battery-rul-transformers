@@ -1,11 +1,7 @@
 // UI for the static Space: loads the ONNX graphs, runs them with onnxruntime-web, draws results.
 import { InputError, parseCSV, postprocess, prepare, validate } from "./core.mjs";
 
-const DEMOS = [
-  ["nasa_B0018", "NASA B0018 (LiCoO₂-type 18650)"],
-  ["calce_CS2_38", "CALCE CS2_38 (LiCoO₂ prismatic)"],
-  ["toyota_b1c1", "Toyota/MIT b1c1 (LFP, fast-charge)"],
-];
+let DEMOS = [];  // [name, label] from examples/demos.json (scripts/make_examples.py)
 const $ = (id) => document.getElementById(id);
 let meta, sessF, sessR;
 
@@ -20,7 +16,6 @@ for (const b of document.querySelectorAll("nav button")) {
 const tmpl = "cycle_idx,capacity_ah\n" + Array.from({ length: 12 }, (_, i) => `${i + 1},${(2 - 0.004 * i).toFixed(4)}`).join("\n");
 $("template").href = "data:text/csv;charset=utf-8," + encodeURIComponent(tmpl + "\n");
 
-for (const [v, label] of DEMOS) $("demo").add(new Option(label, v));
 $("demo").addEventListener("change", () => $("upload-wrap").classList.toggle("hidden", $("demo").value !== ""));
 
 function show(kind, html) {
@@ -32,6 +27,9 @@ async function load() {
   try {
     ort.env.wasm.numThreads = 1;
     meta = await (await fetch("serve_meta.json")).json();
+    DEMOS = (await (await fetch("examples/demos.json")).json()).map((d) => [d.name, d.label]);
+    for (const [v, label] of DEMOS) $("demo").add(new Option(label, v));
+    renderAccuracy(await (await fetch("examples/accuracy.json")).json());
     [sessF, sessR] = await Promise.all([
       ort.InferenceSession.create("forecast.onnx"),
       ort.InferenceSession.create("rul.onnx"),
@@ -91,6 +89,16 @@ $("run").addEventListener("click", async () => {
   }
 });
 
+function renderAccuracy(acc) {
+  const t = acc.datasets.toyota;
+  if (!t) return;
+  $("accuracy").innerHTML =
+    `<b>How accurate is it?</b> On ${t.n_cells} held-out Toyota cells (never trained on), predicting from half-way through life, ` +
+    `the median remaining-life error is <b>${Math.round(t.median_abs_err)} cycles (${Math.round(t.median_rel_err * 100)}%)</b> and ` +
+    `<b>${Math.round(t.coverage * 100)}%</b> of the 90% intervals contain the true value. NASA and CALCE have one held-out cell each ` +
+    `(shown as demos); their leave-one-cell-out benchmark results are in the <a href="https://github.com/anuragjha6557/battery-rul-transformers#results">repository</a>.`;
+}
+
 const escape = (s) => String(s).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
 const pct = (v) => `${(v * 100).toFixed(1)}%`;
 
@@ -112,10 +120,10 @@ function render(res, truth, eol) {
   const truthEol = eol && Number.isFinite(eol.eol_cycle) ? eol.eol_cycle : null;
   $("kpis").innerHTML = [
     ["Current SOH", pct(res.history.soh.at(-1)), `cycle ${last}`],
-    ["Remaining useful life", `${Math.round(r.cycles)} cycles`, `90% interval ${Math.round(r.lo)}–${Math.round(r.hi)}`],
+    ["Remaining useful life", r.cycles < 1 ? "< 1 cycle" : `${Math.round(r.cycles)} cycles`, `90% interval ${Math.round(r.lo)}–${Math.round(r.hi)}`],
     ["Predicted end of life", `cycle ${Math.round(r.eol_cycle)}`, `80% SOH threshold`],
     ...(truthEol !== null
-      ? [["Actual end of life (hidden)", `cycle ${Math.round(truthEol)}`, `true RUL ${Math.round(truthEol - last)} cycles`]]
+      ? [["Actual end of life (hidden)", `cycle ${Math.round(truthEol)}`, `true RUL ${Math.round(truthEol - last)} cycles · ${escape(eol.label)}`]]
       : []),
   ].map(([k, v, s]) => `<div class="kpi"><div class="k">${k}</div><div class="v">${v}</div><div class="k">${s}</div></div>`).join("");
   if (r.already_below_threshold) {
