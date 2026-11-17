@@ -14,7 +14,7 @@ Format and rules: [ADR-0001](0001-record-architecture-decisions.md). Experiment-
 | [0008](0008-baseline-findings.md) | Benchmark findings: dataset-dependent ranking, calibration, limitations | Accepted |
 | [0009](0009-curve-features.md) | Curve features ablation (ICA, ΔQ(V)) | Accepted: mc_curve not adopted |
 | [0010](0010-direct-vs-recursive.md) | Direct multi-horizon vs recursive rollout | Accepted: direct wins at h ≥ 25 |
-| [0011](0011-uq-method.md) | Uncertainty: CQR vs deep ensemble vs GPR | Proposed (pre-registered) |
+| [0011](0011-uq-method.md) | Uncertainty: CQR vs deep ensemble vs GPR | Accepted: CQR primary |
 | [0012](0012-toyota-transfer.md) | Toyota (LFP) pre-training → NASA/CALCE transfer | Accepted: not default (NASA-only gain) |
 | [0013](0013-normalisation-and-loss.md) | Instance normalisation; Huber vs MSE | Accepted: neither adopted |
 

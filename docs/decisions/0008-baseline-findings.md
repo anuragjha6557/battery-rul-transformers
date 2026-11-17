@@ -61,7 +61,8 @@ Level-0 baselines rank last where they apply. **iTransformer is the best model o
 
 ### 6. Uncertainty calibration (pooled split-conformal CQR, α = 0.1)
 - **Forecast h=50 coverage (PICP), all origins:**
-  - Calibrated intervals cover 0.89–0.94 on CALCE/NASA and 0.88–0.96 on Toyota, against a 0.90 target.
+  - Calibrated intervals cover 0.89–0.94 on CALCE/NASA and 0.89–0.96 on Toyota test1, against a 0.90 target.
+  - **Correction (2026-11-17, ADR-0011):** on Toyota test2, three models stay far under target after CQR: GRU 0.47, LSTM 0.66, LightGBM 0.76. The earlier "0.88–0.96 on Toyota" line was wrong for test2.
   - Raw quantiles under-covered: down to 0.46 for iTransformer on NASA and 0.80 for LightGBM on CALCE.
   - Under-covering models get wider intervals (NASA iTransformer MPIW 5.2 → 21.2 %SOH); over-covering ones get narrower (Toyota Transformer 2.96 → 2.37).
 - **Best interval score:** iTransformer on Toyota (1.68), iTransformer-SC on CALCE (14.3), PatchTST on NASA (17.6).
