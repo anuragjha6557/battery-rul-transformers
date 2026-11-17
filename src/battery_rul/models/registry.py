@@ -46,6 +46,8 @@ _PATHS: dict[str, tuple[str, OmpFamily | None]] = {
     "patchtst": ("battery_rul.models.patchtst:PatchTST", "torch"),
     "itransformer": ("battery_rul.models.itransformer:ITransformer", "torch"),  # channels=all
     "itransformer_sc": ("battery_rul.models.itransformer:ITransformer", "torch"),  # channels=soh
+    # ADR-0010 wrapper; family is the base model's, resolved from params in omp_family().
+    "recursive": ("battery_rul.models.recursive:RecursiveWrapper", None),
 }
 
 
@@ -89,8 +91,15 @@ class _LazyModels(Mapping[str, Callable[..., Model]]):
 MODELS = _LazyModels()
 
 
-def omp_family(name: str) -> OmpFamily | None:
-    """Which OpenMP runtime the model's module loads (None: neither torch nor LightGBM)."""
+def omp_family(name: str, params: Mapping[str, Any] | None = None) -> OmpFamily | None:
+    """Which OpenMP runtime the model's module loads (None: neither torch nor LightGBM).
+
+    ``params`` (the model's config params) is only consulted for wrappers: ``recursive`` takes
+    the family of its ``base_name`` (``recursive`` with no params is conservatively ``torch``).
+    """
+    if name == "recursive":
+        base = (params or {}).get("base_name")
+        return omp_family(str(base)) if base else "torch"
     return _PATHS[name][1] if name in _PATHS else None
 
 

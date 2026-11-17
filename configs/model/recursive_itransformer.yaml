@@ -1,0 +1,6 @@
+name: recursive
+# ADR-0010 arm (b): iTransformer trained one-step (h=1) and rolled forward on its own
+# predictions; exogenous channels (and x_tab) held at their last observed value (exog="hold").
+# Not tunable: at benchmark time the base params are copied from the tuned `itransformer` unit.
+params: {base_name: itransformer, base_params: {d_model: 64, n_heads: 4, n_layers: 2, dropout: 0.1, channels: all, use_tab: true, lr: 1.0e-3, weight_decay: 1.0e-4}, lookback: 32}
+search: {}

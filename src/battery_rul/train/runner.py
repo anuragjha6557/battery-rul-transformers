@@ -656,7 +656,7 @@ def run_experiment(
         # OpenMP isolation (models/registry.py): if the experiment mixes torch and LightGBM
         # models, every unit runs in a fresh worker process (max_tasks_per_child=1), even with
         # n_jobs=1, so the two runtimes never share a process.
-        families = {omp_family(u.model.name) for u in units} - {None}
+        families = {omp_family(u.model.name, u.model.params) for u in units} - {None}
         isolate = len(families) > 1
         if (n_jobs > 1 and len(units) > 1) or isolate:
             with ProcessPoolExecutor(
