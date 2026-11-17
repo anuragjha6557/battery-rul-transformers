@@ -19,3 +19,5 @@ Format and rules: [ADR-0001](0001-record-architecture-decisions.md). Experiment-
 | [0013](0013-normalisation-and-loss.md) | Instance normalisation; Huber vs MSE | Accepted: neither adopted |
 | [0014](0014-final-model-selection.md) | Final model selection: iTransformer-v2 | Accepted |
 | [0015](0015-deployment.md) | Deployment: served model, weights, input contract, OOD | Accepted |
+| [0016](0016-rest-aware-forecasting.md) | Forecasting regeneration with the planned rest schedule | Proposed (pre-registered) |
+| [0017](0017-calce-artifact-cycles.md) | CALCE CV-skip cycles as invalid measurements | Proposed (pre-registered) |

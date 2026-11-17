@@ -59,6 +59,7 @@ from battery_rul.splits.loco import independent_fold_cells, loco_folds
 from battery_rul.splits.toyota import grouped_kfold, official_split
 from battery_rul.tasks.labels import eol_table, label_source
 from battery_rul.tasks.samples import (
+    SKIPPED_CV_S,
     PreparedCycles,
     TaskSpec,
     build_samples,
@@ -173,6 +174,9 @@ def unit_config(
         "eval_origins": list(cfg.eval_origins),
         "protocol_version": cfg.protocol_version,
         "train_stride": int(cfg.train_stride.get(dataset, 1)),
+        # optional variants: only present when non-default, so existing unit keys are unchanged
+        **({"future_rest": True} if cfg.future_rest and task == "forecast" else {}),
+        **({"drop_skipped_cv": True} if dataset in cfg.drop_skipped_cv else {}),
     }
 
 
@@ -241,10 +245,13 @@ def fold_data(
     processed_dir: str,
 ) -> FoldData:
     horizons = horizons_for(cfg, dataset)
-    base = (processed_dir, dataset, plan.name, cfg.feature_set, cfg.theta)
+    drop_cv = dataset in cfg.drop_skipped_cv
+    base = (processed_dir, dataset, plan.name, cfg.feature_set, cfg.theta, drop_cv)
 
     def prep() -> PreparedCycles:
         cyc = ctx.cycles
+        if drop_cv:  # ADR-0017: invalid capacity measurements, not ageing
+            cyc = cyc[~(cyc["cv_time_s"] < SKIPPED_CV_S)].reset_index(drop=True)
         if cfg.feature_set == "mc_curve":
             cyc = merge_curve_features(cyc, load_curve_features(dataset, Path(processed_dir)))
         return prepare_cycles(cyc, plan.train, cfg.feature_set)  # type: ignore[arg-type]
@@ -257,6 +264,7 @@ def fold_data(
             lookback=lookback,
             horizons=horizons,
             feature_set=cfg.feature_set,  # type: ignore[arg-type]
+            future_rest=bool(cfg.future_rest and task == "forecast"),
         )
         train = build_samples(prepared, plan.train, ctx.eol, spec, "all")
         tests: dict[tuple[str, str], SampleSet] = {}
@@ -275,7 +283,7 @@ def fold_data(
                     sm[(tag, policy)] = _smooth_targets(ctx, ss)
         return FoldData(train, tests, sm)
 
-    key = (*base, task, lookback, horizons, tuple(cfg.eval_origins))
+    key = (*base, task, lookback, horizons, tuple(cfg.eval_origins), cfg.future_rest)
     out: FoldData = _SAMPLES.get(key, build)
     return out
 
@@ -547,6 +555,8 @@ def _log_unit(
             "label_source": label_source(unit.dataset),
             "theta": cfg.theta,
             "feature_set": cfg.feature_set,
+            "future_rest": bool(cfg.future_rest and unit.task == "forecast"),
+            "drop_skipped_cv": unit.dataset in cfg.drop_skipped_cv,
             "lookback": unit.lookback,
             "independent_fold": bool(plan.tests[0][0] == "test" and unit.fold in ind),
             "tuned_from": unit.model.tuned_from or "none",

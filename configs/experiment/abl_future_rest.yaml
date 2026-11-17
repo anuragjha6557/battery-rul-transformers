@@ -1,0 +1,21 @@
+# @package _global_
+# ADR-0016: forecast conditioned on the planned rest schedule (known-future covariates).
+# Baseline arm = experiment `benchmark` (identical tuned params). Models that consume x_tab.
+defaults:
+  - /experiment_schema
+  - _self_
+
+name: abl_future_rest
+datasets: [nasa, calce]
+tasks: [forecast]
+future_rest: true
+models:
+  - tuned: itransformer__forecast
+  - tuned: itransformer_sc__forecast
+  - tuned: lgbm__forecast
+  - tuned: lstm__forecast
+  - tuned: transformer__forecast
+  - tuned: elasticnet__forecast
+seeds: [0, 1, 2, 3, 4]
+lookback: 32
+eval_origins: [start_points, all]

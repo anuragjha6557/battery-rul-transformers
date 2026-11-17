@@ -254,3 +254,41 @@ def test_mc_curve_requires_curve_columns_and_mc_ignores_them() -> None:
         prepare_cycles(_cycles(), TRAIN, "mc_curve")
     a = prepare_cycles(_curve_cycles(), TRAIN, "mc")
     assert not [c for c in a.channels if c.startswith(("chg_", "dis_"))]
+
+
+# ADR-0016: known-future rest covariates ------------------------------------------------------
+def _fr_inputs(cycles: pd.DataFrame, future_rest: bool = True):
+    prep = prepare_cycles(cycles, TRAIN, "mc")
+    spec = TaskSpec(task="forecast", lookback=8, horizons=(1, 5), future_rest=future_rest)
+    return build_samples(prep, TEST, EOL, spec)
+
+
+@pytest.mark.parametrize("k", [10, 25, 39])
+def test_future_rest_reads_only_the_future_rest_schedule(k: int) -> None:
+    """Corrupting every future measurement except rest_before_s leaves all inputs identical."""
+    clean = _fr_inputs(_cycles())
+    bad = _cycles()
+    future = (bad["cell_id"] == "C3") & (bad["cycle_idx"] > k)
+    num = bad.select_dtypes("number").columns.drop(["cycle_idx", "rest_before_s"])
+    bad.loc[future, num] = bad.loc[future, num] * -7.0 + 3.0
+    pert = _fr_inputs(bad)
+    sel = (clean.meta["origin_cycle"] <= k).to_numpy()
+    np.testing.assert_array_equal(clean.x_hist[sel], pert.x_hist[sel])
+    np.testing.assert_array_equal(clean.x_tab[sel], pert.x_tab[sel])
+
+
+def test_future_rest_values_and_flag() -> None:
+    cyc = _cycles()
+    c3 = cyc["cell_id"] == "C3"
+    cyc.loc[c3 & (cyc["cycle_idx"] == 21), "rest_before_s"] = 86400.0  # a planned 1-day rest
+    on, off = _fr_inputs(cyc), _fr_inputs(cyc, future_rest=False)
+    assert off.x_tab.shape[1] == 5 and on.x_tab.shape[1] == 5 + 4
+    assert on.feature_names[5:] == ("rest_at_h1", "rest_at_h5", "rest_sum_h1", "rest_sum_h5")
+    row = int(np.flatnonzero(on.meta["origin_cycle"].to_numpy() == 20)[0])
+    rest_at_h1, rest_at_h5, sum_h1, sum_h5 = on.x_tab[row, 5:]
+    assert np.isclose(rest_at_h1, np.log1p(86400.0))  # rest before cycle 21
+    assert np.isclose(rest_at_h5, np.log1p(200.0))  # rest before cycle 25
+    assert np.isclose(sum_h1, np.log1p(86400.0))
+    assert np.isclose(sum_h5, np.log1p(86400.0 + 4 * 200.0))
+    with pytest.raises(ValueError, match="forecast task only"):
+        TaskSpec(task="rul", future_rest=True)

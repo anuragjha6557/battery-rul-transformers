@@ -56,6 +56,11 @@ class ExperimentConfig:
     lookback: int = 32
     horizons: dict[str, list[int]] = field(default_factory=default_horizons)
     feature_set: str = "mc"
+    #: ADR-0016: forecast conditioned on the planned rest schedule (known-future covariates).
+    future_rest: bool = False
+    #: ADR-0017: datasets whose CV-skip artifact cycles (cv_time_s < 300 s) are dropped as
+    #: invalid capacity measurements before windowing (inputs and targets).
+    drop_skipped_cv: list[str] = field(default_factory=list)
     theta: float = 0.8
     eval_origins: list[str] = field(default_factory=lambda: ["start_points"])
     # Keep every k-th *training* window per cell, per dataset (default 1 = all). Validation

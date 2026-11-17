@@ -1,0 +1,28 @@
+# @package _global_
+# ADR-0017: CALCE CV-skip artifact cycles dropped before windowing (inputs and targets).
+# Baseline arm = experiment `benchmark`, re-scored on the same artifact-free targets.
+defaults:
+  - /experiment_schema
+  - _self_
+
+name: abl_calce_clean
+datasets: [calce]
+tasks: [forecast, rul]
+drop_skipped_cv: [calce]
+models:
+  - name: persistence
+  - tuned: itransformer__forecast
+  - tuned: itransformer_sc__forecast
+  - tuned: lgbm__forecast
+  - tuned: lstm__forecast
+  - tuned: nlinear__forecast
+  - tuned: elasticnet__forecast
+  - tuned: itransformer__rul
+  - tuned: itransformer_sc__rul
+  - tuned: lgbm__rul
+  - tuned: lstm__rul
+  - tuned: nlinear__rul
+  - tuned: elasticnet__rul
+seeds: [0, 1, 2, 3, 4]
+lookback: 32
+eval_origins: [start_points, all]

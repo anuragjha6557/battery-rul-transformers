@@ -95,12 +95,18 @@ class TaskSpec:
     horizons: tuple[int, ...] = (1, 10, 25, 50, 100)
     feature_set: FeatureSet = "mc"
     min_history: int = 5
+    #: Task B only (ADR-0016): append the *planned* rest schedule of the forecast window as
+    #: known-future covariates. Uses ``rest_before_s`` of future cycles only, never their
+    #: capacity or any other measurement. Defines a separate, conditional task variant.
+    future_rest: bool = False
 
     def __post_init__(self) -> None:
         if self.lookback < 2 or self.min_history < 1:
             raise ValueError("lookback >= 2 and min_history >= 1 required")
         if self.task == "forecast" and (not self.horizons or min(self.horizons) < 1):
             raise ValueError("forecast horizons must be >= 1")
+        if self.future_rest and self.task != "forecast":
+            raise ValueError("future_rest is defined for the forecast task only")
 
     @property
     def target_horizons(self) -> tuple[int, ...]:
@@ -253,6 +259,8 @@ def build_samples(
                     y[:, j] = [soh[t] if t is not None else np.nan for t in tgt]
                 ym = np.isfinite(y)
                 y = np.nan_to_num(y)
+                if spec.future_rest:
+                    tab = np.hstack([tab, _future_rest_features(g, ci, pos, H)])
             else:  # rul
                 y = (cell_eol - ci[pos].astype(np.float64))[:, None]
                 ym = np.ones_like(y, dtype=bool)
@@ -279,6 +287,8 @@ def build_samples(
     tab_names = (
         (*[f"now_{c}" for c in task_a_now], "last_soh") if task == "soh" else SUMMARY_FEATURES
     )
+    if task == "forecast" and spec.future_rest:
+        tab_names = (*tab_names, *future_rest_names(H))
     if not xs:
         raise ValueError(f"no samples for task {task!r} in cells {cells}")
     return SampleSet(
@@ -296,6 +306,35 @@ def build_samples(
 
 
 SUMMARY_FEATURES: Final = ("last_soh", "mean_soh_5", "slope_10", "slope_50", "curv_50")
+
+
+def future_rest_names(horizons: tuple[int, ...]) -> tuple[str, ...]:
+    return (*[f"rest_at_h{h}" for h in horizons], *[f"rest_sum_h{h}" for h in horizons])
+
+
+def _future_rest_features(
+    g: pd.DataFrame, ci: np.ndarray, pos: np.ndarray, horizons: tuple[int, ...]
+) -> np.ndarray:
+    """Known-future covariates (ADR-0016) for origins ``pos`` of one cell.
+
+    For each horizon h: ``log1p(rest before cycle T_p + h)`` and ``log1p(total rest over cycles
+    T_p+1 .. T_p+h)`` in seconds. Only the planned rest schedule (``rest_before_s``) of future
+    cycles is read; missing values (no rest logged, or a cycle beyond the record) count as 0.
+    """
+    rest = g["rest_before_s"].to_numpy(dtype=np.float64) if "rest_before_s" in g else None
+    out = np.zeros((len(pos), 2 * len(horizons)))
+    if rest is None:
+        return out
+    rest = np.nan_to_num(np.clip(rest, 0.0, None))
+    cum = np.concatenate([[0.0], np.cumsum(rest)])  # cum[i] = sum(rest[:i])
+    for j, h in enumerate(horizons):
+        for i, p in enumerate(pos):
+            # last row with cycle_idx <= T_p + h (cycle gaps are rare; rows are sorted)
+            t = int(np.searchsorted(ci, ci[p] + h, side="right")) - 1
+            if ci[t] == ci[p] + h:
+                out[i, j] = np.log1p(rest[t])
+            out[i, len(horizons) + j] = np.log1p(cum[t + 1] - cum[p + 1])
+    return out
 
 
 def _slope(y: np.ndarray) -> float:
