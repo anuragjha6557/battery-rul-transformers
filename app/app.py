@@ -41,7 +41,7 @@ def weights_dir() -> Path:
         return Path(env)
     from huggingface_hub import hf_hub_download
 
-    repo = os.environ.get("BATTERY_RUL_MODEL_REPO", "anuragjha6557/battery-rul-itransformer-v2")
+    repo = os.environ.get("BATTERY_RUL_MODEL_REPO", "anurag6557/battery-rul-itransformer-v2")
     paths = [Path(hf_hub_download(repo_id=repo, filename=f)) for f in WEIGHT_FILES]
     return paths[0].parent
 

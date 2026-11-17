@@ -1,13 +1,13 @@
 # battery-rul-transformers
 
 [![CI](https://github.com/anuragjha6557/battery-rul-transformers/actions/workflows/ci.yml/badge.svg)](https://github.com/anuragjha6557/battery-rul-transformers/actions/workflows/ci.yml)
-[![Demo](https://img.shields.io/badge/demo-Hugging%20Face%20Space-yellow)](https://huggingface.co/spaces/anuragjha6557/battery-rul-itransformer-v2)
+[![Demo](https://img.shields.io/badge/demo-Hugging%20Face%20Space-yellow)](https://huggingface.co/spaces/anurag6557/battery-rul-itransformer-v2)
 
 A leakage-free benchmark for lithium-ion battery **State-of-Health (SOH) estimation, capacity forecasting and Remaining-Useful-Life (RUL) prediction**. It covers NASA PCoE, CALCE and Toyota/MIT-Stanford (Severson 2019, 124 LFP cells), and adds **iTransformer-v2**: inverted-attention forecasting with direct multi-horizon quantile heads and conformal (CQR) prediction intervals.
 
 The project was rebuilt from scratch from the idea in Jha, Dorkar, Biswas & Emadi, *iTransformer Network Based Approach for Accurate Remaining Useful Life Prediction in Lithium-Ion Batteries*, IEEE ITEC 2024 ([doi:10.1109/ITEC60657.2024.10598898](https://doi.org/10.1109/ITEC60657.2024.10598898)). The paper's reported numbers were deliberately **not** used as a target.
 
-**▶ Try it:** [huggingface.co/spaces/anuragjha6557/battery-rul-itransformer-v2](https://huggingface.co/spaces/anuragjha6557/battery-rul-itransformer-v2). Upload a `cycle_idx,capacity_ah` CSV (or pick a demo cell) and get an SOH forecast and a RUL estimate with calibrated 90 % intervals, plus an out-of-distribution warning.
+**▶ Try it:** [huggingface.co/spaces/anurag6557/battery-rul-itransformer-v2](https://huggingface.co/spaces/anurag6557/battery-rul-itransformer-v2). Upload a `cycle_idx,capacity_ah` CSV (or pick a demo cell) and get an SOH forecast and a RUL estimate with calibrated 90 % intervals, plus an out-of-distribution warning.
 
 ## What this project shows
 1. **The answer depends on the dataset.**

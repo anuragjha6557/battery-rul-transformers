@@ -3,7 +3,8 @@
 ``--weights`` uploads ``artifacts/deploy/*`` to a model repo (with a minimal model card).
 ``--space`` assembles a staging dir (``app/*`` plus ``src/battery_rul`` as ``battery_rul/``) and
 uploads it to a Space repo. ``--dry-run`` only assembles the staging dir and prints the plan
-(no network, no token needed). The token is read from the ``HF_TOKEN`` environment variable.
+(no network, no token needed).
+The token is read from ``HF_TOKEN`` (CI) or the ``hf auth login`` cache.
 
 Usage: uv run python scripts/push_to_hub.py (--weights | --space) [--dry-run]
 """
@@ -19,8 +20,8 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_MODEL_REPO = "anuragjha6557/battery-rul-itransformer-v2"
-DEFAULT_SPACE_REPO = "anuragjha6557/battery-rul-itransformer-v2"
+DEFAULT_MODEL_REPO = "anurag6557/battery-rul-itransformer-v2"
+DEFAULT_SPACE_REPO = "anurag6557/battery-rul-itransformer-v2"
 GITHUB = "https://github.com/anuragjha6557/battery-rul-transformers"
 IGNORE = shutil.ignore_patterns("__pycache__", "*.pyc", ".DS_Store")
 
@@ -104,11 +105,11 @@ def push_space(args: argparse.Namespace) -> None:
 
 
 def _api():
-    from huggingface_hub import HfApi
+    from huggingface_hub import HfApi, get_token
 
-    token = os.environ.get("HF_TOKEN")
+    token = os.environ.get("HF_TOKEN") or get_token()  # env (CI) or `hf auth login` cache
     if not token:
-        sys.exit("HF_TOKEN is not set")
+        sys.exit("no Hugging Face token: set HF_TOKEN or run `hf auth login`")
     return HfApi(token=token)
 
 

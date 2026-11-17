@@ -19,7 +19,7 @@ both with conformalized 90% intervals, plus a warning when the input looks unlik
 training cells. Or pick a demo cell that the model never trained on.
 
 - Code, benchmark and model card: https://github.com/anuragjha6557/battery-rul-transformers
-- Weights: https://huggingface.co/anuragjha6557/battery-rul-itransformer-v2
+- Weights: https://huggingface.co/anurag6557/battery-rul-itransformer-v2
 - Paper: Jha et al., ITEC 2024, https://doi.org/10.1109/ITEC60657.2024.10598898
 
 Research demo; intervals are only calibrated for cells resembling the training data
