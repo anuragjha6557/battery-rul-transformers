@@ -66,6 +66,20 @@ def _enc(a: np.ndarray, scale: float) -> list:
     )
 
 
+REST_SUFFIX = "+rest"  # ADR-0016 rest-aware variants (experiment abl_future_rest)
+
+
+def events(ds: str, cell: str) -> dict:
+    """Cycles after a long rest (> 6 h, regeneration) and CV-skip artifact cycles (ADR-0017)."""
+    from battery_rul.data.io import read_tables
+
+    c = read_tables(ds, ROOT / "data" / "processed", curves=False).cycles
+    c = c[c["cell_id"].astype(str) == cell]
+    rest = c[c["rest_before_s"] > 6 * 3600]["cycle_idx"].astype(int).tolist()
+    skip = c[c["cv_time_s"] < 300]["cycle_idx"].astype(int).tolist() if ds != "toyota" else []
+    return {"long_rest": rest, "cv_skip": skip}
+
+
 def build(demo: str, runs: pd.DataFrame) -> dict:
     ds, cell = demo.split("_", 1)
     sel = runs[runs["params.dataset"] == ds]
@@ -79,6 +93,8 @@ def build(demo: str, runs: pd.DataFrame) -> dict:
             m = r["params.model"]
             if m not in MODELS:
                 continue
+            rest = str(r.get("params.future_rest", "False")) == "True"
+            key = m + REST_SUFFIX if rest else m
             pred = _art(r.run_id, "predictions")
             if pred is None:
                 continue
@@ -103,7 +119,9 @@ def build(demo: str, runs: pd.DataFrame) -> dict:
                         lo = w
                     else:
                         hi = w
-            e = models.setdefault(m, {"label": MODELS[m]})
+            e = models.setdefault(
+                key, {"label": MODELS[m] + (" + planned rests" if rest else ""), "base": m}
+            )
             if task == "forecast":
                 horizons = hs
                 e["forecast"] = {"point": _enc(pt, SCALE)}
@@ -119,9 +137,11 @@ def build(demo: str, runs: pd.DataFrame) -> dict:
         "h": horizons,
         "origin": origins,
         "models": models,
+        "events": events(ds, cell),
         "note": (
             "Held-out benchmark predictions (MLflow experiment 'benchmark', seed 0, "
-            "origin_policy=all). SOH = integer/scale as a fraction; RUL in cycles; lo/hi = "
+            "origin_policy=all; '+rest' = abl_future_rest, ADR-0016). "
+            "SOH = integer/scale as a fraction; RUL in cycles; lo/hi = "
             "calibrated split-conformal 90% interval. forecast.* are [origin][horizon]."
         ),
     }
@@ -134,7 +154,9 @@ def main() -> None:
     a = ap.parse_args()
     mlflow.set_tracking_uri(a.tracking_uri)
     runs = mlflow.search_runs(
-        experiment_names=["benchmark"], filter_string=f"params.seed='{a.seed}'", max_results=5000
+        experiment_names=["benchmark", "abl_future_rest"],
+        filter_string=f"params.seed='{a.seed}'",
+        max_results=10000,
     )
     for d in json.loads((EX / "demos.json").read_text()):
         out = build(d["name"], runs)

@@ -95,7 +95,7 @@ tr.live td{font-weight:650}
           <h4>Compare with benchmarked methods</h4>
           <div class="chips" id="cmp-chips" role="group" aria-label="Benchmarked methods to overlay"></div>
           <p class="hint" id="cmp-na">benchmark comparisons are available for the demo cells only (they are the models' real held-out predictions)</p>
-          <p class="hint">Benchmarked methods were trained per dataset without this cell (leave-one-cell-out / official split); the live model is trained on all three datasets. Their forecasts exist only at the marked horizons (dotted lines just connect them); up to 5 at once, the shaded band is the first selected method's 90% interval.</p>
+          <p class="hint">Benchmarked methods were trained per dataset without this cell (leave-one-cell-out / official split); the live model is trained on all three datasets. Their forecasts exist only at the marked horizons (dotted lines just connect them); up to 5 at once, the shaded band is the first selected method's 90% interval. <b>“+ planned rests”</b> variants (NASA, CALCE) also know the rest schedule ahead, which is what lets them anticipate capacity regeneration (▲ markers); no model can foresee the charger glitches (× markers).</p>
         </div>
         <div id="plot"></div>
       </div>

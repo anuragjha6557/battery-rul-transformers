@@ -24,7 +24,8 @@ const CMP_STYLE = { // fixed colours, labels from web/showcase/viz.mjs
 };
 const OTHER_SYMBOLS = ["star", "hexagram", "triangle-down", "pentagon", "bowtie", "hourglass", "circle-open", "diamond-open"];
 const CMP_ORDER = ["itransformer", "lgbm", "itransformer_sc", "patchtst", "lstm", "persistence", "last_slope", "elasticnet",
-  "nlinear", "dlinear", "rlinear", "gru", "transformer"];
+  "nlinear", "dlinear", "rlinear", "gru", "transformer",
+  "lstm+rest", "transformer+rest", "lgbm+rest", "itransformer+rest", "itransformer_sc+rest", "elasticnet+rest"];
 const CMP_LABEL = { // shown when no compare file is loaded
   itransformer: "iTransformer (MC)", lgbm: "LightGBM", itransformer_sc: "iTransformer (SC)", patchtst: "PatchTST", lstm: "LSTM",
   persistence: "Persistence (SOH stays the same)", last_slope: "Last slope", elasticnet: "ElasticNet", nlinear: "NLinear",
@@ -32,7 +33,13 @@ const CMP_LABEL = { // shown when no compare file is loaded
 };
 const LIVE_LABEL = "iTransformer-v2 (live, deployed)";
 const NOTE_NA = "benchmark comparisons are available for the demo cells only (they are the models' real held-out predictions)";
-const cmpStyle = (m) => CMP_STYLE[m] ?? { color: "#9b9a94", symbol: OTHER_SYMBOLS[Math.max(0, CMP_ORDER.indexOf(m)) % OTHER_SYMBOLS.length] };
+const cmpStyle = (m) => {
+  if (m.endsWith("+rest")) { // ADR-0016 variant: same colour as its base model, dash-dot + star
+    const b = cmpStyle(m.slice(0, -5));
+    return { ...b, symbol: "star", dash: "dashdot" };
+  }
+  return CMP_STYLE[m] ?? { color: "#9b9a94", symbol: OTHER_SYMBOLS[Math.max(0, CMP_ORDER.indexOf(m)) % OTHER_SYMBOLS.length] };
+};
 let CMP = null; // {h, scale, fi: Map origin->row, ri: Map, models, rulCache}
 let SEL = ["lgbm", "itransformer", "persistence"]; // selection order = drawing order; the first one with an interval gets the band
 let lastRes = null;
@@ -44,10 +51,25 @@ const rgba = (hex, a) => {
 function buildCmp(j) {
   const idx = (o) => new Map(o.map((c, i) => [c, i]));
   return { h: j.h, scale: j.scale, models: j.models, fi: idx(j.origin.forecast ?? []), ri: idx(j.origin.rul ?? []),
-    rulOrigin: j.origin.rul ?? [], rulCache: new Map() };
+    rulOrigin: j.origin.rul ?? [], rulCache: new Map(), events: j.events ?? { long_rest: [], cv_skip: [] } };
 }
 /** Is a precomputed forecast available at the current prediction point? */
 const cmpAvail = (last) => !!CMP && CMP.fi.has(last);
+
+/** Markers for regeneration-causing rests and CALCE charger-glitch cycles (demo cells only). */
+function eventTraces(c) {
+  if (!CMP || !S.demo) return [];
+  const at = (cycles) => cycles.map((cc) => c.indexOf(cc)).filter((i) => i >= 0);
+  const out = [];
+  const r = at(CMP.events.long_rest), d = at(CMP.events.cv_skip);
+  if (r.length) out.push({ x: r.map((i) => c[i]), y: r.map((i) => S.soh[i] * 100), mode: "markers", name: "after a long rest (regeneration)",
+    marker: { symbol: "triangle-up", size: 9, color: "#1baf7a", line: { width: 1, color: css("--panel") } },
+    hovertemplate: "cycle %{x}: rest > 6 h before it<extra>regeneration</extra>" });
+  if (d.length) out.push({ x: d.map((i) => c[i]), y: d.map((i) => S.soh[i] * 100), mode: "markers", name: "charger skipped CV step (artifact)",
+    marker: { symbol: "x-thin-open", size: 8, color: "#e34948", line: { width: 1.5, color: "#e34948" } },
+    hovertemplate: "cycle %{x}: CV charge step skipped<extra>artifact, not ageing</extra>" });
+  return out;
+}
 
 function buildChips() {
   const keys = CMP ? CMP_ORDER.filter((m) => m in CMP.models).concat(Object.keys(CMP.models).filter((m) => !CMP_ORDER.includes(m))) : CMP_ORDER;
@@ -180,7 +202,11 @@ async function loadCell() {
         fetch(`examples/${demo}_eol.json`).then((r) => (r.ok ? r.json() : null)),
         fetch(`examples/${demo}_compare.json`).then((r) => (r.ok ? r.json() : null)).catch(() => null),
       ]);
-      if (cmp) CMP = buildCmp(cmp);
+      if (cmp) {
+        CMP = buildCmp(cmp);
+        // cells with rests: default to showing regeneration-aware forecasting (ADR-0016)
+        SEL = "lstm+rest" in CMP.models ? ["lstm+rest", "lstm", "persistence"] : ["lgbm", "itransformer", "persistence"];
+      }
       rows = validate(parseCSV(full), meta.min_cycles);
       const lastCut = validate(parseCSV(cut), meta.min_cycles).cycle_idx.at(-1);
       k0 = Math.max(0, rows.cycle_idx.indexOf(lastCut));
@@ -383,6 +409,7 @@ function render(res) {
       line: { color: "#1f5f99", width: 2 }, hovertemplate: "SOH %{y:.1f}%<extra>measured</extra>" },
     { x: c.slice(k), y: S.soh.slice(k).map((v) => v * 100), mode: "lines", name: "measured later (hidden from the model)",
       line: { color: muted, dash: "dot", width: 1.5 }, hovertemplate: "SOH %{y:.1f}%<extra>measured later</extra>" },
+    ...eventTraces(c),
     ...cmpTraces,
     { x: fc, y: [s0, ...res.forecast.map((f) => f.soh)].map((v) => v * 100), mode: "lines+markers", name: LIVE_LABEL,
       line: { color: ink, width: 3.5 }, marker: { size: 9, color: ink, line: { width: 1.5, color: css("--panel") } },
