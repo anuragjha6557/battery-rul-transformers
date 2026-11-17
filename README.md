@@ -235,6 +235,14 @@ Forecast horizon 50, all origins; nominal coverage target 0.90.
 | Transfer | itransformer+zero_shot vs itransformer+scratch | nasa | rmse_h50 | +3.57 [+2.08, +5.07] | 0/4 |
 | Transfer | itransformer+ft_head vs itransformer+scratch | calce | rmse_h50 | +1.09 [+0.98, +1.22] | 0/4 |
 | Transfer | itransformer+ft_head vs itransformer+scratch | nasa | rmse_h50 | +1.75 [+0.59, +2.90] | 0/4 |
+| Transfer (RUL) | itransformer+ft_full vs itransformer+scratch | calce | rul_mae | +28 [+6, +56] | 1/4 |
+| Transfer (RUL) | itransformer+ft_full vs itransformer+scratch | nasa | rul_mae | +0 [-7, +7] | 2/4 |
+| Transfer (RUL) | itransformer+zero_shot vs itransformer+scratch | calce | rul_mae | +183 [+117, +227] | 0/4 |
+| Transfer (RUL) | itransformer+zero_shot vs itransformer+scratch | nasa | rul_mae | +23 [+9, +37] | 0/4 |
+| Transfer (RUL) | itransformer+ft_full vs itransformer+scratch | calce | rul_mae | +13 [-5, +31] | 2/4 |
+| Transfer (RUL) | itransformer+ft_full vs itransformer+scratch | nasa | rul_mae | +3 [-6, +12] | 2/4 |
+| Transfer (RUL) | itransformer+zero_shot vs itransformer+scratch | calce | rul_mae | +277 [+141, +356] | 0/4 |
+| Transfer (RUL) | itransformer+zero_shot vs itransformer+scratch | nasa | rul_mae | +31 [+4, +60] | 1/4 |
 
 Delta = candidate minus reference (negative = candidate better); %SOH for rmse metrics, cycles for rul_mae. Cells better = k of n cells where the candidate wins.
 

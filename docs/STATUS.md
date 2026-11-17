@@ -3,7 +3,7 @@
 _Last updated: 2026-11-17 (Opus 5.5 lead)_
 
 ## State
-- **Phases 0–6 complete.** Phase 7 (freeze iTransformer-v2, final benchmark, README tables) is next.
+- **Phases 0–7 complete; Phase 8 built and tested locally, waiting on the owner's Hugging Face token to publish.**
 - **Phase 4/5 (ADR-0008):**
   - Benchmark: 1 620 runs, 0 failures, plus `benchmark_local` (72 runs). Tuned with 50 Optuna trials per (model, task) on Toyota (ADR-0006, amendments 1–3).
   - Mean rank: iTransformer 3.08, iTransformer-SC 3.95, LightGBM 4.55, PatchTST 4.65.
@@ -31,13 +31,13 @@ _Last updated: 2026-11-17 (Opus 5.5 lead)_
 8. **Feature-availability rule (enforce in `tasks/` + leakage tests):** per-cycle quantities measured during discharge k (`discharge_time_s`, `discharge_energy_wh`, `discharge_temp_max_c`, discharge curves) are ≈ the target `capacity_k` itself. For Task A (estimate SOH_k) only charge-phase features of cycle k (+ history < k) are allowed; for Tasks B/C anything at cycles ≤ T_p. CALCE `ir_ohm` was changed in review to use the charge window only for this reason (NASA `ir_ohm` already uses the latest EIS *before* the charge).
 
 ## Next actions
-1. **Phase 7:**
-   - Write `configs/experiment/final.yaml` with the frozen v2 and the reference models.
-   - Save the trained weights for deployment.
-   - Run the final benchmark, `scripts/make_readme_tables.py`, and ADR-0014 (final model selection).
-2. **Phase 8:** HF Space (predictor, Gradio app, ONNX export, OOD warning, deploy workflow). Needs the owner's HF account and token.
-3. **Phase 9:** model card, interview notes, ADR index.
-4. **Owner reminder:** re-enable sleep with `sudo pmset -a disablesleep 0`.
+1. **Phase 8 publish (owner):**
+   - Run `uv run hf auth login` with a write token.
+   - The lead then runs `scripts/push_to_hub.py --weights` and `--space`.
+   - Smoke-test the live Space.
+   - Add the `HF_TOKEN` repository secret for `deploy-space.yml`.
+2. **Phase 9:** MODEL_CARD.md, `docs/interview_notes.md`, CONTRIBUTING, architecture diagram.
+3. **Owner reminder:** re-enable sleep with `sudo pmset -a disablesleep 0`.
 
 ## Open risks
 - HF free tier availability at deploy time (re-check in Phase 8 day 1; fallback Streamlit Community Cloud).
@@ -57,4 +57,6 @@ _Last updated: 2026-11-17 (Opus 5.5 lead)_
 | 9 Docs | not started | |
 | 2–3 EDA, protocol, harness | done | `reports/data_quality.md`; PROTOCOL v1.1; leakage tests mutation-checked |
 | 4–5 Baselines, iTransformer, PatchTST | done | ADR-0008; `reports/tables/benchmark*` |
-| 6 Improvements | done | ADR-0009–0013 outcomes; v2 config frozen |
+| 6 Improvements | done | ADR-0009–0013 outcomes (incl. RUL transfer, ADR-0012 amendment 1); v2 config frozen |
+| 7 Final benchmark and report | done | ADR-0014; `configs/experiment/final.yaml` ≡ benchmark; README results generated |
+| 8 Deployment | built and tested locally; publish pending HF token | ADR-0015; `app/`, `serve/predictor.py`, 430 + 13 tests green |
