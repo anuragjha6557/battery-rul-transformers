@@ -163,6 +163,60 @@ def main() -> None:
         p = EX / f"{d['name']}_compare.json"
         p.write_text(json.dumps(out, separators=(",", ":")))
         print(p.name, f"{p.stat().st_size / 1e3:.0f} kB", sorted(out["models"]))
+    trajectories(runs)
+
+
+#: Cells for the whole-life trajectories page (web/trajectories.html). Every NASA/CALCE cell is a
+#: leave-one-cell-out test cell of the benchmark; the Toyota cells are official-split test cells
+#: (median iTransformer error at the half-life start point, see the showcase fan chart).
+TRAJ_CELLS = [
+    *(("nasa", c) for c in ("B0005", "B0006", "B0007", "B0018")),
+    *(("calce", c) for c in ("CS2_35", "CS2_36", "CS2_37", "CS2_38")),
+    ("toyota", "b1c31"),
+    ("toyota", "b3c20"),
+    ("toyota", "b3c44"),
+]
+DS_LABEL = {"nasa": "NASA", "calce": "CALCE", "toyota": "Toyota/MIT"}
+
+
+def trajectories(runs: pd.DataFrame) -> None:
+    """Compare files + full trajectories + EOL labels for every TRAJ_CELLS cell."""
+    from battery_rul.data.io import read_tables
+    from battery_rul.tasks.labels import eol_table
+
+    out_dir = EX / "traj"
+    out_dir.mkdir(exist_ok=True)
+    meta = json.loads((ROOT / "artifacts" / "deploy" / "deploy_meta.json").read_text())
+    cells = []
+    for ds in ("nasa", "calce", "toyota"):
+        t = read_tables(ds, ROOT / "data" / "processed", curves=False)
+        eol = eol_table(t.cycles, t.cells, 0.8).set_index("cell_id")
+        split = t.cells.set_index("cell_id")["split"] if "split" in t.cells else None
+        for _, cell in (x for x in TRAJ_CELLS if x[0] == ds):
+            name = f"{ds}_{cell}"
+            cmp = build(name, runs)
+            (out_dir / f"{name}_compare.json").write_text(json.dumps(cmp, separators=(",", ":")))
+            c = t.cycles[t.cycles.cell_id.astype(str) == cell][["cycle_idx", "capacity_ah"]]
+            c.dropna().sort_values("cycle_idx").astype({"cycle_idx": int}).to_csv(
+                out_dir / f"{name}_full.csv", index=False
+            )
+            e = float(eol.loc[cell, "eol_cycle"])
+            (out_dir / f"{name}_eol.json").write_text(json.dumps({"eol_cycle": e}))
+            where = (
+                f"official {split.get(cell)} split"
+                if ds == "toyota" and split is not None
+                else "leave-one-cell-out test cell"
+            )
+            cells.append(
+                {
+                    "name": name,
+                    "label": f"{DS_LABEL[ds]} {cell} ({where})",
+                    # the deployed model never trained on its calibration cells
+                    "live": cell in meta["cells"][ds]["cal"],
+                }
+            )
+            print("traj", name, f"{(out_dir / f'{name}_compare.json').stat().st_size / 1e3:.0f} kB")
+    (out_dir / "cells.json").write_text(json.dumps(cells, indent=1))
 
 
 if __name__ == "__main__":

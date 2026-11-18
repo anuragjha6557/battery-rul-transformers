@@ -72,7 +72,7 @@ svg.pipe .arrow{stroke:var(--text-secondary);fill:none;stroke-width:1.5}
   <nav>
     <a href="#problem">Problem</a><a href="#data">Data &amp; EDA</a><a href="#method">Method</a>
     <a href="#results">Results</a><a href="#uq">Uncertainty</a><a href="#ablations">What didn't work</a><a href="#regen">Regeneration</a>
-    <a href="#deploy">Demo</a>
+    <a href="#deploy">Demo</a><a href="trajectories.html">Trajectories</a>
   </nav>
   <span class="sp"></span>
   <button class="theme" id="theme">Theme</button>
@@ -229,6 +229,7 @@ svg.pipe .arrow{stroke:var(--text-secondary);fill:none;stroke-width:1.5}
   <h2>7 · Try it</h2>
   <p>The served model is the single-channel iTransformer-v2, so it needs only <code>cycle_idx, capacity_ah</code>. It is trained on all three datasets and calibrated on cells it never saw. It runs entirely in your browser via ONNX Runtime Web, so no data leaves the page. An out-of-distribution check warns when intervals should not be trusted.</p>
   <a class="cta" href="index.html">Open the live demo</a>
+  <a class="cta alt" href="trajectories.html">Whole-life method comparison</a>
   <a class="cta alt" href="https://github.com/anuragjha6557/battery-rul-transformers">Code, ADRs and full tables</a>
   <p class="muted" style="margin-top:24px">Source paper: Jha, Dorkar, Biswas, Emadi, “iTransformer Network Based Approach for Accurate Remaining Useful Life Prediction in Lithium-Ion Batteries,” IEEE ITEC 2024, doi:10.1109/ITEC60657.2024.10598898. Data: NASA PCoE; CALCE (University of Maryland); Severson et al., Nature Energy 2019. All figures are generated from the benchmark's MLflow runs by <code>scripts/showcase/</code>.</p>
 </section>

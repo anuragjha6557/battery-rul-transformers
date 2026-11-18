@@ -1,0 +1,57 @@
+[
+ {
+  "name": "nasa_B0005",
+  "label": "NASA B0005 (leave-one-cell-out test cell)",
+  "live": false
+ },
+ {
+  "name": "nasa_B0006",
+  "label": "NASA B0006 (leave-one-cell-out test cell)",
+  "live": false
+ },
+ {
+  "name": "nasa_B0007",
+  "label": "NASA B0007 (leave-one-cell-out test cell)",
+  "live": false
+ },
+ {
+  "name": "nasa_B0018",
+  "label": "NASA B0018 (leave-one-cell-out test cell)",
+  "live": true
+ },
+ {
+  "name": "calce_CS2_35",
+  "label": "CALCE CS2_35 (leave-one-cell-out test cell)",
+  "live": false
+ },
+ {
+  "name": "calce_CS2_36",
+  "label": "CALCE CS2_36 (leave-one-cell-out test cell)",
+  "live": false
+ },
+ {
+  "name": "calce_CS2_37",
+  "label": "CALCE CS2_37 (leave-one-cell-out test cell)",
+  "live": false
+ },
+ {
+  "name": "calce_CS2_38",
+  "label": "CALCE CS2_38 (leave-one-cell-out test cell)",
+  "live": true
+ },
+ {
+  "name": "toyota_b1c31",
+  "label": "Toyota/MIT b1c31 (official test1 split)",
+  "live": false
+ },
+ {
+  "name": "toyota_b3c20",
+  "label": "Toyota/MIT b3c20 (official test2 split)",
+  "live": true
+ },
+ {
+  "name": "toyota_b3c44",
+  "label": "Toyota/MIT b3c44 (official test2 split)",
+  "live": true
+ }
+]

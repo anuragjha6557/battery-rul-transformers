@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Whole-Life Trajectories</title>
+<meta name="description" content="Every benchmarked method's held-out predictions over a battery's entire life, one forecast horizon at a time, against the measured capacity.">
+<style>
+:root{
+  --bg:#fbfbfa;--surface-2:#ffffff;--text-primary:#0b0b0b;--text-secondary:#52514e;--grid:#e4e3df;--line:#e4e3df;--accent:#2a78d6;
+  --series-1:#2a78d6;--series-2:#eb6834;--series-3:#1baf7a;--series-4:#eda100;--series-5:#e87ba4;--series-6:#008300;--series-7:#6250d6;--series-8:#e34948;--other:#9b9a94;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#141413;--surface-2:#222220;--text-primary:#f0efec;--text-secondary:#c3c2b7;--grid:#34332f;--line:#34332f;--accent:#3987e5;
+  --series-1:#3987e5;--series-2:#d95926;--series-3:#199e70;--series-4:#c98500;--series-5:#d55181;--series-6:#008300;--series-7:#9085e9;--series-8:#e66767;--other:#7a7974;}}
+:root[data-theme="dark"]{
+  --bg:#141413;--surface-2:#222220;--text-primary:#f0efec;--text-secondary:#c3c2b7;--grid:#34332f;--line:#34332f;--accent:#3987e5;
+  --series-1:#3987e5;--series-2:#d95926;--series-3:#199e70;--series-4:#c98500;--series-5:#d55181;--series-6:#008300;--series-7:#9085e9;--series-8:#e66767;--other:#7a7974;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text-primary);font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+header.top{border-bottom:1px solid var(--line)}
+header.top .in{max-width:1160px;margin:0 auto;padding:10px 16px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-size:.9rem}
+header.top a{color:var(--text-secondary);text-decoration:none}
+header.top a:hover{color:var(--text-primary)}
+header.top .sp{flex:1}
+main{max-width:1160px;margin:0 auto;padding:8px 16px 56px}
+h1{font-size:1.6rem;margin:20px 0 4px}
+.lede{color:var(--text-secondary);max-width:900px;margin:0 0 16px}
+.panel{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:14px}
+.row{display:flex;flex-wrap:wrap;gap:14px;align-items:end}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:.82rem;color:var(--text-secondary)}
+select{font:inherit;color:var(--text-primary);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;max-width:100%}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{font:inherit;background:none;border:0;border-right:1px solid var(--line);color:var(--text-primary);padding:6px 14px;cursor:pointer;font-variant-numeric:tabular-nums}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--bg);font-weight:600}
+.seg button:disabled{opacity:.35;cursor:not-allowed}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:3px 10px 3px 8px;font-size:.85rem;cursor:pointer;user-select:none}
+.chip input{margin:0}
+.chip .sw{width:10px;height:10px;border-radius:50%}
+.chip.off{opacity:.4;cursor:not-allowed}
+.small{color:var(--text-secondary);font-size:.84rem;margin:6px 0 0}
+.chart{width:100%}
+#c-soh{height:470px}#c-err{height:300px}#c-rul{height:360px}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:.9rem}
+th,td{text-align:right;padding:6px 10px;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+.scroll{overflow-x:auto}
+h3{font-size:1rem;margin:0 0 4px}
+.sw2{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle}
+button.theme{font:inherit;font-size:.82rem;background:none;border:1px solid var(--line);color:var(--text-secondary);border-radius:6px;padding:3px 10px;cursor:pointer}
+.status{font-size:.84rem;color:var(--text-secondary)}
+</style>
+</head>
+<body>
+<header class="top"><div class="in">
+  <b>Whole-life trajectories</b>
+  <a href="index.html">Interactive demo</a><a href="showcase.html">Project showcase</a>
+  <a href="https://github.com/anuragjha6557/battery-rul-transformers">Code</a>
+  <span class="sp"></span><button class="theme" id="theme">Theme</button>
+</div></header>
+<main>
+  <h1>Every method, over the whole life of a cell</h1>
+  <p class="lede">Pick a cell and <b>one</b> forecast horizon h. Each method's curve is made of its forecasts issued h cycles earlier, drawn at the cycle they predict, so the whole life is covered by forecasts of the same length. All benchmarked methods are shown with their genuine held-out predictions: the model never trained on this cell. Toggle methods on and off to compare.</p>
+
+  <div class="panel">
+    <div class="row">
+      <label class="f">Cell <select id="cell"></select></label>
+      <div><div class="small" style="margin:0 0 4px">Forecast horizon (cycles ahead)</div><div class="seg" id="hz"></div></div>
+      <label class="f">90% interval band <select id="band"><option value="">none</option></select></label>
+      <span class="status" id="status"></span>
+    </div>
+    <div class="chips" id="chips"></div>
+    <p class="small" id="note"></p>
+  </div>
+
+  <div class="panel"><h3 id="t-soh">Predicted vs measured SOH</h3><div class="chart" id="c-soh"></div>
+    <p class="small">Each line = one method's h-step-ahead forecasts over the cell's life. Thick translucent yellow = measured SOH. ▲ = cycle after a long rest (regeneration), × = charger glitch (CALCE artifact). "+ planned rests" variants also know the rest schedule ahead (ADR-0016).</p></div>
+  <div class="panel"><h3>Forecast error over life</h3><div class="chart" id="c-err"></div>
+    <p class="small">Absolute error |forecast − measured| at each target cycle, smoothed with an 11-cycle rolling mean so methods are comparable at a glance (hover shows the smoothed value).</p></div>
+  <div class="panel scroll"><h3 id="t-tab">Ranking at this horizon</h3><table id="tab"></table>
+    <p class="small">RMSE and bias over every target cycle of this cell at the chosen horizon; interval coverage = share of measured values inside the method's calibrated 90% interval. RUL MAE is over every prediction point before end of life. The live model is trained on all three datasets at once; on NASA its RUL reacts strongly to each regeneration jump, while the per-dataset benchmark models are steadier there.</p></div>
+  <div class="panel"><h3>Remaining-life prediction over life</h3><div class="chart" id="c-rul"></div>
+    <p class="small">Predicted RUL at every point in the cell's life against the true remaining life (red dashed) and a ±20% cone. RUL does not depend on the forecast horizon.</p></div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.19.2/dist/ort.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js"></script>
+<script type="module" src="traj.mjs"></script>
+</body>
+</html>
