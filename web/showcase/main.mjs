@@ -72,7 +72,7 @@ async function part(name) {
 
 async function main() {
   pipeline();
-  const [, core] = await Promise.all([part("eda"), part("results_core"), part("results_more"), part("method")]);
+  const [, core] = await Promise.all([part("eda"), part("results_core"), part("results_more"), part("method"), part("regen")]);
   if (core?.hero) heroTiles(core.hero);
   if (core?.horizon_note) $("res-horizon-note").innerHTML = core.horizon_note;
 }

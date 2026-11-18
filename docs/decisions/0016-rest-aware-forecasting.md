@@ -13,7 +13,7 @@ The source paper's motivation for attention models was capturing **capacity rege
 
 - **The benchmark forecasters cannot predict a future regeneration.** At h = 1, every model misses NASA regeneration targets by about −3.3 % SOH, the same as persistence.
 - **The reason is missing information, not architecture.** The rest that causes the jump happens *after* the forecast origin, so it is not in the inputs.
-- **SOH estimation (Task A) does see the rest before the current cycle.** There, iTransformer SC/MC capture about 55–60 % of each jump (bias −1.4 / −1.8 % vs −3.3 %), which is the best of all models.
+- **SOH estimation (Task A) does see the rest before the current cycle.** Pooled over 5 seeds, iTransformer SC/MC are the most accurate models at regeneration cycles: RMSE 1.87 / 2.18 %SOH vs ≥ 3.17 for every other model, with bias −1.20 / −1.52 vs −3.29 for previous-SOH. LSTM has a smaller bias (−0.61) but a much larger spread (RMSE 3.28). Source: `scripts/showcase/regen.py`.
 
 ## Hypothesis
 Giving forecasters the **planned rest schedule** of the forecast window as known-future covariates lets them forecast regeneration:
@@ -60,7 +60,7 @@ Giving forecasters the **planned rest schedule** of the forecast window as known
 - **What the data support:**
   - Regeneration is forecastable only when the rest schedule is known. With it, a recurrent model captures about 70 % of the NASA jump one cycle ahead.
   - The source paper's claim that inverted attention captures regeneration is not supported for *forecasting*.
-  - It is partly supported for *estimation* (Task A, where the current rest is observed). There, iTransformer is the best model at regeneration cycles.
+  - It is partly supported for *estimation* (Task A, where the current rest is observed). There, iTransformer has the lowest RMSE at regeneration cycles.
 
 ## Decision
 - **Rest-aware forecasting is reported as a conditional task variant (B | schedule).** It is never mixed with unconditional results.

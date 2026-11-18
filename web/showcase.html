@@ -71,7 +71,7 @@ svg.pipe .arrow{stroke:var(--text-secondary);fill:none;stroke-width:1.5}
   <b>Battery RUL Benchmark</b>
   <nav>
     <a href="#problem">Problem</a><a href="#data">Data &amp; EDA</a><a href="#method">Method</a>
-    <a href="#results">Results</a><a href="#uq">Uncertainty</a><a href="#ablations">What didn't work</a>
+    <a href="#results">Results</a><a href="#uq">Uncertainty</a><a href="#ablations">What didn't work</a><a href="#regen">Regeneration</a>
     <a href="#deploy">Demo</a>
   </nav>
   <span class="sp"></span>
@@ -203,8 +203,30 @@ svg.pipe .arrow{stroke:var(--text-secondary);fill:none;stroke-width:1.5}
   <p class="cap">Left: h = 50 forecast RMSE at the benchmark start points for each transfer arm. Pre-training on 124 Toyota LFP cells then fully fine-tuning cuts NASA error by about 27 % (28 % over all origins). It slightly hurts CALCE, whose long-lived cells already give enough training data. Right: the same idea does not help RUL. Zero-shot transfer fails on both.</p>
 </section>
 
+<section id="regen">
+  <h2>6 · Capacity regeneration and data artifacts</h2>
+  <p>A key motivation of the source paper was <b>capacity regeneration</b>: a cell that rests recovers some capacity, and the next cycles look "younger". This section tests that claim directly, and separates it from a look-alike artifact.</p>
+  <ul>
+    <li><b>NASA:</b> genuine regeneration. Each rest longer than 6 hours is followed by a +3.1 % SOH jump on average (20 events).</li>
+    <li><b>CALCE:</b> mostly an artifact. In 109 cycles the charger skipped its constant-voltage step, so the next discharge reads about 10.6 % low; true recovery after rests there is only +0.8 %.</li>
+    <li><b>Toyota:</b> no long rests, so no regeneration.</li>
+  </ul>
+  <h3>Estimating SOH right after a rest: inverted attention is the best model</h3>
+  <div class="chart short"><div id="regen-taska"></div></div>
+  <p class="cap">SOH estimation (task A) error on NASA at regeneration cycles vs ordinary cycles, 5 seeds. Here the rest has already happened and is an input. iTransformer (SC and MC) is the most accurate model at regeneration cycles (RMSE 1.87 and 2.18 % SOH vs ≥ 3.17 for every other model). This is the defensible version of the paper's claim.</p>
+  <h3>Forecasting regeneration needs the rest schedule</h3>
+  <p>A forecaster issued before the rest cannot know it is coming, so every benchmark model misses the jump (−3.3 % SOH, the same as persistence). A pre-registered experiment (ADR-0016) gave models the <i>planned</i> rest schedule of the forecast window as known-future inputs. Operators usually know when a cell will sit idle, and in the NASA test the rests are part of the protocol.</p>
+  <div class="chart short"><div id="regen-fan"></div></div>
+  <p class="cap">Held-out NASA B0018 forecasts issued just before a long rest (▲). The LSTM without the schedule projects the smooth trend. With the planned rests it anticipates the regeneration jump one cycle ahead and decays back afterwards. Forecasts exist at h = 1, 10, 25, 50 and 100.</p>
+  <div class="chart short"><div id="regen-events"></div></div>
+  <p class="cap">Error at NASA regeneration cycles without (faded) and with (solid) the planned rest schedule, 5 seeds × 4 held-out cells. The schedule cuts the error by up to 42 % (time-step Transformer) and 26 % for the LSTM, which then captures about 70 % of each jump. <b>Inverted attention gains the least</b> (iTransformer 10 %, SC 4 %): it absorbs these inputs as one extra token, while LSTM, Transformer and LightGBM feed them straight to the output head. Both pre-registered hypotheses (≥ 50 % for iTransformer; attention gains most) are rejected and reported.</p>
+  <h3>CALCE: treating charger glitches as invalid measurements</h3>
+  <div class="chart short"><div id="regen-clean"></div></div>
+  <p class="cap">Paired change from dropping the 109 glitch cycles before training (ADR-0017), with both arms scored on the same glitch-free targets (95 % CIs; filled circle = better, square = worse, open diamond = inconclusive). Forecasts improve for every learned model (e.g. iTransformer-SC 2.43 → 2.14 % SOH at h = 50), but RUL gets slightly worse. Dips near the 80 % line carry information about how close a cell is to end of life. The benchmark therefore keeps raw data and additionally reports CALCE forecasts on glitch-free targets. The demo marks both event types.</p>
+</section>
+
 <section id="deploy">
-  <h2>6 · Try it</h2>
+  <h2>7 · Try it</h2>
   <p>The served model is the single-channel iTransformer-v2, so it needs only <code>cycle_idx, capacity_ah</code>. It is trained on all three datasets and calibrated on cells it never saw. It runs entirely in your browser via ONNX Runtime Web, so no data leaves the page. An out-of-distribution check warns when intervals should not be trusted.</p>
   <a class="cta" href="index.html">Open the live demo</a>
   <a class="cta alt" href="https://github.com/anuragjha6557/battery-rul-transformers">Code, ADRs and full tables</a>
