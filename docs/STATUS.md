@@ -3,7 +3,7 @@
 _Last updated: 2026-11-17 (Opus 5.5 lead)_
 
 ## State
-- **Phase 2 started (2026-11-18): field-realistic study** — no SOH history at prediction time; see `docs/PLAN_PHASE2.md` (owner decisions: field signals + cycle count; re-extract Toyota charge-side signals). Stage 0 (EDA, outlier policy, field features) in progress.
+- **Phase 2 started (2026-11-18): field-realistic study** — no SOH history at prediction time; see `docs/PLAN_PHASE2.md` (owner decisions: field signals + cycle count; re-extract Toyota charge-side signals). Stage 0 done (ADR-0018 outlier policy + field inputs, ADR-0019 intervals, `reports/eda_field.md`); **owner gate before Stage 1**.
 - **Phases 0–8 complete.** Live demo: https://huggingface.co/spaces/anurag6557/battery-rul-itransformer-v2. It is a static in-browser Space (ADR-0015 amendment 1) because Gradio hosting needs HF PRO.
 - **Phase 4/5 (ADR-0008):**
   - Benchmark: 1 620 runs, 0 failures, plus `benchmark_local` (72 runs). Tuned with 50 Optuna trials per (model, task) on Toyota (ADR-0006, amendments 1–3).

@@ -1,0 +1,4 @@
+model,mean_rank,n_conditions,n_missing
+lgbm,1.0,4,0
+elasticnet,2.25,4,0
+age_only,2.75,4,0
