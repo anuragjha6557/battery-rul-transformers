@@ -5,8 +5,9 @@ experimental variable), rests ~60 s at I = 0, charges at 1C CC up to 3.6 V and t
 (CV) until the current has decayed. Only the **protocol-common** part (rest + 1C CC + CV) is used,
 so the features do not encode the policy and need no capacity measurement:
 
-``fld_relax_v0/v1/dv/s``  voltage at start / end of the I ~ 0 rest, their difference (V) and its
-                          duration (s). NaN without such a rest.
+``fld_relax_v0/v1/dv/s``  voltage at the start of the I ~ 0 rest and ``RELAX_AT_S`` = 8 s into
+                          it, their difference (V), and the rest duration (s, diagnostic only;
+                          protocol-dependent). NaN without such a rest.
 ``fld_win_*``             a fixed voltage window ``[V_LO, V_HI]`` inside the 1C CC segment:
                           charge passed (Ah, from the raw ``Qc`` counter differences, a coulomb
                           count a BMS can do on a partial charge) and time (s) inside it;
@@ -62,6 +63,10 @@ ICA_STEP: Final = 0.0025
 I_REST: Final = 0.02  # C-rate; |I| below this is a rest
 #: shortest accepted rest; measured rest length: ~10 s batch 3, ~56 s batch 1, ~296 s batch 2
 REST_MIN_S: Final = 5.0
+#: Relaxation is read at this fixed elapsed time after the rest starts. Batch 2018-04-12 (the
+#: official test2 cells) rests ~10 s instead of ~60 s, so "V at the end of the rest" measures a
+#: different relaxation stage there; a fixed elapsed time common to every protocol does not.
+RELAX_AT_S: Final = 8.0
 I_1C_HI: Final = 1.25  # C-rate; the step after the rest is 1C (at most this)
 CV_TOL_V: Final = 0.005
 AH_PER_C: Final = 1.1
@@ -152,10 +157,13 @@ def relaxation_features(t: np.ndarray, v: np.ndarray, seg: Segments) -> dict[str
     nan = float("nan")
     if seg.rest0 is None or seg.rest1 is None:
         return {"fld_relax_v0": nan, "fld_relax_v1": nan, "fld_relax_dv": nan, "fld_relax_s": nan}
-    # v0 = first rest sample (V relaxes fast); v1 = median of the last 3 samples (the raw data
-    # contain isolated one-sample V glitches inside the rest)
+    # v0 = first rest sample (V relaxes fast); v1 = V at RELAX_AT_S after the rest starts,
+    # linearly interpolated (protocol-invariant: every policy rests at least ~10 s). If the rest
+    # is shorter than that, v1 is the last rest sample.
     v0 = float(v[seg.rest0])
-    v1 = float(np.median(v[max(seg.rest0, seg.rest1 - 2) : seg.rest1 + 1]))
+    tr = (t[seg.rest0 : seg.rest1 + 1] - t[seg.rest0]) * 60.0
+    vr = v[seg.rest0 : seg.rest1 + 1]
+    v1 = float(np.interp(RELAX_AT_S, tr, vr)) if tr[-1] >= RELAX_AT_S else float(vr[-1])
     return {
         "fld_relax_v0": v0,
         "fld_relax_v1": v1,

@@ -50,6 +50,8 @@ def test_relaxation_values() -> None:
     t, v, i, _ = _profile()
     r = relaxation_features(t, v, segment_charge(t, v, i))
     assert r["fld_relax_v0"] > r["fld_relax_v1"] and r["fld_relax_dv"] < 0
+    # read at 8 s of a linear 60 s relaxation from 3.45 to 3.40 V
+    assert abs(r["fld_relax_dv"] - (-0.05 * 8 / 60)) < 0.003
     assert 50 <= r["fld_relax_s"] <= 70
 
 

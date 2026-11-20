@@ -172,7 +172,8 @@ def clean_cycles(
     dur_cols = [
         c
         for c in out.columns
-        if c in CHARGE_DURATION_COLS or c.startswith(CHARGE_DURATION_PREFIXES)
+        if (c in CHARGE_DURATION_COLS or c.startswith(CHARGE_DURATION_PREFIXES))
+        and pd.api.types.is_float_dtype(out[c])  # never flags such as fld_win_valid (bool)
     ]
     out.loc[pause, dur_cols] = np.nan
     for c, m in masks.items():

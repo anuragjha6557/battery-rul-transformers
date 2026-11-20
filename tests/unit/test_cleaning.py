@@ -65,6 +65,7 @@ def test_cv_skip_rule_is_calce_only() -> None:
 def test_charge_pause_masks_duration_inputs_only() -> None:
     df = _cell()
     df["fld_win_dq_ah"] = 0.5
+    df["fld_win_valid"] = True  # bool flag column: must be left alone
     df.loc[40, "charge_time_s"] = 50_000.0
     out, rep = clean_cycles(df)
     row = out[out["cycle_idx"] == 41].iloc[0]
