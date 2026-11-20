@@ -1,0 +1,30 @@
+# @package _global_
+# PLAN_PHASE2 Stage 1: field SOH estimation screen (no SOH/capacity inputs), feature set field_curve.
+# Tuned hyperparameters reused (ADR-0006 equal treatment); lookback fixed at 64 for every model.
+defaults:
+  - /experiment_schema
+  - _self_
+
+name: field_screen_field_curve
+datasets: [nasa, calce, toyota]
+tasks: [soh]
+feature_set: field_curve
+clean: true
+models:
+  - name: age_only
+  - tuned: itransformer__soh
+    params: {lookback: 64, channels: all}
+  - tuned: patchtst__soh
+    params: {lookback: 64}
+  - tuned: transformer__soh
+    params: {lookback: 64}
+  - tuned: lstm__soh
+    params: {lookback: 64}
+  - tuned: lgbm__soh
+    params: {lookback: 64}
+  - tuned: elasticnet__soh
+    params: {lookback: 64}
+seeds: [0, 1, 2]
+lookback: 64
+eval_origins: [start_points, all]
+train_stride: {toyota: 4}
