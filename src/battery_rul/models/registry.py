@@ -31,6 +31,7 @@ _PATHS: dict[str, tuple[str, OmpFamily | None]] = {
     "persistence": ("battery_rul.models.persistence:Persistence", None),
     "last_slope": ("battery_rul.models.persistence:LastSlope", None),
     "prev_soh": ("battery_rul.models.extrapolate:PrevSOH", None),
+    "age_only": ("battery_rul.models.age:AgeOnly", None),  # field setting baseline
     "param_linear": ("battery_rul.models.extrapolate:ParamFit", None),
     "param_exp2": ("battery_rul.models.extrapolate:ParamFit", None),
     "param_power": ("battery_rul.models.extrapolate:ParamFit", None),

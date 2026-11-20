@@ -23,7 +23,7 @@ from numpy.lib.stride_tricks import sliding_window_view
 from battery_rul.models.base import SampleSet, TaskName
 from battery_rul.splits.scaling import FoldScaler
 
-FeatureSet = Literal["sc", "mc", "mc_curve", "shared"]
+FeatureSet = Literal["sc", "mc", "mc_curve", "shared", "field", "field_curve"]
 OriginPolicy = Literal["all", "start_points"]
 
 #: Charge-phase / pre-charge per-cycle quantities. Allowed for the current cycle in Task A
@@ -53,6 +53,55 @@ CURVE_DISCHARGE_PREFIX: Final = "dis_"
 def is_charge_channel(name: str) -> bool:
     """True for channels that may be used as the current cycle's inputs in Task A."""
     return name in CHARGE_CHANNELS or name.startswith(CURVE_CHARGE_PREFIX)
+
+
+#: Field setting (ADR-0018/PLAN_PHASE2 §2): only BMS-measurable inputs, never capacity/SOH.
+#: Scalar per-cycle channels (each used where the dataset has training data for it).
+FIELD_SCALARS: Final = (
+    "cycle_count",  # log1p(cycle_idx): the BMS always knows the cell's age (owner decision)
+    "cv_time_s",
+    "skipped_cv",
+    "ir_ohm",
+    "log_rest_s",
+    "charge_temp_max_c",
+    "charge_temp_mean_c",
+    "fld_relax_v0",
+    "fld_relax_v1",
+    "fld_relax_dv",
+    "fld_r_dc",
+    "fld_win_dq_ah",
+    "fld_win_dt_s",
+    "fld_ica_v",
+    "fld_ica_h",
+    "fld_chg_temp_max_c",
+    "fld_chg_temp_mean_c",
+)
+#: Voltage-grid Q(V) points inside the fixed charge window (many correlated variates).
+FIELD_CURVE: Final = tuple(f"fld_q_v{i:02d}" for i in range(1, 16))  # v00 == 0 by definition
+FIELD_PREFIX: Final = "fld_"
+#: Never inputs in the field setting (capacity measurements, direct or disguised).
+FIELD_FORBIDDEN: Final = (
+    "capacity_ah",
+    "soh",
+    "charge_throughput_ah",
+    "charge_time_s",
+    "cc_time_s",
+    "discharge_time_s",
+    "discharge_energy_wh",
+    "discharge_temp_max_c",
+)
+
+
+def is_field(fs: str) -> bool:
+    return fs in ("field", "field_curve")
+
+
+def merge_field_features(cycles: pd.DataFrame, feats: pd.DataFrame) -> pd.DataFrame:
+    """Left-join ``fld_*`` field features (keyed dataset, cell_id, cycle_idx) onto ``cycles``."""
+    cols = [c for c in feats.columns if c.startswith(FIELD_PREFIX)]
+    keys = ["dataset", "cell_id", "cycle_idx"]
+    base = cycles.drop(columns=[c for c in cols if c in cycles.columns])
+    return base.merge(feats[[*keys, *cols]], on=keys, how="left")
 
 
 def merge_curve_features(cycles: pd.DataFrame, feats: pd.DataFrame) -> pd.DataFrame:
@@ -125,6 +174,7 @@ class PreparedCycles:
 def _derive(cycles: pd.DataFrame) -> pd.DataFrame:
     out = cycles.sort_values(["cell_id", "cycle_idx"]).reset_index(drop=True).copy()
     out["log_rest_s"] = np.log1p(out["rest_before_s"].clip(lower=0.0))
+    out["cycle_count"] = np.log1p(out["cycle_idx"].astype(np.float64))
     cv = out["cv_time_s"]
     out["skipped_cv"] = np.where(cv.isna(), np.nan, (cv < SKIPPED_CV_S).astype(float))
     return out
@@ -143,6 +193,9 @@ def prepare_cycles(
     if feature_set == "sc":
         return PreparedCycles(cycles=df, channels=(), scaler=None)
     candidates = [*CHARGE_CHANNELS, *DISCHARGE_CHANNELS]
+    if is_field(feature_set):
+        candidates = [*FIELD_SCALARS, *(FIELD_CURVE if feature_set == "field_curve" else ())]
+        candidates = [c for c in candidates if c in df.columns]
     if feature_set == "shared":
         candidates = list(SHARED_CHANNELS)
         absent = [
@@ -215,7 +268,11 @@ def build_samples(
     theta_by_cell = (
         eol.set_index("cell_id")["theta"] if "theta" in eol.columns else pd.Series(dtype=float)
     )
-    hist_channels = ("soh", *prepared.channels)
+    field = is_field(spec.feature_set)
+    if field and not prepared.channels:
+        raise ValueError("field feature set has no channels with training data")
+    # Field setting: no SOH channel at all; every channel is BMS-measurable (PLAN_PHASE2 §2).
+    hist_channels = prepared.channels if field else ("soh", *prepared.channels)
     task_a_now = tuple(c for c in prepared.channels if is_charge_channel(c))
     L, task = spec.lookback, spec.task
     H = spec.target_horizons
@@ -231,8 +288,10 @@ def build_samples(
         win, wmask = _windows(hist_vals, L)
         cell_eol = float(eol_by_cell.get(cell, np.nan))
 
-        # Task A: the window must end at k-1, so it needs min_history rows before k.
-        first_ok = spec.min_history if task == "soh" else spec.min_history - 1
+        # Task A: the window must end at k-1, so it needs min_history rows before k. In the field
+        # setting every channel is charge-side (measured before discharge k), so the window ends
+        # at k itself.
+        first_ok = spec.min_history if (task == "soh" and not field) else spec.min_history - 1
         positions = _origin_positions(ci, cell_eol, dataset, origins, first_ok)
         if task == "rul":
             positions = [(p, k) for p, k in positions if np.isfinite(cell_eol) and ci[p] < cell_eol]
@@ -241,7 +300,26 @@ def build_samples(
         pos = np.array([p for p, _ in positions])
         kinds = [k for _, k in positions]
 
-        if task == "soh":
+        if field:
+            x, m = win[pos], wmask[pos]  # history ends at k (charge-side signals only)
+            tab = np.log1p(ci[pos].astype(np.float64))[:, None]  # age at the origin
+            if task == "soh":
+                y = soh[pos][:, None]
+                ym = np.ones_like(y, dtype=bool)
+            elif task == "forecast":
+                lookup = {int(c): i for i, c in enumerate(ci)}
+                y = np.full((len(pos), len(H)), np.nan)
+                for j, h in enumerate(H):
+                    tgt = [lookup.get(int(ci[p]) + h) for p in pos]
+                    y[:, j] = [soh[t] if t is not None else np.nan for t in tgt]
+                ym = np.isfinite(y)
+                y = np.nan_to_num(y)
+                if spec.future_rest:
+                    tab = np.hstack([tab, _future_rest_features(g, ci, pos, H)])
+            else:  # rul
+                y = (cell_eol - ci[pos].astype(np.float64))[:, None]
+                ym = np.ones_like(y, dtype=bool)
+        elif task == "soh":
             x, m = win[pos - 1], wmask[pos - 1]  # history ends at k-1
             now = g[list(task_a_now)].to_numpy(dtype=np.float64)[pos]  # charge of cycle k
             last = soh[pos - 1][:, None]
@@ -285,7 +363,11 @@ def build_samples(
         )
 
     tab_names = (
-        (*[f"now_{c}" for c in task_a_now], "last_soh") if task == "soh" else SUMMARY_FEATURES
+        ("log_age",)
+        if field
+        else (*[f"now_{c}" for c in task_a_now], "last_soh")
+        if task == "soh"
+        else SUMMARY_FEATURES
     )
     if task == "forecast" and spec.future_rest:
         tab_names = (*tab_names, *future_rest_names(H))

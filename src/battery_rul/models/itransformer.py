@@ -94,10 +94,14 @@ class _ITransformer(nn.Module):
         dropout: float,
         ff: int,
         denorm_soh: bool,
+        readout: str = "first",
     ) -> None:
         super().__init__()
         self.n_vars, self.n_tab, self.n_h, self.n_q = n_vars, n_tab, n_h, n_q
         self.denorm_soh = denorm_soh
+        #: "first": read the SOH token (variate 0). "mean": pool all tokens (field setting: no
+        #: SOH variate exists; health is a function of all the measured variates).
+        self.readout = readout
         self.embed = nn.Linear(lookback + 2, d_model)
         self.var_emb = nn.Parameter(torch.zeros(n_vars, d_model))
         self.tab_w = nn.Parameter(torch.zeros(n_tab, d_model))
@@ -122,7 +126,8 @@ class _ITransformer(nn.Module):
             tab_tokens = x_tab[..., None] * self.tab_w + self.tab_b  # (B, F, d)
             tokens = torch.cat([tokens, tab_tokens], dim=1)
         h = self.encoder(tokens)
-        out = self.head(h[:, 0]).view(-1, self.n_h, self.n_q)  # SOH token is variate 0
+        z0 = h[:, 0] if self.readout == "first" else h.mean(dim=1)
+        out = self.head(z0).view(-1, self.n_h, self.n_q)  # SOH token is variate 0
         if self.denorm_soh:
             out = out * scale[:, :1, None]
         return out
@@ -167,9 +172,14 @@ class ITransformer(NeuralModel):
         self, n_channels: int, n_tab: int, lookback: int, n_h: int, n_q: int
     ) -> nn.Module:
         a = self.arch
+        field = bool(getattr(self, "_field", False))
+        if field and a["channels"] != "all":
+            raise ValueError(
+                "the SC variant needs an SOH channel; use channels='all' in the field setting"
+            )
         n_vars = (n_channels - 1) if a["channels"] == "all" else 1  # minus the mask channel
         n_tab_used = n_tab if a["use_tab"] else 0
-        denorm = getattr(self, "_task", "forecast") != "rul"
+        denorm = getattr(self, "_task", "forecast") != "rul" and not field
         ff = int(a["ff_mult"]) * int(a["d_model"])
         while True:
             module = _ITransformer(
@@ -184,9 +194,15 @@ class ITransformer(NeuralModel):
                 float(a["dropout"]),
                 ff,
                 denorm,
+                "mean" if field else "first",
             )
-            if count_params(module) <= MAX_PARAMS or ff <= 4:
+            if count_params(module) <= MAX_PARAMS:
                 return _TabGate(module, use_tab=bool(a["use_tab"]))
+            if ff <= 4:  # was silently returned over the cap (PLAN_PHASE2 Stage 2 fix)
+                raise ValueError(
+                    f"iTransformer exceeds the {MAX_PARAMS} parameter cap "
+                    f"({count_params(module)}) at lookback {lookback}, d_model {a['d_model']}"
+                )
             ff = max(4, ff * 3 // 4)
 
 

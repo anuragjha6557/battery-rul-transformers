@@ -292,3 +292,66 @@ def test_future_rest_values_and_flag() -> None:
     assert np.isclose(sum_h5, np.log1p(86400.0 + 4 * 200.0))
     with pytest.raises(ValueError, match="forecast task only"):
         TaskSpec(task="rul", future_rest=True)
+
+
+# Field setting (PLAN_PHASE2): no capacity-derived input, ever --------------------------------
+def _field_cycles(seed: int = 0) -> pd.DataFrame:
+    cyc = _cycles(seed)
+    rng = np.random.default_rng(seed + 1)
+    cyc["fld_relax_v0"] = 3.6 + 0.001 * cyc["cycle_idx"] + 0.002 * rng.standard_normal(len(cyc))
+    cyc["fld_win_dq_ah"] = cyc["capacity_ah"] * 0.6 + 0.01 * rng.standard_normal(len(cyc))
+    for k in range(1, 16):
+        cyc[f"fld_q_v{k:02d}"] = cyc["fld_win_dq_ah"] * k / 15
+    return cyc
+
+
+def _field_inputs(cycles: pd.DataFrame, task: str, fs: str = "field_curve"):
+    prep = prepare_cycles(cycles, TRAIN, fs)  # type: ignore[arg-type]
+    spec = TaskSpec(task=task, lookback=8, horizons=(1, 5), feature_set=fs)  # type: ignore[arg-type]
+    return build_samples(prep, TEST, EOL, spec)
+
+
+@pytest.mark.parametrize("task", ["soh", "forecast", "rul"])
+def test_field_inputs_never_read_capacity_derived_columns(task: str) -> None:
+    from battery_rul.tasks.samples import FIELD_FORBIDDEN
+
+    clean = _field_inputs(_field_cycles(), task)
+    bad = _field_cycles()
+    for c in FIELD_FORBIDDEN:
+        if c in bad:
+            bad[c] = bad[c] * -3.0 + 7.0  # corrupt every cycle of every cell
+    pert = _field_inputs(bad, task)
+    assert "soh" not in clean.channel_names
+    assert not set(clean.channel_names) & set(FIELD_FORBIDDEN)
+    np.testing.assert_array_equal(clean.x_hist, pert.x_hist)
+    np.testing.assert_array_equal(clean.x_tab, pert.x_tab)
+
+
+@pytest.mark.parametrize("task", ["soh", "forecast", "rul"])
+@pytest.mark.parametrize("k", [10, 25, 39])
+def test_field_rule2_no_future_inputs(task: str, k: int) -> None:
+    clean = _field_inputs(_field_cycles(), task)
+    bad = _field_cycles()
+    future = (bad["cell_id"] == "C3") & (bad["cycle_idx"] > k)
+    num = bad.select_dtypes("number").columns.drop("cycle_idx")
+    bad.loc[future, num] = bad.loc[future, num] * -7.0 + 3.0
+    pert = _field_inputs(bad, task)
+    sel_c = (clean.meta["origin_cycle"] <= k).to_numpy()
+    sel_p = (pert.meta["origin_cycle"] <= k).to_numpy()
+    np.testing.assert_array_equal(clean.x_hist[sel_c], pert.x_hist[sel_p])
+    np.testing.assert_array_equal(clean.x_tab[sel_c], pert.x_tab[sel_p])
+
+
+def test_field_soh_window_ends_at_the_target_cycle() -> None:
+    """Field Task A may use cycle k's charge-side signals (they precede discharge k)."""
+    ss = _field_inputs(_field_cycles(), "soh", "field")
+    cyc = _field_cycles()
+    i = 20
+    k = int(ss.meta["origin_cycle"].iloc[i])
+    c = ss.channel_names.index("fld_relax_v0")
+    raw = cyc[(cyc.cell_id == "C3") & (cyc.cycle_idx <= k)]["fld_relax_v0"]
+    # last window step is cycle k itself (after train-only scaling: compare ranks of change)
+    assert ss.hist_mask[i, -1]
+    assert np.sign(ss.x_hist[i, -1, c] - ss.x_hist[i, -2, c]) == np.sign(
+        raw.iloc[-1] - raw.iloc[-2]
+    )

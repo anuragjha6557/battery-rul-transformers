@@ -79,8 +79,13 @@ class _PatchTST(nn.Module):
         ff_dim: int,
         bottleneck: int | None,
         all_channels: bool,
+        n_field_vars: int = 0,
     ) -> None:
         super().__init__()
+        #: Field setting (no SOH channel): every channel is encoded independently (PatchTST's
+        #: design), tagged with a learned channel embedding, then mean-pooled across channels
+        #: before the head - the minimal cross-channel readout needed to map signals to SOH.
+        self.n_field_vars = n_field_vars
         self.patch_len = patch_len
         self.stride = max(1, patch_len // 2)
         self.n_patches = (lookback + self.stride - patch_len) // self.stride + 1
@@ -88,6 +93,9 @@ class _PatchTST(nn.Module):
         self.embed = nn.Linear(patch_len, d_model)
         self.pos = nn.Parameter(torch.zeros(1, self.n_patches, d_model))
         nn.init.normal_(self.pos, std=0.02)
+        if n_field_vars:
+            self.ch_emb = nn.Parameter(torch.zeros(n_field_vars, 1, d_model))
+            nn.init.normal_(self.ch_emb, std=0.02)
         layer = nn.TransformerEncoderLayer(
             d_model,
             n_heads,
@@ -109,10 +117,11 @@ class _PatchTST(nn.Module):
         """Series (B*K, L) in last-value/std units and their stds (B, 1) for the SOH channel."""
         valid = x_hist[:, :, -1] > 0.5
         n = valid.sum(1, keepdim=True).clamp_min(1).to(x_hist.dtype)
-        chans = range(x_hist.shape[2] - 1) if self.all_channels else (SOH_CHANNEL,)
+        field = bool(self.n_field_vars)
+        chans = range(x_hist.shape[2] - 1) if (self.all_channels or field) else (SOH_CHANNEL,)
         xs, stds = [], []
         for c in chans:
-            if c == SOH_CHANNEL:
+            if c == SOH_CHANNEL and not field:
                 filled, last = prepare_soh(x_hist)
             else:
                 filled, last = _fill_and_last(x_hist[:, :, c], valid)
@@ -127,8 +136,15 @@ class _PatchTST(nn.Module):
         xn, std = self._normalise(x_hist)  # (K*B, L)
         xn = nnf.pad(xn[:, None, :], (0, self.stride), mode="replicate")[:, 0]
         patches = xn.unfold(1, self.patch_len, self.stride)  # (K*B, P, patch_len)
-        h = self.encoder(self.embed(patches) + self.pos)
+        e = self.embed(patches) + self.pos
+        if self.n_field_vars:  # channel-major blocks of B rows: add each channel's identity
+            k = self.n_field_vars
+            e = (e.view(k, b, *e.shape[1:]) + self.ch_emb[:, :, None, :]).view(k * b, *e.shape[1:])
+        h = self.encoder(e)
         h = self.reduce(h)
+        if self.n_field_vars:
+            z = h.flatten(1).view(self.n_field_vars, b, -1).mean(dim=0)  # pool across channels
+            return self.head(self.drop(z)).view(b, self.n_h, self.n_q)  # absolute SOH
         out = self.head(self.drop(h.flatten(1)))  # (K*B, H*Q)
         out = out[:b]  # SOH channel only: the other channels' forecasts are discarded
         return (out * std).view(b, self.n_h, self.n_q)
@@ -190,6 +206,7 @@ class PatchTST(NeuralModel):
                 ff,
                 r,
                 a["channels"] == "all",
+                (n_channels - 1) if getattr(self, "_field", False) else 0,
             )
             if count_params(module) <= MAX_PARAMS:
                 break

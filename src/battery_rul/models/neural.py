@@ -38,6 +38,11 @@ from battery_rul.utils import resolve_device
 SOH_CHANNEL = 0
 
 
+def has_soh(samples: SampleSet) -> bool:
+    """False in the field setting (PLAN_PHASE2): no SOH channel, targets are absolute."""
+    return bool(samples.channel_names) and samples.channel_names[0] == "soh"
+
+
 def last_valid_soh(samples: SampleSet) -> np.ndarray:
     """Last observed SOH per sample (cycle T_p for B/C, k-1 for Task A)."""
     mask = samples.hist_mask
@@ -156,12 +161,16 @@ class NeuralModel:
     def _y_to_target(self, s: SampleSet) -> np.ndarray:
         if s.task == "rul":
             return s.y.astype(np.float64) / self._rul_scale
+        if not has_soh(s):  # field setting: SOH relative to the training cells' mean (labels only)
+            return s.y.astype(np.float64) - self._y_offset[None, :]
         return s.y.astype(np.float64) - last_valid_soh(s)[:, None]
 
     def _target_to_y(self, s: SampleSet, t: np.ndarray) -> np.ndarray:
         """t: (n, H, Q) in target space -> SOH or cycles."""
         if s.task == "rul":
             return np.maximum(t * self._rul_scale, 0.0)
+        if not has_soh(s):
+            return t + self._y_offset[None, :, None]
         return t + last_valid_soh(s)[:, None, None]
 
     def _loss(self, pred: torch.Tensor, y: torch.Tensor, m: torch.Tensor) -> torch.Tensor:
@@ -182,6 +191,12 @@ class NeuralModel:
             float(np.median(train.y[train.y_mask])) if train.task == "rul" else 1.0
         ) or 1.0
         n_q = len(self.quantiles) if self.quantiles is not None else 1
+        self._field = not has_soh(train)
+        # field setting: per-horizon mean training target (a label statistic, never an input)
+        ym = np.where(train.y_mask, train.y, np.nan).astype(np.float64)
+        self._y_offset = (
+            np.nan_to_num(np.nanmean(ym, axis=0)) if self._field else np.zeros(ym.shape[1])
+        )
         self.module = self.build_module(
             train.x_hist.shape[2] + 1,
             train.x_tab.shape[1],

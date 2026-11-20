@@ -38,6 +38,7 @@ import numpy as np
 import pandas as pd
 import yaml
 
+from battery_rul.data.cleaning import clean_cycles
 from battery_rul.data.io import read_tables
 from battery_rul.eval.metrics import (
     alpha_lambda_accuracy,
@@ -63,7 +64,9 @@ from battery_rul.tasks.samples import (
     PreparedCycles,
     TaskSpec,
     build_samples,
+    is_field,
     merge_curve_features,
+    merge_field_features,
     prepare_cycles,
     thin_origins,
 )
@@ -177,6 +180,7 @@ def unit_config(
         # optional variants: only present when non-default, so existing unit keys are unchanged
         **({"future_rest": True} if cfg.future_rest and task == "forecast" else {}),
         **({"drop_skipped_cv": True} if dataset in cfg.drop_skipped_cv else {}),
+        **({"clean": True} if cfg.clean else {}),
     }
 
 
@@ -246,7 +250,7 @@ def fold_data(
 ) -> FoldData:
     horizons = horizons_for(cfg, dataset)
     drop_cv = dataset in cfg.drop_skipped_cv
-    base = (processed_dir, dataset, plan.name, cfg.feature_set, cfg.theta, drop_cv)
+    base = (processed_dir, dataset, plan.name, cfg.feature_set, cfg.theta, drop_cv, cfg.clean)
 
     def prep() -> PreparedCycles:
         cyc = ctx.cycles
@@ -254,6 +258,13 @@ def fold_data(
             cyc = cyc[~(cyc["cv_time_s"] < SKIPPED_CV_S)].reset_index(drop=True)
         if cfg.feature_set == "mc_curve":
             cyc = merge_curve_features(cyc, load_curve_features(dataset, Path(processed_dir)))
+        if is_field(cfg.feature_set):  # PLAN_PHASE2: BMS-measurable charge-side features
+            fp = Path(processed_dir) / dataset / "field_features.parquet"
+            if not fp.exists():
+                raise FileNotFoundError(f"{fp} missing; build the field features first")
+            cyc = merge_field_features(cyc, pd.read_parquet(fp))
+        if cfg.clean:  # ADR-0018 outlier policy
+            cyc, _ = clean_cycles(cyc)
         return prepare_cycles(cyc, plan.train, cfg.feature_set)  # type: ignore[arg-type]
 
     prepared: PreparedCycles = _PREPARED.get(base, prep)
@@ -557,6 +568,7 @@ def _log_unit(
             "feature_set": cfg.feature_set,
             "future_rest": bool(cfg.future_rest and unit.task == "forecast"),
             "drop_skipped_cv": unit.dataset in cfg.drop_skipped_cv,
+            "clean": bool(cfg.clean),
             "lookback": unit.lookback,
             "independent_fold": bool(plan.tests[0][0] == "test" and unit.fold in ind),
             "tuned_from": unit.model.tuned_from or "none",

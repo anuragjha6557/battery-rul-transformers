@@ -51,8 +51,32 @@ def last_soh(samples: SampleSet) -> np.ndarray:
     return samples.x_hist[np.arange(len(samples)), last, SOH_CHANNEL].astype(np.float64)
 
 
+def _has_soh(samples: SampleSet) -> bool:
+    return bool(samples.channel_names) and samples.channel_names[0] == "soh"
+
+
+def _field_design(samples: SampleSet) -> tuple[np.ndarray, tuple[str, ...]]:
+    """Field setting (no SOH channel): last value, window mean and window change per channel."""
+    x = np.where(samples.hist_mask[..., None], samples.x_hist.astype(np.float64), np.nan)
+    with np.errstate(all="ignore"):
+        last = x[:, -1, :]
+        mean = np.nanmean(x, axis=1)
+        first_idx = np.argmax(samples.hist_mask, axis=1)
+        first = x[np.arange(len(x)), first_idx, :]
+    cols = np.hstack([samples.x_tab.astype(np.float64), last, mean, last - first])
+    names = (
+        *samples.feature_names,
+        *[f"last_{c}" for c in samples.channel_names],
+        *[f"mean_{c}" for c in samples.channel_names],
+        *[f"delta_{c}" for c in samples.channel_names],
+    )
+    return cols, names
+
+
 def design_matrix(samples: SampleSet, n_lags: int) -> tuple[np.ndarray, tuple[str, ...]]:
     """(n, F + n_lags + C - 1) float64 design matrix and its column names (NaN = unavailable)."""
+    if not _has_soh(samples):
+        return _field_design(samples)
     soh = samples.x_hist[:, :, SOH_CHANNEL].astype(np.float64)
     mask = samples.hist_mask
     soh = np.where(mask, soh, np.nan)
@@ -99,6 +123,8 @@ class TabularModel:
         y = s.y.astype(np.float64)
         if s.task == "rul":
             return np.log1p(np.maximum(y, 0.0))
+        if not _has_soh(s):  # field setting: absolute SOH
+            return y
         return y - last_soh(s)[:, None]
 
     @staticmethod
@@ -106,6 +132,8 @@ class TabularModel:
         """Invert :meth:`to_target` on an array of shape (n, H, ...)."""
         if s.task == "rul":
             return np.maximum(np.expm1(t), 0.0)
+        if not _has_soh(s):
+            return t
         extra = (1,) * (t.ndim - 1)
         return t + last_soh(s).reshape(-1, *extra)
 

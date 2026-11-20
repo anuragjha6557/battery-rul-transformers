@@ -61,6 +61,8 @@ class ExperimentConfig:
     #: ADR-0017: datasets whose CV-skip artifact cycles (cv_time_s < 300 s) are dropped as
     #: invalid capacity measurements before windowing (inputs and targets).
     drop_skipped_cv: list[str] = field(default_factory=list)
+    #: ADR-0018 outlier policy (label outliers dropped, causal input masking).
+    clean: bool = False
     theta: float = 0.8
     eval_origins: list[str] = field(default_factory=lambda: ["start_points"])
     # Keep every k-th *training* window per cell, per dataset (default 1 = all). Validation
