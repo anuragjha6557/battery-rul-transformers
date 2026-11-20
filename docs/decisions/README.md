@@ -22,3 +22,4 @@ Format and rules: [ADR-0001](0001-record-architecture-decisions.md). Experiment-
 | [0016](0016-rest-aware-forecasting.md) | Forecasting regeneration with the planned rest schedule | Accepted: conditional variant; H1/H2 rejected |
 | [0017](0017-calce-artifact-cycles.md) | CALCE CV-skip cycles as invalid measurements | Accepted: not default; artifact-free scoring added |
 | [0018](0018-outlier-policy-and-field-inputs.md) | Outlier policy; field-setting inputs and models | Accepted |
+| [0019](0019-adaptive-intervals.md) | Adaptive conformal intervals (post hoc) | Accepted: rejected; CQR kept + informativeness |
