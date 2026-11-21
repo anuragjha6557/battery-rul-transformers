@@ -47,3 +47,21 @@ Tables: `reports/tables/field_screen_{field,field_curve}.md`, paired: `reports/t
 - No retune: no model failed to train; the age-only gaps are as large as the probe suggested.
 
 **Operational note.** PatchTST folds channels into the batch; on Toyota with 20–35 channels, three parallel workers exhausted memory (swap thrash). Fixed by chunked validation/prediction forward passes (numerically identical) and running the remaining units with one worker. Stage 2 runs PatchTST sequentially.
+
+## Stage 2: long-lookback test (registered 2026-11-21, before any run)
+- **Design:**
+  - Tasks F-A (SOH at k) and F-B (direct multi-horizon forecast; headline h = 50).
+  - Lookback L ∈ {32, 128, 512}; every other parameter is the tuned value (ADR-0006).
+  - Models: iTransformer (MC), time-step Transformer, PatchTST, LSTM. Shorter histories are left-padded and masked, so every L is scored on the same samples (paired).
+  - CALCE (LOCO, `field_curve`) and Toyota (official split, `field`), per the Stage 1 gate. NASA is excluded: cells of 132–168 cycles.
+  - 3 seeds; 360 runs; experiment `field_lookback`. PatchTST runs with one worker (memory, Stage 1 note).
+- **Parameter cap (250k):**
+  - iTransformer and PatchTST stay under it at every L (iTransformer shrinks its feed-forward width; it now raises instead of exceeding).
+  - The time-step Transformer on F-B reaches 274–276k at L = 512, from its learned position table, which grows with L. This is accepted and recorded rather than shrinking d_model, which would confound L with width. The excess favours the competitor, not iTransformer.
+- **H2 (iTransformer paper, claim 2: uses long lookbacks):**
+  - iTransformer error falls with L: Δ(L512 − L32) < 0, with the Toyota CI excluding 0 and ≥ 3/4 CALCE cells better.
+  - Its Δ is more negative than the time-step Transformer's and the LSTM's, which are expected to plateau or degrade.
+  - Measured per task (F-A rmse, F-B rmse_h50). Supported if it holds on Toyota for both tasks; CALCE is reported as k/4.
+- **Selection for Stage 3 (leakage-free):**
+  - Each model's L is the one with the lowest mean inner-validation RMSE (cross-fit predictions on held-out *training* cells, `inner_val_predictions.parquet`), per (model, task, dataset).
+  - Test scores are not used for selection.

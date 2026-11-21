@@ -1,0 +1,28 @@
+# @package _global_
+# PLAN_PHASE2 Stage 2 (ADR-0020): long-lookback test, L in {32,128,512}; tuned params reused, lookback overridden.
+defaults:
+  - /experiment_schema
+  - _self_
+
+name: field_lookback
+datasets: [calce]
+tasks: [soh, forecast]
+feature_set: field_curve
+clean: true
+models:
+  - tuned: patchtst__soh
+    params: {lookback: 32}
+  - tuned: patchtst__soh
+    params: {lookback: 128}
+  - tuned: patchtst__soh
+    params: {lookback: 512}
+  - tuned: patchtst__forecast
+    params: {lookback: 32}
+  - tuned: patchtst__forecast
+    params: {lookback: 128}
+  - tuned: patchtst__forecast
+    params: {lookback: 512}
+seeds: [0, 1, 2]
+lookback: 64
+eval_origins: [start_points, all]
+train_stride: {toyota: 4}
