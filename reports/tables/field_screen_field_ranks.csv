@@ -1,0 +1,8 @@
+model,mean_rank,n_conditions,n_missing
+lstm,2.5,8,0
+lgbm,2.875,8,0
+itransformer,3.25,8,0
+transformer,4.125,8,0
+elasticnet,4.375,8,0
+patchtst,5.125,8,0
+age_only,5.75,8,0

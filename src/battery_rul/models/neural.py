@@ -232,7 +232,16 @@ class NeuralModel:
                 continue
             self.module.eval()
             with torch.no_grad():
-                v = float(self._loss(self.module(vxh, vxt), vy, vm))
+                # chunked forward: one pass over a large validation set can exhaust memory
+                # (PatchTST folds channels into the batch); the loss is computed once on the
+                # concatenated outputs, so the value is identical to the unchunked pass
+                vout = torch.cat(
+                    [
+                        self.module(vxh[i : i + 1024], vxt[i : i + 1024])
+                        for i in range(0, len(vxh), 1024)
+                    ]
+                )
+                v = float(self._loss(vout, vy, vm))
             if self.epoch_callback is not None:
                 self.epoch_callback(epoch, v)
             if v < best - 1e-7:
@@ -259,8 +268,8 @@ class NeuralModel:
         xh, xt = self._x(samples)
         outs = []
         with torch.no_grad():
-            for i in range(0, len(samples), 4096):
-                outs.append(self.module(xh[i : i + 4096], xt[i : i + 4096]).float().cpu().numpy())
+            for i in range(0, len(samples), 1024):
+                outs.append(self.module(xh[i : i + 1024], xt[i : i + 1024]).float().cpu().numpy())
         t = np.concatenate(outs).astype(np.float64)  # (n, H, Q)
         y = self._target_to_y(samples, t)
         if self.quantiles is None:
