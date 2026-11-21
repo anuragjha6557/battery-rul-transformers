@@ -39,7 +39,7 @@ Tables: `reports/tables/field_screen_{field,field_curve}.md`, paired: `reports/t
 
 **Other findings.**
 - iTransformer with `field` is the most robust model under the Toyota test2 protocol shift (1.55 vs 2.03–4.16).
-- PatchTST is the weakest learned model in every cell of the table except Toyota test2 `field`.
+- PatchTST is the weakest learned model on CALCE and Toyota test1 in both arms; on NASA the time-step Transformer is worse.
 - The field-vs-lab gap remains 4–75×.
 
 **Gate decision (feature set per dataset, same for every model; not per model, which would select on test results):**
