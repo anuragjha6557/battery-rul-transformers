@@ -1,5 +1,5 @@
 # @package _global_
-# PLAN_PHASE2 Stage 2 (ADR-0020): long-lookback test, L in {32,128,512}; tuned params reused, lookback overridden.
+# PLAN_PHASE2 Stage 2 (ADR-0020): long-lookback test, L in {32,128} (512 dropped 2026-11-21, ADR-0020); tuned params reused, lookback overridden.
 defaults:
   - /experiment_schema
   - _self_
@@ -14,38 +14,26 @@ models:
     params: {lookback: 32, channels: all}
   - tuned: itransformer__soh
     params: {lookback: 128, channels: all}
-  - tuned: itransformer__soh
-    params: {lookback: 512, channels: all}
   - tuned: itransformer__forecast
     params: {lookback: 32, channels: all}
   - tuned: itransformer__forecast
     params: {lookback: 128, channels: all}
-  - tuned: itransformer__forecast
-    params: {lookback: 512, channels: all}
   - tuned: transformer__soh
     params: {lookback: 32}
   - tuned: transformer__soh
     params: {lookback: 128}
-  - tuned: transformer__soh
-    params: {lookback: 512}
   - tuned: transformer__forecast
     params: {lookback: 32}
   - tuned: transformer__forecast
     params: {lookback: 128}
-  - tuned: transformer__forecast
-    params: {lookback: 512}
   - tuned: lstm__soh
     params: {lookback: 32}
   - tuned: lstm__soh
     params: {lookback: 128}
-  - tuned: lstm__soh
-    params: {lookback: 512}
   - tuned: lstm__forecast
     params: {lookback: 32}
   - tuned: lstm__forecast
     params: {lookback: 128}
-  - tuned: lstm__forecast
-    params: {lookback: 512}
 seeds: [0, 1, 2]
 lookback: 64
 eval_origins: [start_points, all]

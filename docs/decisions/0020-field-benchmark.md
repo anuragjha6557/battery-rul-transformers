@@ -65,3 +65,12 @@ Tables: `reports/tables/field_screen_{field,field_curve}.md`, paired: `reports/t
 - **Selection for Stage 3 (leakage-free):**
   - Each model's L is the one with the lowest mean inner-validation RMSE (cross-fit predictions on held-out *training* cells, `inner_val_predictions.parquet`), per (model, task, dataset).
   - Test scores are not used for selection.
+
+### Stage 2 amendment (2026-11-21, owner decision; before any CALCE result)
+- **L = 512 dropped from the remaining runs.**
+  - It is ≈ 91–92 % of the median pre-EOL life on Toyota test1 and CALCE, so the window is full on only 20 % (Toyota test1) and ≈ 8 % (CALCE) of pre-EOL predictions; the rest are mostly padding.
+  - It costs most of the compute (Toyota attention models need several GB each; 4 workers thrashed a 24 GB machine).
+- The 51 finished Toyota L = 512 runs are kept as a supplementary result and are not part of the H2 test.
+- **H2 is tested as L = 128 vs L = 32.** At 128 (≈ 23 % of median life) the window is full on 77–87 % of pre-EOL predictions.
+- Selection for Stage 3 is unchanged (lowest inner-validation RMSE), now over L ∈ {32, 128}.
+- Context: the iTransformer paper's long-lookback results use L = 96–720 on series tens of thousands of steps long. Here a cell lives 150–2,200 cycles, so claim 2 can only be tested at moderate L.

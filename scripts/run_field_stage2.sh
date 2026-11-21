@@ -4,7 +4,7 @@ set -uo pipefail
 cd "$(dirname "$0")/.."
 export MLFLOW_TRACKING_URI="${MLFLOW_TRACKING_URI:-sqlite:///$PWD/mlflow.db}" MLFLOW_DISABLE_AGENT_HINT=1 PYTHONWARNINGS=ignore
 UV="${UV:-$HOME/.local/bin/uv}"; LOG=reports/ablations/run.log
-for spec in field_lookback_toyota:2 field_lookback_calce:2 field_lookback_toyota_patchtst:1 field_lookback_calce_patchtst:1; do
+for spec in field_lookback_toyota:3 field_lookback_calce:3 field_lookback_toyota_patchtst:1 field_lookback_calce_patchtst:1; do
   cfg=${spec%%:*}; nj=${spec##*:}
   echo "$(date '+%F %T') START $cfg" | tee -a "$LOG"
   "$UV" run battery-rul benchmark --config "$cfg" --n-jobs "$nj" > "reports/ablations/$cfg.log" 2>&1 \
