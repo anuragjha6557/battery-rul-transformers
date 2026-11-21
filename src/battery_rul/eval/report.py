@@ -78,14 +78,17 @@ def with_arm_labels(runs: pd.DataFrame) -> pd.DataFrame:
     bare name."""
     runs = runs.copy()
     runs["arm"] = runs["params.model"].astype(str)
-    pcols = [c for c in runs.columns if c.startswith("params.model.")]
+    # lookback is logged as a top-level param (not model.*) but is a model setting too
+    pcols = [c for c in runs.columns if c.startswith("params.model.") or c == "params.lookback"]
     for _, g in runs.groupby(["params.task", "params.model"], sort=False):
         varying = [c for c in pcols if len(set(g[c].fillna("<default>"))) > 1]
         if not varying:
             continue
         for idx, r in g.iterrows():
             tag = ",".join(
-                f"{c.removeprefix('params.model.')}={r[c]}" for c in varying if pd.notna(r[c])
+                f"{c.removeprefix('params.model.').removeprefix('params.')}={r[c]}"
+                for c in varying
+                if pd.notna(r[c])
             )
             runs.loc[idx, "arm"] = f"{r['params.model']}[{tag or 'default'}]"
     return runs

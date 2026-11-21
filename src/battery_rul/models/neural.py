@@ -237,8 +237,8 @@ class NeuralModel:
                 # concatenated outputs, so the value is identical to the unchunked pass
                 vout = torch.cat(
                     [
-                        self.module(vxh[i : i + 1024], vxt[i : i + 1024])
-                        for i in range(0, len(vxh), 1024)
+                        self.module(vxh[i : i + 256], vxt[i : i + 256])
+                        for i in range(0, len(vxh), 256)
                     ]
                 )
                 v = float(self._loss(vout, vy, vm))
@@ -268,8 +268,8 @@ class NeuralModel:
         xh, xt = self._x(samples)
         outs = []
         with torch.no_grad():
-            for i in range(0, len(samples), 1024):
-                outs.append(self.module(xh[i : i + 1024], xt[i : i + 1024]).float().cpu().numpy())
+            for i in range(0, len(samples), 256):
+                outs.append(self.module(xh[i : i + 256], xt[i : i + 256]).float().cpu().numpy())
         t = np.concatenate(outs).astype(np.float64)  # (n, H, Q)
         y = self._target_to_y(samples, t)
         if self.quantiles is None:
