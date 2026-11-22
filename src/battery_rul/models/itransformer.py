@@ -26,6 +26,13 @@ Choices beyond the original, each documented as a deviation:
 Variants via ``channels``: ``"all"`` (MC, the paper's multi-channel model) and ``"soh"`` (SC,
 one variate token plus tabular tokens; the degenerate case the paper never reported).
 
+Rest-schedule token (ADR-0020 Stage 3, ``rest_token=True``, forecast with ``future_rest_seq``):
+the past rest channel (``log_rest_s`` over the lookback, padding zeroed) and the planned rest of
+the next K cycles (``rest_seq_*`` features) are concatenated into one series of length L + K and
+embedded as one extra variate token (``Linear(L + K -> d)``). This is the inverted model's natural
+way to take a known-future covariate: one token whose window spans past and future, instead of
+K scalar tabular tokens (ADR-0016, where iTransformer gained least from the schedule).
+
 Parameter cap (PROTOCOL §6, ≤ 250 k): as in ``transformer.py``, only the FFN width shrinks, and
 only at the largest corner of the search space.
 """
@@ -39,6 +46,7 @@ from torch import nn
 
 from battery_rul.models.neural import NeuralModel
 from battery_rul.models.transformer import MAX_PARAMS, count_params
+from battery_rul.tasks.samples import REST_SEQ_PREFIX
 
 Channels = Literal["all", "soh"]
 _ALLOWED_ARCH = {
@@ -50,6 +58,7 @@ _ALLOWED_ARCH = {
     "channels",
     "use_tab",
     "lookback",
+    "rest_token",
 }
 _EPS = 1e-3
 
@@ -95,7 +104,10 @@ class _ITransformer(nn.Module):
         ff: int,
         denorm_soh: bool,
         readout: str = "first",
+        rest: tuple[int, list[int], list[int]] | None = None,
     ) -> None:
+        """``rest``: (index of the past rest channel, x_tab columns of the future rest sequence,
+        x_tab columns kept as tabular tokens); None = no rest token, every column is a token."""
         super().__init__()
         self.n_vars, self.n_tab, self.n_h, self.n_q = n_vars, n_tab, n_h, n_q
         self.denorm_soh = denorm_soh
@@ -113,6 +125,13 @@ class _ITransformer(nn.Module):
             layer, n_layers, norm=nn.LayerNorm(d_model), enable_nested_tensor=False
         )
         self.head = nn.Linear(d_model, n_h * n_q)
+        self.rest_ch = -1
+        if rest is not None:
+            self.rest_ch = rest[0]
+            self.register_buffer("rest_idx", torch.tensor(rest[1], dtype=torch.long))
+            self.register_buffer("keep_idx", torch.tensor(rest[2], dtype=torch.long))
+            self.rest_embed = nn.Linear(lookback + len(rest[1]), d_model)
+            self.rest_emb = nn.Parameter(torch.zeros(d_model))
         nn.init.normal_(self.var_emb, std=0.02)
         nn.init.normal_(self.tab_w, std=0.02)
 
@@ -122,6 +141,14 @@ class _ITransformer(nn.Module):
         z, loc, scale = fill_and_normalise(x_hist)
         stats = torch.stack([loc, torch.log(scale)], dim=2)  # (B, V, 2)
         tokens = self.embed(torch.cat([z, stats], dim=2)) + self.var_emb  # (B, V, d)
+        if self.rest_ch >= 0:
+            past = x_hist[..., self.rest_ch] * (x_hist[..., -1] > 0.5)  # (B, L), padding -> 0
+            rest_idx: torch.Tensor = self.rest_idx  # type: ignore[assignment]
+            keep_idx: torch.Tensor = self.keep_idx  # type: ignore[assignment]
+            series = torch.cat([past, x_tab[:, rest_idx]], dim=1)  # (B, L + K)
+            rest_tok = (self.rest_embed(series) + self.rest_emb)[:, None]
+            tokens = torch.cat([tokens, rest_tok], dim=1)
+            x_tab = x_tab[:, keep_idx]
         if self.n_tab:
             tab_tokens = x_tab[..., None] * self.tab_w + self.tab_b  # (B, F, d)
             tokens = torch.cat([tokens, tab_tokens], dim=1)
@@ -148,6 +175,7 @@ class ITransformer(NeuralModel):
         ff_mult: int = 4,
         channels: Channels = "all",
         use_tab: bool = True,
+        rest_token: bool = False,
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -158,6 +186,7 @@ class ITransformer(NeuralModel):
             ff_mult=ff_mult,
             channels=channels,
             use_tab=use_tab,
+            rest_token=rest_token,
             **kwargs,
         )
         extra = set(self.arch) - _ALLOWED_ARCH
@@ -179,6 +208,18 @@ class ITransformer(NeuralModel):
             )
         n_vars = (n_channels - 1) if a["channels"] == "all" else 1  # minus the mask channel
         n_tab_used = n_tab if a["use_tab"] else 0
+        rest = None
+        if a.get("rest_token"):
+            ch_names, f_names = getattr(self, "_names", ((), ()))
+            seq = [i for i, f in enumerate(f_names) if f.startswith(REST_SEQ_PREFIX)]
+            if "log_rest_s" not in ch_names or not seq or a["channels"] != "all":
+                raise ValueError(
+                    "rest_token needs channels='all', the log_rest_s history channel and "
+                    "future_rest_seq features (forecast with future_rest_seq > 0)"
+                )
+            keep = [i for i in range(n_tab) if i not in seq] if a["use_tab"] else []
+            rest = (ch_names.index("log_rest_s"), seq, keep)
+            n_tab_used = len(keep)
         denorm = getattr(self, "_task", "forecast") != "rul" and not field
         ff = int(a["ff_mult"]) * int(a["d_model"])
         while True:
@@ -195,9 +236,11 @@ class ITransformer(NeuralModel):
                 ff,
                 denorm,
                 "mean" if field else "first",
+                rest,
             )
             if count_params(module) <= MAX_PARAMS:
-                return _TabGate(module, use_tab=bool(a["use_tab"]))
+                # with a rest token the module selects its own tab columns
+                return _TabGate(module, use_tab=bool(a["use_tab"]) or rest is not None)
             if ff <= 4:  # was silently returned over the cap (PLAN_PHASE2 Stage 2 fix)
                 raise ValueError(
                     f"iTransformer exceeds the {MAX_PARAMS} parameter cap "

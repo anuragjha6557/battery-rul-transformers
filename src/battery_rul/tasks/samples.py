@@ -148,6 +148,11 @@ class TaskSpec:
     #: known-future covariates. Uses ``rest_before_s`` of future cycles only, never their
     #: capacity or any other measurement. Defines a separate, conditional task variant.
     future_rest: bool = False
+    #: Task B only (ADR-0020 Stage 3 regeneration arm): append the planned rest of each of the
+    #: next K cycles, ``log1p(rest_before_s)`` of cycles T+1 .. T+K, as features
+    #: ``rest_seq_001 .. rest_seq_K``. Same leakage rule as ``future_rest``. iTransformer
+    #: (``rest_token=True``) joins them with the past rest channel into one variate token.
+    future_rest_seq: int = 0
 
     def __post_init__(self) -> None:
         if self.lookback < 2 or self.min_history < 1:
@@ -156,6 +161,8 @@ class TaskSpec:
             raise ValueError("forecast horizons must be >= 1")
         if self.future_rest and self.task != "forecast":
             raise ValueError("future_rest is defined for the forecast task only")
+        if self.future_rest_seq < 0 or (self.future_rest_seq and self.task != "forecast"):
+            raise ValueError("future_rest_seq must be >= 0 and is defined for forecast only")
 
     @property
     def target_horizons(self) -> tuple[int, ...]:
@@ -316,6 +323,8 @@ def build_samples(
                 y = np.nan_to_num(y)
                 if spec.future_rest:
                     tab = np.hstack([tab, _future_rest_features(g, ci, pos, H)])
+                if spec.future_rest_seq:
+                    tab = np.hstack([tab, _future_rest_seq(g, ci, pos, spec.future_rest_seq)])
             else:  # rul
                 y = (cell_eol - ci[pos].astype(np.float64))[:, None]
                 ym = np.ones_like(y, dtype=bool)
@@ -339,6 +348,8 @@ def build_samples(
                 y = np.nan_to_num(y)
                 if spec.future_rest:
                     tab = np.hstack([tab, _future_rest_features(g, ci, pos, H)])
+                if spec.future_rest_seq:
+                    tab = np.hstack([tab, _future_rest_seq(g, ci, pos, spec.future_rest_seq)])
             else:  # rul
                 y = (cell_eol - ci[pos].astype(np.float64))[:, None]
                 ym = np.ones_like(y, dtype=bool)
@@ -371,6 +382,8 @@ def build_samples(
     )
     if task == "forecast" and spec.future_rest:
         tab_names = (*tab_names, *future_rest_names(H))
+    if task == "forecast" and spec.future_rest_seq:
+        tab_names = (*tab_names, *future_rest_seq_names(spec.future_rest_seq))
     if not xs:
         raise ValueError(f"no samples for task {task!r} in cells {cells}")
     return SampleSet(
@@ -416,6 +429,32 @@ def _future_rest_features(
             if ci[t] == ci[p] + h:
                 out[i, j] = np.log1p(rest[t])
             out[i, len(horizons) + j] = np.log1p(cum[t + 1] - cum[p + 1])
+    return out
+
+
+REST_SEQ_PREFIX: Final = "rest_seq_"
+
+
+def future_rest_seq_names(k: int) -> tuple[str, ...]:
+    return tuple(f"{REST_SEQ_PREFIX}{j:03d}" for j in range(1, k + 1))
+
+
+def _future_rest_seq(g: pd.DataFrame, ci: np.ndarray, pos: np.ndarray, k: int) -> np.ndarray:
+    """Planned rest schedule of the next ``k`` cycles for origins ``pos`` of one cell.
+
+    Column j-1 is ``log1p(rest before cycle T_p + j)`` in seconds; 0 where the cycle is not in
+    the record or no rest is logged. Only ``rest_before_s`` of future cycles is read.
+    """
+    out = np.zeros((len(pos), k))
+    if "rest_before_s" not in g:
+        return out
+    rest = np.log1p(np.nan_to_num(np.clip(g["rest_before_s"].to_numpy(np.float64), 0.0, None)))
+    lookup = {int(c): i for i, c in enumerate(ci)}
+    for i, p in enumerate(pos):
+        for j in range(1, k + 1):
+            t = lookup.get(int(ci[p]) + j)
+            if t is not None:
+                out[i, j - 1] = rest[t]
     return out
 
 

@@ -46,3 +46,42 @@ def test_sc_variant_rejected_in_field_setting() -> None:
     m = make_model("itransformer", d_model=16, n_heads=2, n_layers=1, channels="soh", **TINY)
     with pytest.raises(ValueError, match="SOH channel"):
         m.fit(tr, te)
+
+
+def _seq_sets(k: int = 6):
+    prep = prepare_cycles(_field_cycles(), TRAIN, "field_curve")
+    spec = TaskSpec(
+        task="forecast", lookback=8, horizons=(1, 5), feature_set="field_curve", future_rest_seq=k
+    )
+    return build_samples(prep, TRAIN, EOL, spec), build_samples(prep, TEST, EOL, spec)
+
+
+def test_itransformer_rest_token_uses_the_future_schedule() -> None:
+    """The rest token is built, consumes the rest_seq columns, and its output depends on them."""
+    import torch
+
+    tr, te = _seq_sets()
+    m = make_model(
+        "itransformer", d_model=16, n_heads=2, n_layers=1, channels="all", rest_token=True, **TINY
+    )
+    m.fit(tr, te)
+    inner = m.module.inner
+    assert inner.rest_ch == tr.channel_names.index("log_rest_s")
+    assert len(inner.rest_idx) == 6 and len(inner.keep_idx) == len(tr.feature_names) - 6
+    p = m.predict(te)
+    assert p.point.shape == te.y.shape and np.isfinite(p.point).all()
+    with torch.no_grad():
+        nn_ = inner.rest_embed
+        nn_.weight[:, -6:] += 1.0  # make the future part matter, then perturb it
+    te2 = te.__class__(**{**te.__dict__, "x_tab": te.x_tab.copy()})
+    te2.x_tab[:, [te.feature_names.index(f"rest_seq_{j:03d}") for j in range(1, 7)]] += 5.0
+    assert not np.allclose(m.predict(te).point, m.predict(te2).point)
+
+
+def test_rest_token_requires_the_sequence() -> None:
+    tr, te = _sets("forecast")
+    m = make_model(
+        "itransformer", d_model=16, n_heads=2, n_layers=1, channels="all", rest_token=True, **TINY
+    )
+    with pytest.raises(ValueError, match="rest_token needs"):
+        m.fit(tr, te)
