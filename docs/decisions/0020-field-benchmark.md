@@ -94,6 +94,11 @@ Paired Δ RMSE (L128 − L32), % SOH; Toyota 95 % CI, CALCE k/4. Tables: `report
   - Transformer: CALCE 128/32, Toyota 32/32.
   - LSTM: CALCE 32/128, Toyota 32/128.
 
+### Stage 2 addendum: PatchTST (2026-11-22, 72 runs, 0 failed)
+- Selected lookbacks (inner-validation RMSE, same rule): CALCE 32 for F-A (9.17 vs 9.75) and F-B (8.71 vs 8.73); Toyota 128 for F-A (1.99 vs 2.30) and F-B (2.05 vs 2.36). NASA uses 64 as for the other models.
+- PatchTST is the only model where L = 128 clearly helps on Toyota, but it stays the least accurate neural model there (≈ 2.0 vs 1.15–1.32 % SOH inner-validation RMSE). H2 (iTransformer) is unaffected.
+- Stage 3 runs: `field_final_{nasa,calce,toyota}_patchtst.yaml`, same experiment, one worker.
+
 ## Stage 3: final field benchmark (registered 2026-11-21, before any run)
 - **Grid:**
   - Tasks F-A, F-B (all horizons), F-C (RUL).
@@ -130,3 +135,37 @@ Paired Δ RMSE (L128 − L32), % SOH; Toyota 95 % CI, CALCE k/4. Tables: `report
   - token vs tab for iTransformer at h = 1 and h = 10. At h = 10 the token knows the rest of each intermediate cycle, the tab arm only their sum, so it is a stated information advantage.
   - Overall h = 10 / h = 50 RMSE must not worsen (CI or k/4).
 - **Size:** 2 datasets × 4 units × 5 seeds × 5 arms = 200 runs. They run after the main grid, from `main` once the token code is merged (no merge while a sweep runs).
+
+### Stage 3 outcome: main grid (2026-11-22, 810 runs, 0 failed; PatchTST pending)
+Tables: `reports/tables/field_final.md`, paired `field_final_paired.md` (`scripts/field_stage3_pairs.py`), intervals `field_final_intervals_summary.csv`.
+
+Headline (RMSE % SOH for F-A and F-B h50, MAE cycles for F-C; best learned model in bold):
+
+| | age-only | iTransformer | LSTM | Transformer | LightGBM | ElasticNet |
+|---|---|---|---|---|---|---|
+| CALCE F-A | 6.89 | 3.28 | **2.07** | 2.94 | 4.15 | 3.60 |
+| CALCE F-B | 7.08 | 3.96 | 2.83 | 3.22 | 4.69 | **2.77** |
+| CALCE F-C | 50.7 | **50.6** | 52.5 | 54.0 | 65.7 | 32,547 |
+| NASA F-A | 5.85 | 4.59 | 4.22 | 7.77 | **3.94** | 5.42 |
+| NASA F-B | 6.28 | 5.82 | **5.62** | 8.47 | 6.47 | 7.74 |
+| NASA F-C | 33.8 | **15.1** | 21.3 | 27.2 | 24.3 | 535 |
+| Toyota test1 F-A | 4.01 | 1.06 | 1.07 | **0.91** | 0.95 | 1.18 |
+| Toyota test1 F-B | 4.22 | 1.26 | 1.00 | 1.03 | **0.93** | 1.42 |
+| Toyota test1 F-C | 236 | 55.8 | 54.4 | 58.7 | **51.2** | 79.7 |
+| Toyota test2 F-A | 3.67 | **1.55** | 2.19 | 2.53 | 2.55 | 4.16 |
+| Toyota test2 F-B | 3.77 | **1.90** | 2.20 | 2.74 | 2.45 | 4.22 |
+| Toyota test2 F-C | 259 | 146 | 156 | 162 | 153 | **125** |
+
+- **Field vs age-only:** every learned model beats age-only on Toyota (Holm p < 1e-5), except ElasticNet on test2 F-A/F-B. CALCE F-A/F-B: all models 3–4/4 cells. NASA F-B: no model beats age-only reliably (best LSTM −0.66, 3/4, CI spans 0). ElasticNet F-C diverges on NASA/CALCE (a few extreme predictions; reported, not removed).
+- **iTransformer vs competitors:**
+  - Toyota test2 (batch shift, EDA §5): best F-A and F-B, significant against every competitor (Holm p ≤ 0.006).
+  - NASA F-C: best, 4/4 cells against every competitor.
+  - Toyota test1: beaten significantly on F-A by the Transformer (+0.15, p = 0.001) and on F-B by LightGBM, LSTM and Transformer (+0.22 to +0.33, p ≤ 0.004). F-C: no significant difference.
+  - CALCE F-A/F-B: behind LSTM (0/4 and 1/4 cells).
+- **Verdict rule (preliminary, before PatchTST):** mean rank among learned models over the 12 headline conditions: LSTM 2.17, iTransformer 2.33, LightGBM 2.92, Transformer 3.50, ElasticNet 4.08. Condition 1 fails. Competitors beat iTransformer significantly on Toyota test1 in 2 of 3 tasks: condition 2 fails. Unless PatchTST changes the ranks, ADR-0021 is **negative**, with the qualifier that iTransformer is the most accurate model under the Toyota batch shift.
+- **Intervals (per-horizon CQR, h50, α = 0.1):**
+  - Toyota test1: coverage 0.92–0.96, width 2.8–4.8 % SOH, useful share 80–86 %.
+  - Toyota test2: neural models under-cover (0.59–0.71; iTransformer 0.66) because the shift is not in the calibration cells; LightGBM keeps 0.87. Accuracy and calibration under shift diverge.
+  - CALCE: coverage 0.89–0.94, width 8–31 % SOH, useful share ≤ 10 %. NASA: coverage 0.81–0.90, width 27–34 %, useful share ≈ 0.
+  - RUL (log-space CQR vs additive changes little): Toyota test1 coverage 0.94–0.98 at 340–520 cycles width; NASA/CALCE and Toyota test2 under-cover (0.64–0.89).
+  - So the field setting does not make NASA/CALCE intervals informative; the 4-cell datasets stay a caveat (ADR-0019).

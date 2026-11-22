@@ -16,7 +16,8 @@ Metrics on the held-out cells: marginal PICP, mean width, the worst PICP over li
 intervals (width < 50 % of the predicted distance to 80 % SOH).
 
 Usage: uv run python scripts/interval_rescoring.py [--experiment benchmark]
-Writes reports/tables/interval_rescoring{,_summary}.csv
+    [--models ...] [--out NAME]
+Writes reports/tables/<out>{,_summary}.csv (default out: interval_rescoring)
 """
 
 from __future__ import annotations
@@ -109,12 +110,14 @@ def score(d: pd.DataFrame, task: str) -> dict:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--experiment", default="benchmark")
+    ap.add_argument("--models", nargs="*", default=list(MODELS))
+    ap.add_argument("--out", default="interval_rescoring")
     args = ap.parse_args()
     mlflow.set_tracking_uri(
         os.environ.get("MLFLOW_TRACKING_URI", f"sqlite:///{Path.cwd() / 'mlflow.db'}")
     )
     runs = mlflow.search_runs(experiment_names=[args.experiment], max_results=10000)
-    runs = runs[runs["tags.unit_key"].notna() & runs["params.model"].isin(MODELS)]
+    runs = runs[runs["tags.unit_key"].notna() & runs["params.model"].isin(args.models)]
     runs = runs[runs["params.task"].isin(["forecast", "rul"])]
     rows = []
     for _, r in runs.iterrows():
@@ -157,7 +160,7 @@ def main() -> None:
                     }
                 )
     res = pd.DataFrame(rows)
-    out = Path("reports/tables/interval_rescoring.csv")
+    out = Path(f"reports/tables/{args.out}.csv")
     res.to_csv(out, index=False)
     keep = res[(res.task == "rul") | (res.horizon == 50)]
     summ = (
@@ -167,7 +170,7 @@ def main() -> None:
         .mean()
         .round(3)
     )
-    summ.to_csv(out.with_name("interval_rescoring_summary.csv"))
+    summ.to_csv(out.with_name(f"{args.out}_summary.csv"))
     print(summ.to_string())
 
 

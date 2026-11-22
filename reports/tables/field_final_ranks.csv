@@ -1,0 +1,13 @@
+model,mean_rank,n_conditions,n_missing
+itransformer[lookback=128],2.0,4,36
+lstm[lookback=128],2.0833333333333335,24,16
+lstm[lookback=64],2.3,10,30
+lstm[lookback=32],2.3333333333333335,6,34
+itransformer[lookback=64],2.8,10,30
+transformer[lookback=32],2.8214285714285716,28,12
+lgbm,2.9,40,0
+itransformer[lookback=32],3.1538461538461537,26,14
+transformer[lookback=128],4.0,2,38
+elasticnet,4.525,40,0
+age_only,4.95,40,0
+transformer[lookback=64],5.3,10,30

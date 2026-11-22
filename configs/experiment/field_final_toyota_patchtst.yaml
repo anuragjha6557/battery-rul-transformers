@@ -1,0 +1,24 @@
+# @package _global_
+# PLAN_PHASE2 Stage 3 (ADR-0020): final field benchmark, toyota, PatchTST (added after its Stage 2
+# selection, same rule as the other models; RUL uses the forecast lookback). Same experiment as
+# field_final_toyota.yaml; run separately with one worker (MPS memory).
+defaults:
+  - /experiment_schema
+  - _self_
+
+name: field_final
+datasets: [toyota]
+tasks: [soh, forecast, rul]
+feature_set: field
+clean: true
+models:
+  - tuned: patchtst__soh
+    params: {lookback: 128}
+  - tuned: patchtst__forecast
+    params: {lookback: 128}
+  - tuned: patchtst__rul
+    params: {lookback: 128}
+seeds: [0, 1, 2, 3, 4]
+lookback: 64
+eval_origins: [start_points, all]
+train_stride: {toyota: 4}

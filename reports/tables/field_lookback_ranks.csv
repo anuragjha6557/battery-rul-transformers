@@ -1,0 +1,12 @@
+model,mean_rank,n_conditions,n_missing
+lstm[lookback=32],3.0,24,0
+lstm[lookback=128],3.125,24,0
+lstm[lookback=512],4.5,16,8
+itransformer[lookback=128],4.875,24,0
+transformer[lookback=32],5.041666666666667,24,0
+transformer[lookback=512],5.5,16,8
+itransformer[lookback=32],5.875,24,0
+transformer[lookback=128],6.0,24,0
+itransformer[lookback=512],6.4375,16,8
+patchtst[lookback=128],8.333333333333334,24,0
+patchtst[lookback=32],8.791666666666666,24,0
