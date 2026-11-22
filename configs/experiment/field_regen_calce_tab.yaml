@@ -1,0 +1,25 @@
+# @package _global_
+# ADR-0020 Stage 3 regeneration arm (tabular future_rest covariates, ADR-0016 style), calce: forecast given the planned rest schedule.
+# Lookbacks = field_final F-B lookbacks, so each arm pairs with its field_final baseline.
+defaults:
+  - /experiment_schema
+  - _self_
+
+name: field_regen
+datasets: [calce]
+tasks: [forecast]
+feature_set: field_curve
+clean: true
+future_rest: true
+models:
+  - tuned: itransformer__forecast
+    params: {lookback: 32, channels: all}
+  - tuned: transformer__forecast
+    params: {lookback: 32}
+  - tuned: lstm__forecast
+    params: {lookback: 128}
+  - tuned: lgbm__forecast
+    params: {lookback: 64}
+seeds: [0, 1, 2, 3, 4]
+lookback: 64
+eval_origins: [start_points, all]
