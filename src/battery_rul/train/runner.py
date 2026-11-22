@@ -179,6 +179,11 @@ def unit_config(
         "train_stride": int(cfg.train_stride.get(dataset, 1)),
         # optional variants: only present when non-default, so existing unit keys are unchanged
         **({"future_rest": True} if cfg.future_rest and task == "forecast" else {}),
+        **(
+            {"future_rest_seq": int(cfg.future_rest_seq)}
+            if cfg.future_rest_seq and task == "forecast"
+            else {}
+        ),
         **({"drop_skipped_cv": True} if dataset in cfg.drop_skipped_cv else {}),
         **({"clean": True} if cfg.clean else {}),
     }
@@ -276,6 +281,7 @@ def fold_data(
             horizons=horizons,
             feature_set=cfg.feature_set,  # type: ignore[arg-type]
             future_rest=bool(cfg.future_rest and task == "forecast"),
+            future_rest_seq=int(cfg.future_rest_seq) if task == "forecast" else 0,
         )
         train = build_samples(prepared, plan.train, ctx.eol, spec, "all")
         tests: dict[tuple[str, str], SampleSet] = {}
@@ -294,7 +300,15 @@ def fold_data(
                     sm[(tag, policy)] = _smooth_targets(ctx, ss)
         return FoldData(train, tests, sm)
 
-    key = (*base, task, lookback, horizons, tuple(cfg.eval_origins), cfg.future_rest)
+    key = (
+        *base,
+        task,
+        lookback,
+        horizons,
+        tuple(cfg.eval_origins),
+        cfg.future_rest,
+        int(cfg.future_rest_seq),
+    )
     out: FoldData = _SAMPLES.get(key, build)
     return out
 
@@ -567,6 +581,7 @@ def _log_unit(
             "theta": cfg.theta,
             "feature_set": cfg.feature_set,
             "future_rest": bool(cfg.future_rest and unit.task == "forecast"),
+            "future_rest_seq": int(cfg.future_rest_seq) if unit.task == "forecast" else 0,
             "drop_skipped_cv": unit.dataset in cfg.drop_skipped_cv,
             "clean": bool(cfg.clean),
             "lookback": unit.lookback,

@@ -192,6 +192,7 @@ class NeuralModel:
         ) or 1.0
         n_q = len(self.quantiles) if self.quantiles is not None else 1
         self._field = not has_soh(train)
+        self._names = (tuple(train.channel_names), tuple(train.feature_names))
         # field setting: per-horizon mean training target (a label statistic, never an input)
         ym = np.where(train.y_mask, train.y, np.nan).astype(np.float64)
         self._y_offset = (

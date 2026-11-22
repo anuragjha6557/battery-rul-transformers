@@ -355,3 +355,42 @@ def test_field_soh_window_ends_at_the_target_cycle() -> None:
     assert np.sign(ss.x_hist[i, -1, c] - ss.x_hist[i, -2, c]) == np.sign(
         raw.iloc[-1] - raw.iloc[-2]
     )
+
+
+# ADR-0020 Stage 3: per-cycle planned rest sequence ---------------------------------------
+def _seq_inputs(cycles: pd.DataFrame, k: int = 6):
+    prep = prepare_cycles(cycles, TRAIN, "field_curve")
+    spec = TaskSpec(
+        task="forecast", lookback=8, horizons=(1, 5), feature_set="field_curve", future_rest_seq=k
+    )
+    return build_samples(prep, TEST, EOL, spec)
+
+
+@pytest.mark.parametrize("k", [10, 25, 39])
+def test_future_rest_seq_reads_only_the_future_rest_schedule(k: int) -> None:
+    clean = _seq_inputs(_field_cycles())
+    bad = _field_cycles()
+    future = (bad["cell_id"] == "C3") & (bad["cycle_idx"] > k)
+    num = bad.select_dtypes("number").columns.drop(["cycle_idx", "rest_before_s"])
+    bad.loc[future, num] = bad.loc[future, num] * -7.0 + 3.0
+    pert = _seq_inputs(bad)
+    sel = (clean.meta["origin_cycle"] <= k).to_numpy()
+    np.testing.assert_array_equal(clean.x_hist[sel], pert.x_hist[sel])
+    np.testing.assert_array_equal(clean.x_tab[sel], pert.x_tab[sel])
+
+
+def test_future_rest_seq_values() -> None:
+    cyc = _field_cycles()
+    c3 = cyc["cell_id"] == "C3"
+    cyc.loc[c3 & (cyc["cycle_idx"] == 23), "rest_before_s"] = 86400.0
+    s = _seq_inputs(cyc, k=6)
+    names = [n for n in s.feature_names if n.startswith("rest_seq_")]
+    assert names == [f"rest_seq_{j:03d}" for j in range(1, 7)]
+    row = int(np.flatnonzero(s.meta["origin_cycle"].to_numpy() == 20)[0])
+    seq = s.x_tab[row, [s.feature_names.index(n) for n in names]]
+    assert np.isclose(seq[2], np.log1p(86400.0))  # cycle 23 = T + 3
+    assert np.allclose(np.delete(seq, 2), np.log1p(200.0))
+    last = int(np.flatnonzero(s.meta["origin_cycle"].to_numpy() == s.meta["origin_cycle"].max())[0])
+    assert s.x_tab[last, s.feature_names.index("rest_seq_006")] == 0.0  # beyond the record
+    with pytest.raises(ValueError, match="forecast only"):
+        TaskSpec(task="soh", future_rest_seq=3)

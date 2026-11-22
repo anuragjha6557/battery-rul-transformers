@@ -58,6 +58,8 @@ class ExperimentConfig:
     feature_set: str = "mc"
     #: ADR-0016: forecast conditioned on the planned rest schedule (known-future covariates).
     future_rest: bool = False
+    #: Task B only (ADR-0020 Stage 3): planned rest of the next K cycles as features (0 = off).
+    future_rest_seq: int = 0
     #: ADR-0017: datasets whose CV-skip artifact cycles (cv_time_s < 300 s) are dropped as
     #: invalid capacity measurements before windowing (inputs and targets).
     drop_skipped_cv: list[str] = field(default_factory=list)
