@@ -114,3 +114,19 @@ Paired Δ RMSE (L128 − L32), % SOH; Toyota 95 % CI, CALCE k/4. Tables: `report
   - **Mixed** if only one condition holds; **negative** otherwise.
   - The Stage 1 (variates: chemistry-conditional) and Stage 2 (lookback: not supported) findings are reported alongside.
 - **Regeneration arm:** registered separately before its runs, after the rest-token code is reviewed.
+
+## Stage 3 regeneration arm (registered 2026-11-21, before any run)
+- **Question:** can a field model forecast capacity regeneration when the planned rest schedule is known? And does iTransformer use the schedule when it enters the inverted way?
+- **Arms** (F-B, NASA + CALCE LOCO, `field_curve`, 5 seeds; experiment `field_regen`; lookbacks equal to `field_final` F-B, so every arm pairs with its `field_final` baseline):
+  - **tab:** ADR-0016 covariates (`future_rest`: rest at T+h and rest sum to T+h, per horizon) for iTransformer, the time-step Transformer, LSTM and LightGBM.
+  - **token (new):** iTransformer with `rest_token`. The past `log_rest_s` window and the planned rest of each of the next 100 cycles (`future_rest_seq = 100`) form one variate token, `Linear(L + 100 → d)`.
+  - Leakage: only `rest_before_s` of future cycles is read (`test_future_rest_seq_reads_only_the_future_rest_schedule`).
+- **Regeneration targets:** target cycles preceded by a rest of more than 6 h (ADR-0016 definition). Errors are pooled over cells and seeds and also reported per cell.
+- **H3 (primary, h = 1, where both arms hold the same information about the next cycle):**
+  - iTransformer-token reduces RMSE at regeneration targets vs its `field_final` baseline by ≥ 26 % (LSTM's gain in ADR-0016).
+  - It also reduces it by at least as much as the best tab-arm competitor.
+  - Assessed on NASA, which has real, persistent regeneration (EDA §4). CALCE is reported, but its recovery fades within 1–2 cycles.
+- **Secondary:**
+  - token vs tab for iTransformer at h = 1 and h = 10. At h = 10 the token knows the rest of each intermediate cycle, the tab arm only their sum, so it is a stated information advantage.
+  - Overall h = 10 / h = 50 RMSE must not worsen (CI or k/4).
+- **Size:** 2 datasets × 4 units × 5 seeds × 5 arms = 200 runs. They run after the main grid, from `main` once the token code is merged (no merge while a sweep runs).
