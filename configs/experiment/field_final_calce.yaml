@@ -1,0 +1,48 @@
+# @package _global_
+# PLAN_PHASE2 Stage 3 (ADR-0020): final field benchmark, calce. Feature set and lookbacks fixed by the
+# Stage 1 gate and the Stage 2 inner-validation rule (RUL uses the forecast lookback); tuned params reused.
+defaults:
+  - /experiment_schema
+  - _self_
+
+name: field_final
+datasets: [calce]
+tasks: [soh, forecast, rul]
+feature_set: field_curve
+clean: true
+models:
+  - name: age_only
+  - tuned: itransformer__soh
+    params: {lookback: 32, channels: all}
+  - tuned: itransformer__forecast
+    params: {lookback: 32, channels: all}
+  - tuned: itransformer__rul
+    params: {lookback: 32, channels: all}
+  - tuned: transformer__soh
+    params: {lookback: 128}
+  - tuned: transformer__forecast
+    params: {lookback: 32}
+  - tuned: transformer__rul
+    params: {lookback: 32}
+  - tuned: lstm__soh
+    params: {lookback: 32}
+  - tuned: lstm__forecast
+    params: {lookback: 128}
+  - tuned: lstm__rul
+    params: {lookback: 128}
+  - tuned: lgbm__soh
+    params: {lookback: 64}
+  - tuned: lgbm__forecast
+    params: {lookback: 64}
+  - tuned: lgbm__rul
+    params: {lookback: 64}
+  - tuned: elasticnet__soh
+    params: {lookback: 64}
+  - tuned: elasticnet__forecast
+    params: {lookback: 64}
+  - tuned: elasticnet__rul
+    params: {lookback: 64}
+seeds: [0, 1, 2, 3, 4]
+lookback: 64
+eval_origins: [start_points, all]
+train_stride: {toyota: 4}

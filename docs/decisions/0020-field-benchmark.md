@@ -74,3 +74,43 @@ Tables: `reports/tables/field_screen_{field,field_curve}.md`, paired: `reports/t
 - **H2 is tested as L = 128 vs L = 32.** At 128 (≈ 23 % of median life) the window is full on 77–87 % of pre-EOL predictions.
 - Selection for Stage 3 is unchanged (lowest inner-validation RMSE), now over L ∈ {32, 128}.
 - Context: the iTransformer paper's long-lookback results use L = 96–720 on series tens of thousands of steps long. Here a cell lives 150–2,200 cycles, so claim 2 can only be tested at moderate L.
+
+### Stage 2 outcome (2026-11-21; PatchTST pending, not needed for H2)
+Paired Δ RMSE (L128 − L32), % SOH; Toyota 95 % CI, CALCE k/4. Tables: `reports/tables/field_lookback_paired_{soh,forecast}.md`.
+
+| Model | Task | CALCE | Toyota test1 | Toyota test2 |
+|---|---|---|---|---|
+| iTransformer | F-A | +0.13 (2/4) | −0.03 [−0.09, +0.05] | −0.06 [−0.15, +0.03] |
+| iTransformer | F-B h50 | **+0.64 (0/4)** | +0.03 [−0.05, +0.14] | **−0.43** [−0.57, −0.29] |
+| Transformer | F-A | −0.40 (3/4) | +0.13 [+0.03, +0.26] | +0.03 [−0.05, +0.12] |
+| Transformer | F-B h50 | −0.38 (2/4) | +0.10 [+0.03, +0.18] | **−0.34** [−0.42, −0.26] |
+| LSTM | F-A / F-B | −0.05 / −0.07 | ≈ 0 | ≈ 0 |
+
+- **H2: not supported.** iTransformer improves with L only for F-B on Toyota test2. It is flat on F-A and worse on the CALCE forecast (0/4 cells). The time-step Transformer gains at least as much from longer history.
+- **Reading:** iTransformer compresses each variate's whole window through one linear map, so a longer window mainly adds parameters. The health signal here is local (slow drift plus regeneration events lasting a few cycles), unlike the long periodic series of the paper's benchmarks.
+- **Supplementary (L = 512, Toyota only):** iTransformer is worse than at L = 32 on test1 (F-A +0.38, F-B +0.49, CIs > 0). This is consistent with the padding analysis.
+- **Selected lookbacks** (`reports/tables/field_lookback_selection.md`, inner validation):
+  - iTransformer: CALCE 32/32, Toyota 128/32 (F-A/F-B).
+  - Transformer: CALCE 128/32, Toyota 32/32.
+  - LSTM: CALCE 32/128, Toyota 32/128.
+
+## Stage 3: final field benchmark (registered 2026-11-21, before any run)
+- **Grid:**
+  - Tasks F-A, F-B (all horizons), F-C (RUL).
+  - Datasets: NASA, CALCE (LOCO, `field_curve`) and Toyota (official split, `field`); ADR-0018 cleaning.
+  - 5 seeds (0–4). Experiment `field_final`, configs `field_final_{nasa,calce,toyota}.yaml`.
+- **Models:** iTransformer, time-step Transformer, LSTM, LightGBM, ElasticNet, age-only. PatchTST is added with the same rule once its Stage 2 runs finish.
+- **Lookbacks:**
+  - Stage 2 selection for neural models.
+  - F-C uses the F-B lookback (RUL was not screened).
+  - NASA (not screened, short cells) and the tabular models use L = 64 (Stage 1).
+- **New runs:** every seed is rerun (resume works within an experiment), so all comparisons are within `field_final`.
+- **Analysis:**
+  - Each model vs age-only, and iTransformer vs each competitor.
+  - Toyota: per test split, cluster-bootstrap CI, Wilcoxon with Holm correction over competitors. NASA/CALCE: k/4.
+  - Then CQR (per-horizon, ADR-0019) on all runs, with interval informativeness reported.
+- **ADR-0021 verdict rule (iTransformer in the field setting):**
+  - **Positive** if iTransformer has the best mean rank among learned models over the headline metrics (F-A rmse, F-B rmse_h50, F-C rul_mae; per dataset and Toyota split), and no competitor beats it significantly on Toyota test1 in more than one of the three tasks.
+  - **Mixed** if only one condition holds; **negative** otherwise.
+  - The Stage 1 (variates: chemistry-conditional) and Stage 2 (lookback: not supported) findings are reported alongside.
+- **Regeneration arm:** registered separately before its runs, after the rest-token code is reviewed.
