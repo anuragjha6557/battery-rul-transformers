@@ -64,6 +64,12 @@ svg.pipe .arrow{stroke:var(--text-secondary);fill:none;stroke-width:1.5}
 .cta{display:inline-block;background:var(--accent);color:var(--bg);text-decoration:none;font-weight:600;border-radius:8px;padding:10px 18px;margin:8px 8px 0 0}
 .cta.alt{background:none;color:var(--accent);border:1px solid var(--accent)}
 .err{color:#b22222}
+table.left td,table.left th{text-align:left;vertical-align:top}
+table.heat td{text-align:right;font-size:.85rem;padding:5px 7px}
+table.heat th.grp{text-align:center;border-left:1px solid var(--line)}
+table.heat th.sub{font-size:.78rem;font-weight:500;color:var(--text-secondary)}
+table.heat td.best{font-weight:700;text-decoration:underline}
+.verdict{border-left:3px solid var(--series-8);background:var(--surface-2);padding:10px 14px;border-radius:0 8px 8px 0;margin:16px 0;max-width:900px}
 </style>
 </head>
 <body>
@@ -71,7 +77,7 @@ svg.pipe .arrow{stroke:var(--text-secondary);fill:none;stroke-width:1.5}
   <b>Battery RUL Benchmark</b>
   <nav>
     <a href="#problem">Problem</a><a href="#data">Data &amp; EDA</a><a href="#method">Method</a>
-    <a href="#results">Results</a><a href="#uq">Uncertainty</a><a href="#ablations">What didn't work</a><a href="#regen">Regeneration</a>
+    <a href="#results">Results</a><a href="#uq">Uncertainty</a><a href="#ablations">What didn't work</a><a href="#regen">Regeneration</a><a href="#field">Field setting</a>
     <a href="#deploy">Demo</a><a href="trajectories.html">Trajectories</a>
   </nav>
   <span class="sp"></span>
@@ -225,8 +231,51 @@ svg.pipe .arrow{stroke:var(--text-secondary);fill:none;stroke-width:1.5}
   <p class="cap">Paired change from dropping the 109 glitch cycles before training (ADR-0017), with both arms scored on the same glitch-free targets (95 % CIs; filled circle = better, square = worse, open diamond = inconclusive). Forecasts improve for every learned model (e.g. iTransformer-SC 2.43 → 2.14 % SOH at h = 50), but RUL gets slightly worse. Dips near the 80 % line carry information about how close a cell is to end of life. The benchmark therefore keeps raw data and additionally reports CALCE forecasts on glitch-free targets. The demo marks both event types.</p>
 </section>
 
+<section id="field">
+  <h2>7 · The field setting: no capacity history</h2>
+  <p>The lab setting above assumes a measured capacity log. A real battery management system (BMS) has no such log: capacity is the label, never an input. The field setting (ADR-0018, ADR-0020) feeds models only what a BMS can measure during a charge, plus the cycle count. Three tasks: <b>F-A</b> SOH estimation, <b>F-B</b> forecasting, <b>F-C</b> RUL. NASA and CALCE use leave-one-cell-out (4 cells each); Toyota uses the official test 1 / test 2 split. 5 seeds.</p>
+  <h3>What a BMS can measure</h3>
+  <div class="scroll" id="field-signals"></div>
+  <div class="scroll" style="margin-top:14px" id="field-rho"></div>
+  <p class="cap">Source: <code>reports/eda_field.md</code> sections 1 and 3. Toyota (LFP) has a flat voltage plateau, so its narrow top-of-charge window carries less information; relaxation voltage is its strongest field signal.</p>
+
+  <h3>The price of losing the capacity history</h3>
+  <div class="chart"><div id="field-gap"></div></div>
+  <p class="cap">Best error with SOH history (benchmark, all models including persistence and previous-SOH baselines) against the best field model and the age-only baseline, all origins, log axis. SOH estimation costs 3–110× (Toyota test 2: 0.01 → 1.6 % SOH). Forecasting and RUL lose much less, and CALCE RUL and NASA RUL are on par with the lab best: the lab models were not stronger at those tasks to begin with. Hover for the winning model.</p>
+
+  <h3>Field headline: every model, every condition</h3>
+  <div class="scroll" id="field-heat"></div>
+  <p class="cap">Mean over 5 seeds (hover for the 95 % CI and the lookback each family used). Cell tint: error relative to the best learned model of that cell, log scale, saturating at 8×. Bold underlined = best learned model. ⚠ ElasticNet RUL on NASA and CALCE diverged (errors of 10<sup>2</sup>–10<sup>4</sup> cycles); they are shown but excluded from the colour scale.</p>
+
+  <h3>Is iTransformer justified here? Verdict: negative</h3>
+  <div class="verdict"><b>Negative</b> under the pre-registered rule (ADR-0021). Mean rank over the 12 task × condition cells (lower is better): <span id="field-ranks"></span>. iTransformer does not have the best rank, and competitors beat it on 2 of 3 tasks on Toyota test 1. <b>Borderline:</b> that second condition depends on what "significantly" means. Under the CI rule or the Holm-Wilcoxon rule alone, competitors win 2 of 3 tasks; only if both must hold for the same competitor does the count drop to 1 and the verdict becomes <i>mixed</i>. We report negative because it holds under each criterion the project has used. <b>Shift-robustness qualifier:</b> on Toyota test 2, a batch with a different rest, CV time and temperature, iTransformer is the most accurate model for F-A and F-B, significantly better than every competitor. Its intervals do not follow: h = 50 coverage there is 0.66 against 0.87 for LightGBM.</div>
+  <p>The four claims of the iTransformer paper, tested:</p>
+  <h3>1 · Variate tokens exploit many correlated variates: chemistry-conditional</h3>
+  <div class="chart short"><div id="field-variates"></div></div>
+  <p class="cap">Paired change in SOH-estimation RMSE from adding 15 Q(V) curve points as variates (Stage 1), 95 % cluster-bootstrap CIs. Filled = CI excludes zero. iTransformer gains the most on CALCE and loses on Toyota (LFP plateau).</p>
+  <h3>2 · Long lookbacks help: not supported</h3>
+  <div class="grid2">
+    <div><div class="chart short"><div id="field-lookback-soh"></div></div></div>
+    <div><div class="chart short"><div id="field-lookback-fc"></div></div></div>
+  </div>
+  <p class="cap">Paired change from lookback 32 to 128 (Stage 2). No monotone gain; L = 128 is worse on CALCE forecasting. (512 was dropped by owner decision.)</p>
+  <h3>3 · Known-future covariates as a variate token: not supported</h3>
+  <div class="chart short"><div id="field-regen"></div></div>
+  <p class="cap">Error change at regeneration targets, 1 cycle ahead, when the planned rest schedule is given as an extra input. Hatched = delivered as an iTransformer variate token; plain = as tabular inputs. Negative = worse than the model without the schedule.</p>
+  <h3>4 · Channel mixing beats channel independence: supported</h3>
+  <div class="chart short"><div id="field-mixing"></div></div>
+  <p class="cap">iTransformer minus PatchTST, same cells and seeds. iTransformer's error is lower in all 12 task × condition cells (CI excludes zero on every Toyota split; wide on 4-cell NASA and CALCE). On CALCE, PatchTST is worse than the age-only baseline.</p>
+
+  <h3>Intervals: informative on Toyota, not on NASA or CALCE</h3>
+  <div class="chart short"><div id="field-cov"></div></div>
+  <div class="chart short"><div id="field-useful"></div></div>
+  <p class="cap">Per-horizon CQR 90 % intervals at h = 50, mean over seeds. An interval is <i>useful</i> when its width is under 50 % of the predicted distance to 80 % SOH (ADR-0019). On NASA and CALCE almost no origin is useful (the intervals cover, but say little), NASA coverage is also below target for some models, and on Toyota test 2 the batch shift pulls coverage well below 0.90 for most models (shaded band = 0.85–0.95).</p>
+  <div class="scroll" id="field-rul-iv"></div>
+  <p class="cap">RUL intervals (CQR, all origins). Widths of hundreds of cycles on NASA and CALCE exceed the cells' remaining life scale; the field RUL intervals are not decision-grade there.</p>
+</section>
+
 <section id="deploy">
-  <h2>7 · Try it</h2>
+  <h2>8 · Try it</h2>
   <p>The served model is the single-channel iTransformer-v2, so it needs only <code>cycle_idx, capacity_ah</code>. It is trained on all three datasets and calibrated on cells it never saw. It runs entirely in your browser via ONNX Runtime Web, so no data leaves the page. An out-of-distribution check warns when intervals should not be trusted.</p>
   <a class="cta" href="index.html">Open the live demo</a>
   <a class="cta alt" href="trajectories.html">Whole-life method comparison</a>
