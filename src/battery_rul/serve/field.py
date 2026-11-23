@@ -84,7 +84,13 @@ def validate_field(df: pd.DataFrame, inputs: list[str], protocol: str) -> pd.Dat
     derive_src = [r for r in DERIVED_FROM.values() if r != "cycle_idx"]
     for c in dict.fromkeys([*inputs[1:], *OPTIONAL_INPUTS, *derive_src]):
         src = cols.get(c.lower())
-        out[c] = pd.to_numeric(df[src], errors="coerce") if src is not None else np.nan
+        # always float: an all-integer column would otherwise be int64 and skip the
+        # float-only masking of clean_inputs (and differ from the browser port)
+        out[c] = (
+            pd.to_numeric(df[src], errors="coerce").astype(np.float64)
+            if src is not None
+            else np.nan
+        )
     out = out.sort_values("cycle_idx").reset_index(drop=True)
     out.insert(0, "cell_id", "uploaded")
     out.insert(0, "dataset", protocol)

@@ -181,3 +181,18 @@ def test_raw_inputs_and_useful() -> None:
         "x",
     ]
     assert useful(0.90, 0.92, 0.95) and not useful(0.80, 0.95, 0.90)
+
+
+def test_validate_field_columns_are_float_so_pause_masking_applies() -> None:
+    n = 12
+    df = pd.DataFrame(
+        {
+            "cycle_idx": range(1, n + 1),
+            "charge_time_s": [3000] * (n - 1) + [20000],  # all-integer column, last is a pause
+            "cv_time_s": [900] * n,
+        }
+    )
+    out = validate_field(df, ["cycle_idx", "cv_time_s"], "toyota")
+    assert out["cv_time_s"].dtype == np.float64
+    cleaned, counts = clean_inputs(out)
+    assert counts["charge_pause"] == 1 and np.isnan(cleaned["cv_time_s"].iloc[-1])
