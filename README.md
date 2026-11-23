@@ -45,7 +45,7 @@ The results above assume a measured capacity log. A real battery management syst
 1. **Field signals beat age-only on Toyota and CALCE.**
    - On Toyota, every learned model beats the age-only baseline, except ElasticNet on test2 SOH and forecasting.
    - On NASA, forecasting does not: no model beats age-only reliably at h = 50.
-   - Losing the SOH history costs 4-75x in SOH error against the lab setting.
+   - Losing the SOH history multiplies the best SOH-estimation error by about 3× (CALCE), 6× (NASA), 8× (Toyota test1) and over 100× under the Toyota test2 shift, against the best lab model (showcase field section).
 2. **The iTransformer verdict is negative** ([ADR-0021](docs/decisions/0021-itransformer-field-verdict.md)).
    - Its mean rank is 2.33 over 12 conditions, behind LSTM (2.25). It is also beaten significantly on Toyota test1 in two of three tasks.
    - The verdict is borderline: if a competitor must win under both the CI rule and the Holm-Wilcoxon test, it would read mixed. We report negative because it holds under each criterion alone.
@@ -53,7 +53,7 @@ The results above assume a measured capacity log. A real battery management syst
 3. **Two paper claims were not supported here.** Longer lookbacks (32 to 128) gave no monotone gain. A known-future rest token did not improve regeneration forecasts (-8.9 % against a pre-registered +26 % bar). Many variates helped on CALCE and NASA and hurt on Toyota.
 4. **Intervals are informative only on Toyota test1.** There 80-86 % of h = 50 intervals are narrow enough to be useful. On NASA the share is about zero and on CALCE it is at most 10 %. Coverage near 90 % does not make a wide interval useful ([ADR-0019](docs/decisions/0019-adaptive-intervals.md)).
 
-**Field demo mode** ([ADR-0022](docs/decisions/0022-field-deployment.md)). The demo also runs a field model per protocol (NASA, CALCE, Toyota), because field signals are protocol-specific. You upload `cycle_idx` plus that protocol's raw signals. The page applies the same causal cleaning as training, shows CQR intervals marked as informative or not, and flags out-of-distribution inputs (Mahalanobis distance, missing channels, short history). Its model is the per-protocol iTransformer, chosen for robustness under shift, not as a reversal of the verdict. Lab mode is unchanged.
+**Field demo mode** ([ADR-0022](docs/decisions/0022-field-deployment.md)). The demo also runs a field model per protocol (NASA, CALCE, Toyota), because field signals are protocol-specific. You upload `cycle_idx` plus that protocol's raw signals. The page applies the same causal cleaning as training, shows CQR intervals marked as informative or not, and flags out-of-distribution inputs (distance from the training cycles, missing channels, short history). The guard is weak: it flags only about 6 % of the cycles in the Toyota test2 shift and cannot be calibrated on NASA's 3 training cells, so the page also carries a fixed caveat. Its model is the per-protocol iTransformer, chosen for robustness under shift, not as a reversal of the verdict. Lab mode is unchanged.
 
 More: [architecture and module map](docs/architecture.md), [model card](MODEL_CARD.md), [contributing](CONTRIBUTING.md), [interview notes](docs/interview_notes.md).
 
