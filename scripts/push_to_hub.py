@@ -2,9 +2,10 @@
 
 ``--weights`` uploads ``artifacts/deploy/*`` (PyTorch) and ``artifacts/web/*`` (ONNX graphs +
 ``serve_meta.json`` from ``scripts/export_onnx.py``) to a model repo, with a minimal model card.
-``--space`` assembles the **static** Space (``web/*`` page, the ONNX graphs, ``app/examples``)
-and uploads it. Free CPU hosting of Gradio Spaces needs HF PRO (ADR-0015 amendment), so the
-public demo runs in the browser; the Gradio app in ``app/`` remains for local use. When
+``--space`` assembles the **static** Space (``web/*`` page, the ONNX graphs, ``app/examples``,
+and the field-mode graphs ``artifacts/web/field/**`` -> ``field/**`` when present) and uploads
+it. Free CPU hosting of Gradio Spaces needs HF PRO (ADR-0015 amendment), so the public demo
+runs in the browser; the Gradio app in ``app/`` remains for local use. When
 ``artifacts/web`` is absent (CI), the ONNX files are fetched from the model repo.
 ``--dry-run`` only assembles the staging dir and prints the plan
 (no network, no token needed).
@@ -98,7 +99,7 @@ WEB_FILES = ("forecast.onnx", "rul.onnx", "serve_meta.json")
 
 
 def assemble_space(dest: Path, web_dir: Path, model_repo: str) -> list[Path]:
-    """Static Space: web/* + ONNX graphs + demo examples; return the relative file list."""
+    """Static Space: web/* + ONNX graphs (+ ``field/**``) + demo examples; list the files."""
     shutil.copytree(ROOT / "web", dest, ignore=IGNORE, dirs_exist_ok=True)
     shutil.copytree(ROOT / "app" / "examples", dest / "examples", ignore=IGNORE)
     for n in WEB_FILES:
@@ -108,6 +109,11 @@ def assemble_space(dest: Path, web_dir: Path, model_repo: str) -> list[Path]:
             from huggingface_hub import hf_hub_download
 
             shutil.copy2(hf_hub_download(model_repo, n), dest / n)
+    field = web_dir / "field"  # scripts/export_onnx_field.py; absent => lab-only page
+    if field.is_dir() and any(field.glob("*/field_serve_meta.json")):
+        shutil.copytree(field, dest / "field", ignore=IGNORE)
+    else:
+        print("[space] no field ONNX models (artifacts/web/field): field mode will be hidden")
     return sorted(p.relative_to(dest) for p in dest.rglob("*") if p.is_file())
 
 

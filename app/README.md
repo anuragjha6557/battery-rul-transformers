@@ -24,3 +24,12 @@ training cells. Or pick a demo cell that the model never trained on.
 
 Research demo; intervals are only calibrated for cells resembling the training data
 (NASA, CALCE, Toyota/MIT-Stanford).
+
+## Field mode (static Space only)
+
+The static Space (`web/`) also has a **Field** mode that needs no capacity log: upload per-cycle
+BMS signals (`cycle_idx` plus the columns of one protocol: NASA, CALCE or Toyota/MIT) and get a
+SOH estimate, a forecast and RUL with 90 % intervals, computed in your browser. Field models are
+protocol-specific; under batch shift (Toyota test 2) interval coverage fell to 0.66 and the
+out-of-distribution guard flags only ~6 % of those cycles. NASA/CALCE intervals are usually
+uninformative. See ADR-0022 in the GitHub repository. This Gradio app is unchanged (lab mode).

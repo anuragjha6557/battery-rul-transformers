@@ -1,0 +1,66 @@
+[
+ {
+  "name": "nasa_B0018",
+  "protocol": "nasa",
+  "cell": "B0018",
+  "split": "test",
+  "n_cycles": 132,
+  "label": "NASA B0018 (held out from the field model)"
+ },
+ {
+  "name": "calce_CS2_38",
+  "protocol": "calce",
+  "cell": "CS2_38",
+  "split": "test",
+  "n_cycles": 1025,
+  "label": "CALCE CS2_38 (held out from the field model)"
+ },
+ {
+  "name": "toyota_b2c1",
+  "protocol": "toyota",
+  "cell": "b2c1",
+  "split": "test1",
+  "n_cycles": 170,
+  "label": "Toyota/MIT b2c1 (official test1 split, held out)"
+ },
+ {
+  "name": "toyota_b2c10",
+  "protocol": "toyota",
+  "cell": "b2c10",
+  "split": "test1",
+  "n_cycles": 596,
+  "label": "Toyota/MIT b2c10 (official test1 split, held out)"
+ },
+ {
+  "name": "toyota_b1c2",
+  "protocol": "toyota",
+  "cell": "b1c2",
+  "split": "test1",
+  "n_cycles": 2235,
+  "label": "Toyota/MIT b1c2 (official test1 split, held out)"
+ },
+ {
+  "name": "toyota_b3c28",
+  "protocol": "toyota",
+  "cell": "b3c28",
+  "split": "test2",
+  "n_cycles": 540,
+  "label": "Toyota/MIT b3c28 (official test2 split, held out)"
+ },
+ {
+  "name": "toyota_b3c44",
+  "protocol": "toyota",
+  "cell": "b3c44",
+  "split": "test2",
+  "n_cycles": 939,
+  "label": "Toyota/MIT b3c44 (official test2 split, held out)"
+ },
+ {
+  "name": "toyota_b3c38",
+  "protocol": "toyota",
+  "cell": "b3c38",
+  "split": "test2",
+  "n_cycles": 1934,
+  "label": "Toyota/MIT b3c38 (official test2 split, held out)"
+ }
+]

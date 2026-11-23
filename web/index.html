@@ -58,12 +58,26 @@ a{color:var(--accent)}
 tr.live td{font-weight:650}
 #cmp-na{color:var(--warn-ink);background:var(--warn-bg);border-radius:6px;padding:4px 10px}
 .muted{color:var(--muted);font-size:.85rem}
+.modes{display:flex;gap:0;margin:0 0 16px;width:max-content;max-width:100%}
+.modes button{font:inherit;background:var(--panel);color:var(--muted);border:1px solid var(--line);padding:6px 16px;cursor:pointer}
+.modes button:first-child{border-radius:6px 0 0 6px}.modes button:last-child{border-radius:0 6px 6px 0;border-left:0}
+.modes button[aria-pressed="true"]{background:var(--accent);color:var(--bg);border-color:var(--accent);font-weight:600}
+.caveat{border:2px solid var(--warn-ink);background:var(--warn-bg);color:var(--warn-ink);border-radius:8px;padding:12px 16px;margin-bottom:16px}
+.caveat b.t{display:block;margin-bottom:4px}.caveat ul{margin:4px 0 6px;padding-left:20px}.caveat a{color:inherit;font-weight:600}
+#plot-field{width:100%;height:420px}
+.tag{display:inline-block;font-size:.72rem;border:1px solid var(--warn-ink);color:var(--warn-ink);border-radius:999px;padding:0 8px;margin-left:6px;vertical-align:middle;font-weight:500}
+.tag.ok{border-color:var(--ok-ink);color:var(--ok-ink)}
 </style>
 </head>
 <body>
 <main>
   <h1>Battery RUL Forecaster</h1>
   <p class="sub">State-of-health forecast and remaining useful life with calibrated 90% intervals. iTransformer-v2, running entirely in your browser; your data never leaves this page. <a href="showcase.html">See the full project: data, method, benchmark results →</a> · <a href="trajectories.html">Compare every method over a whole life →</a></p>
+  <div class="modes hidden" id="modes" role="group" aria-label="Mode">
+    <button id="mode-lab" aria-pressed="true" title="Needs a measured capacity log">Lab: capacity log</button>
+    <button id="mode-field" aria-pressed="false" title="No capacity needed: BMS signals only">Field: BMS signals</button>
+  </div>
+  <div id="lab">
   <nav role="tablist">
     <button role="tab" aria-selected="true" data-tab="predict">Predict</button>
     <button role="tab" aria-selected="false" data-tab="format">Data format</button>
@@ -132,9 +146,48 @@ tr.live td{font-weight:650}
       <p><b>Paper.</b> Jha, Dorkar, Biswas, Emadi, “iTransformer Network Based Approach for Accurate Remaining Useful Life Prediction in Lithium-Ion Batteries,” IEEE ITEC 2024, <a href="https://doi.org/10.1109/ITEC60657.2024.10598898">doi:10.1109/ITEC60657.2024.10598898</a>.</p>
     </div>
   </section>
+  </div>
+
+  <section id="field" class="hidden">
+    <div class="caveat" id="field-caveat" role="note">
+      <b class="t">Read this before trusting a field prediction</b>
+      <ul>
+        <li><b>Field models are protocol-specific.</b> Each was trained on one charging protocol (NASA, CALCE or Toyota/MIT) and is only meaningful for cells that follow it. A different charger, voltage window or chemistry needs its own model.</li>
+        <li><b>Batch shift breaks the intervals.</b> On the Toyota test 2 batch (cells made and cycled later than the training batch) the held-out 90% interval coverage was <b>0.66</b>, and the out-of-distribution guard flagged only about <b>6%</b> of those cycles. A green "looks like training data" message does not rule this out.</li>
+        <li><b>NASA and CALCE intervals are usually uninformative</b> (only 4 cells per dataset; the NASA guard could not be calibrated). Hatched bands mean the 90% interval is wider than half the distance to 80% SOH, so it says little.</li>
+      </ul>
+      Evidence and design: <a href="https://github.com/anuragjha6557/battery-rul-transformers/blob/main/docs/decisions/0022-field-deployment.md">ADR-0022</a> · <a href="showcase.html#field">showcase, field setting</a>.
+    </div>
+    <div class="panel controls">
+      <label>Protocol
+        <select id="f-proto"></select>
+      </label>
+      <label>Cell
+        <select id="f-demo"></select>
+      </label>
+      <label id="f-upload-wrap" class="hidden">Your CSV
+        <input type="file" id="f-file" accept=".csv,text/csv">
+      </label>
+      <button class="primary" id="f-run" disabled>Loading models…</button>
+    </div>
+    <p class="muted" id="f-cols"></p>
+    <div id="f-result" class="hidden">
+      <div class="kpis" id="f-kpis"></div>
+      <div id="f-msg"></div>
+      <div class="panel">
+        <h3 class="ph">State-of-health forecast from the last uploaded cycle</h3>
+        <div id="plot-field"></div>
+        <p class="muted" id="f-plotnote"></p>
+      </div>
+      <div class="panel scroll"><table id="f-table"></table>
+        <p class="muted">The model never sees capacity or SOH; it reads charge-side signals and the cycle count only. Intervals are conformalized quantile regression (90%) calibrated on cells held out from training.</p>
+        <p class="muted" id="f-heldout"></p></div>
+    </div>
+  </section>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.19.2/dist/ort.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js"></script>
 <script type="module" src="app.mjs"></script>
+<script type="module" src="field_app.mjs"></script>
 </body>
 </html>
