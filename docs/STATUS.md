@@ -3,7 +3,7 @@
 _Last updated: 2026-11-23 (Opus 5.5 lead)_
 
 ## State
-- **Phase 2 (field setting, `docs/PLAN_PHASE2.md`): Stages 0–3 complete (2026-11-23); Stage 4 (deliverables) next.**
+- **Phase 2 (field setting, `docs/PLAN_PHASE2.md`): complete (2026-11-23).** Stage 4 delivered: field-mode demo live on the Space (ADR-0022; per-protocol iTransformer, reproduces `field_final` held-out metrics, JS port parity-tested), showcase field section, trajectories field mode with informativeness badges, README field results, MODEL_CARD.md, interview notes, CONTRIBUTING, architecture. Weights (lab + `field/`) on the HF model repo.
   - Stage 0: ADR-0018 (outliers, field inputs), ADR-0019 (intervals), `reports/eda_field.md`.
   - Stage 1–3: ADR-0020. `field_screen` 378 runs, `field_lookback` 360, `field_final` 990, `field_regen` 200; 0 failures.
   - Field signals beat age-only on Toyota and CALCE; on NASA forecasting no model does reliably.
@@ -38,10 +38,10 @@ _Last updated: 2026-11-23 (Opus 5.5 lead)_
 8. **Feature-availability rule (enforce in `tasks/` + leakage tests):** per-cycle quantities measured during discharge k (`discharge_time_s`, `discharge_energy_wh`, `discharge_temp_max_c`, discharge curves) are ≈ the target `capacity_k` itself. For Task A (estimate SOH_k) only charge-phase features of cycle k (+ history < k) are allowed; for Tasks B/C anything at cycles ≤ T_p. CALCE `ir_ohm` was changed in review to use the charge window only for this reason (NASA `ir_ohm` already uses the latest EIS *before* the charge).
 
 ## Next actions
-0. **Phase 2 Stage 4:** showcase field section, dashboards field mode with informativeness badges, field-model deploy decision (shift robustness + OOD guard), README and model card.
 1. Add the `HF_TOKEN` repository secret on GitHub so `deploy-space.yml` can republish on `v*` tags (optional).
-2. **Phase 9:** MODEL_CARD.md, `docs/interview_notes.md`, CONTRIBUTING, architecture diagram.
-3. **Owner reminder:** re-enable sleep with `sudo pmset -a disablesleep 0`.
+2. Push `main` to GitHub and check CI (the field node test was added to CI).
+3. Optional: live field model in the trajectories page (`LIVE_FIELD` hook in `web/traj.mjs`; needs signal columns in `traj_field`).
+4. **Owner reminder:** re-enable sleep with `sudo pmset -a disablesleep 0`.
 
 ## Open risks
 - HF free tier availability at deploy time (re-check in Phase 8 day 1; fallback Streamlit Community Cloud).
