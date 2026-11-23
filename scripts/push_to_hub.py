@@ -36,17 +36,20 @@ REL_LINK = re.compile(r"\]\((?!https?://|#|mailto:)([^)]+)\)")
 
 
 def _field_table(field_meta: dict) -> str:
-    """Per-protocol summary from ``field_meta.json`` files (keys read defensively)."""
+    """Per-protocol summary from the ``field_meta.json`` files of ``train_deploy_field.py``."""
     rows = []
     for proto, m in sorted(field_meta.items()):
-        cells = m.get("cells") or {}
-        held = cells.get("held_out", cells.get("test")) if isinstance(cells, dict) else None
-        lb = m.get("lookbacks")
+        tasks = m.get("tasks", {})
+        lb = "/".join(str(tasks[t]["lookback"]) for t in ("soh", "forecast", "rul") if t in tasks)
+        held = sum(len(v) for v in m.get("cells", {}).get("heldout", {}).values())
         rows.append(
-            f"| {proto} | {len(m.get('channels') or [])} | "
-            f"{json.dumps(lb) if lb else '-'} | {json.dumps(held) if held else '-'} |"
+            f"| {proto} | {m.get('feature_set', '-')} | {len(m.get('channels') or [])} | "
+            f"{lb or '-'} | {len(m.get('cells', {}).get('train', []))} | {held} |"
         )
-    head = "| Protocol | Channels | Lookbacks | Held-out cells |\n|---|---|---|---|\n"
+    head = (
+        "| Protocol | Feature set | Channels | Lookback F-A/F-B/F-C | Train cells "
+        "| Held-out cells |\n|---|---|---|---|---|---|\n"
+    )
     return (
         "\nShipped under `field/` in this repo (`field_meta.json` per protocol):\n\n"
         + head
