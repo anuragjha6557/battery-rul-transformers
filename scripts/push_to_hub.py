@@ -18,6 +18,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import shutil
 import sys
 import tempfile
@@ -30,8 +31,51 @@ GITHUB = "https://github.com/anuragjha6557/battery-rul-transformers"
 IGNORE = shutil.ignore_patterns("__pycache__", "*.pyc", ".DS_Store")
 
 
-def model_card(meta: dict) -> str:
+FIELD_BLOCK = re.compile(r"<!-- FIELD:START -->.*?<!-- FIELD:END -->\n?", re.S)
+REL_LINK = re.compile(r"\]\((?!https?://|#|mailto:)([^)]+)\)")
+
+
+def _field_table(field_meta: dict) -> str:
+    """Per-protocol summary from ``field_meta.json`` files (keys read defensively)."""
+    rows = []
+    for proto, m in sorted(field_meta.items()):
+        cells = m.get("cells") or {}
+        held = cells.get("held_out", cells.get("test")) if isinstance(cells, dict) else None
+        lb = m.get("lookbacks")
+        rows.append(
+            f"| {proto} | {len(m.get('channels') or [])} | "
+            f"{json.dumps(lb) if lb else '-'} | {json.dumps(held) if held else '-'} |"
+        )
+    head = "| Protocol | Channels | Lookbacks | Held-out cells |\n|---|---|---|---|\n"
+    return (
+        "\nShipped under `field/` in this repo (`field_meta.json` per protocol):\n\n"
+        + head
+        + ("\n".join(rows) + "\n")
+    )
+
+
+def model_card(meta: dict, field_meta: dict | None = None) -> str:
+    """HF model card: the repo's MODEL_CARD.md plus the shipped-weights header.
+
+    The "Field models" block (between ``<!-- FIELD:START -->`` / ``<!-- FIELD:END -->``) is
+    kept only when ``field_meta`` (protocol -> parsed ``field_meta.json``) is given.
+    """
     cov = {t: meta["tasks"][t]["cal_coverage_cqr"] for t in meta["tasks"]}
+    body = (ROOT / "MODEL_CARD.md").read_text()
+    if field_meta:
+        body = body.replace("<!-- FIELD:START -->", "").replace("<!-- FIELD:END -->", "")
+        body = body.replace(
+            "- **One model per protocol**",
+            _field_table(field_meta) + "\n- **One model per protocol**",
+            1,
+        )
+    else:
+        body = FIELD_BLOCK.sub(
+            "Field models (no SOH history) are not part of this upload; see the GitHub "
+            "repository and ADR-0022.\n",
+            body,
+        )
+    body = REL_LINK.sub(lambda m: f"]({GITHUB}/blob/main/{m.group(1)})", body)
     return f"""---
 license: mit
 library_name: pytorch
@@ -40,21 +84,14 @@ tags: [battery, remaining-useful-life, time-series, conformal-prediction]
 
 # Battery RUL: iTransformer-v2 weights
 
-`{meta.get("model_version", "itransformer-v2")}`: single-channel iTransformer (SOH history plus
-causal SOH summaries) with direct multi-horizon quantile heads and conformalized quantile
-regression (90% intervals). Trained on pooled NASA, CALCE and Toyota/MIT-Stanford cells; the
-calibration cells were never trained on.
-
-Files: `forecast.pt` (SOH, horizons 1/10/25/50/100), `rul.pt` (cycles to 80% SOH), their ONNX
-exports with pre/post-processing folded in (`forecast.onnx`, `rul.onnx`, `serve_meta.json`),
-`deploy_meta.json` (CQR corrections, out-of-distribution statistics, cell split, provenance).
+`{meta.get("model_version", "itransformer-v2")}`. Files: `forecast.pt` (SOH, h = 1/10/25/50/100),
+`rul.pt` (cycles to 80% SOH), their ONNX exports with pre/post-processing folded in
+(`forecast.onnx`, `rul.onnx`, `serve_meta.json`), `deploy_meta.json` (CQR corrections,
+out-of-distribution statistics, cell split, provenance).
 
 Calibration-set coverage after CQR (target 0.90): `{json.dumps(cov)}`
 
-Intended use: research demo. Intervals hold only for cells resembling the training data; RUL for
-unseen chemistries or protocols is unreliable. Code, benchmark and limitations: {GITHUB}
-Demo Space: https://huggingface.co/spaces/{DEFAULT_SPACE_REPO}
-"""
+{body}"""
 
 
 WEB_FILES = ("forecast.onnx", "rul.onnx", "serve_meta.json")
@@ -89,8 +126,13 @@ def push_weights(args: argparse.Namespace) -> None:
             shutil.copy2(src / n, stage / n)
         for n in WEB_FILES:
             shutil.copy2(web / n, stage / n)
-        (stage / "README.md").write_text(model_card(meta))
-        files = sorted(p.name for p in stage.iterdir())
+        field_meta = {}
+        field_src = src.parent / "deploy_field"  # written by scripts/train_deploy_field.py
+        for fm in sorted(field_src.glob("*/field_meta.json")):
+            field_meta[fm.parent.name] = json.loads(fm.read_text())
+            shutil.copytree(fm.parent, stage / "field" / fm.parent.name, ignore=IGNORE)
+        (stage / "README.md").write_text(model_card(meta, field_meta or None))
+        files = sorted(str(p.relative_to(stage)) for p in stage.rglob("*") if p.is_file())
         print(f"[weights] {args.model_repo} (model): {files}")
         if args.dry_run:
             print("[weights] dry run: nothing uploaded")
