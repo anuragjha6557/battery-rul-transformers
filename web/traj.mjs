@@ -1,25 +1,35 @@
 // Whole-life trajectories: every method's h-step-ahead held-out forecasts over a cell's life.
 // Benchmark predictions: app/examples/traj/<cell>_compare.json (scripts/make_demo_compare.py).
 // Live deployed model: computed in the browser (core.mjs, parity-tested) on cells it never saw.
+// Field mode (no SOH history): app/examples/traj_field/<cell>_compare.json (scripts/make_field_traj.py).
 import { parseCSV, postprocess, prepare, validate } from "./core.mjs";
 
 const $ = (id) => document.getElementById(id);
 const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const LIVE = "live";
 const ORDER = ["live", "itransformer", "lgbm", "itransformer_sc", "patchtst", "lstm", "persistence", "last_slope", "elasticnet",
-  "nlinear", "dlinear", "rlinear", "gru", "transformer",
+  "nlinear", "dlinear", "rlinear", "gru", "transformer", "age_only",
   "lstm+rest", "transformer+rest", "lgbm+rest", "itransformer+rest", "itransformer_sc+rest", "elasticnet+rest"];
 const SLOT = { itransformer: 1, lgbm: 2, itransformer_sc: 3, patchtst: 7, lstm: 5, gru: 4, transformer: 8, elasticnet: 6 };
-const DASH = { persistence: "dash", last_slope: "dash" };
+const DASH = { persistence: "dash", last_slope: "dash", age_only: "dot" };
+const MODES = { lab: "examples/traj", field: "examples/traj_field" };
+const DEFAULT_SEL = { lab: ["live", "itransformer", "lgbm", "persistence"], field: ["itransformer", "lstm", "lgbm", "age_only"] };
+// Interval informativeness (ADR-0019): useful when width < 50 % of max(point - 0.8, 0.005), SOH as a fraction.
+const USEFUL_FRAC = 0.5, SOH_EOL = 0.8, MIN_DIST = 0.005;
+/** Pluggable live series for field mode. Another module can set globalThis.LIVE_FIELD to
+ *  { available(info) -> bool, compute(D) -> Promise<{h, origin, point, lo, hi, rul, rlo, rhi}|null> } (same shape as the lab
+ *  live model's output); while it is unset the live series stays hidden in field mode. */
+const LIVE_FIELD = globalThis.LIVE_FIELD ?? null;
+let MODE = "lab";
 let CELLS = [], meta = null, sessF = null, sessR = null;
 let D = null; // loaded cell
-let H = 50, SEL = ["live", "itransformer", "lgbm", "persistence"], BAND = "";
+let H = 50, SEL = [...DEFAULT_SEL.lab], BAND = "";
 
 function color(m) {
   if (m === LIVE) return css("--text-primary");
   const b = m.replace("+rest", "");
   if (SLOT[b]) return css(`--series-${SLOT[b]}`);
-  if (b === "persistence" || b === "last_slope") return css("--text-secondary");
+  if (b === "persistence" || b === "last_slope" || b === "age_only") return css("--text-secondary");
   return css("--other");
 }
 const dash = (m) => (m.endsWith("+rest") ? "dashdot" : DASH[m] ?? "solid");
@@ -40,12 +50,14 @@ $("theme").addEventListener("click", () => {
 
 // ------------------------------------------------------------------ loading
 async function init() {
-  CELLS = await (await fetch("examples/traj/cells.json")).json();
-  for (const c of CELLS) $("cell").add(new Option(c.label, c.name));
   const q = new URLSearchParams(location.search);
-  if (q.get("cell") && CELLS.some((c) => c.name === q.get("cell"))) $("cell").value = q.get("cell");
+  if (q.get("mode") === "field") MODE = "field";
   if (q.get("h")) H = Number(q.get("h"));
+  SEL = [...DEFAULT_SEL[MODE]];
+  syncMode();
+  await loadCells(q.get("cell"));
   $("cell").addEventListener("change", loadCell);
+  for (const b of $("mode").querySelectorAll("button")) b.addEventListener("click", () => setMode(b.dataset.mode));
   $("band").addEventListener("change", () => { BAND = $("band").value; draw(); });
   try {
     ort.env.wasm.numThreads = 1;
@@ -57,32 +69,63 @@ async function init() {
   await loadCell();
 }
 
+function syncMode() {
+  for (const b of $("mode").querySelectorAll("button")) b.setAttribute("aria-pressed", String(b.dataset.mode === MODE));
+}
+async function loadCells(want) {
+  CELLS = await (await fetch(`${MODES[MODE]}/cells.json`)).json();
+  $("cell").innerHTML = "";
+  for (const c of CELLS) $("cell").add(new Option(c.label, c.name));
+  if (want && CELLS.some((c) => c.name === want)) $("cell").value = want;
+}
+async function setMode(m) {
+  if (m === MODE) return;
+  MODE = m;
+  SEL = [...DEFAULT_SEL[MODE]];
+  BAND = "";
+  const u = new URL(location.href);
+  if (m === "field") u.searchParams.set("mode", "field");
+  else u.searchParams.delete("mode");
+  window.history.replaceState(null, "", u);
+  syncMode();
+  await loadCells();
+  await loadCell();
+}
+const liveOn = (info) => (MODE === "lab" ? !!(info.live && sessF) : !!(LIVE_FIELD?.available?.(info) && info.live));
+
 async function loadCell() {
-  const name = $("cell").value, info = CELLS.find((c) => c.name === name);
+  const name = $("cell").value, info = CELLS.find((c) => c.name === name), dir = MODES[MODE];
   $("status").textContent = "loading…";
   const [cmp, full, eol] = await Promise.all([
-    fetch(`examples/traj/${name}_compare.json`).then((r) => r.json()),
-    fetch(`examples/traj/${name}_full.csv`).then((r) => r.text()),
-    fetch(`examples/traj/${name}_eol.json`).then((r) => r.json()),
+    fetch(`${dir}/${name}_compare.json`).then((r) => r.json()),
+    fetch(`${dir}/${name}_full.csv`).then((r) => r.text()),
+    fetch(`${dir}/${name}_eol.json`).then((r) => r.json()),
   ]);
   const rows = validate(parseCSV(full), 2);
   const ref = rows.capacity_ah.slice(0, 5).reduce((a, b) => a + b, 0) / Math.min(5, rows.capacity_ah.length);
   const soh = rows.capacity_ah.map((c) => c / ref);
   const sohAt = new Map(rows.cycle_idx.map((c, i) => [c, soh[i]]));
   D = { name, info, cmp, rows, soh, sohAt, eol: eol.eol_cycle, live: null };
-  const models = ORDER.filter((m) => (m === LIVE ? info.live && sessF : m in cmp.models));
+  const models = ORDER.filter((m) => (m === LIVE ? liveOn(info) : m in cmp.models));
   SEL = SEL.filter((m) => models.includes(m));
   if (!SEL.length) SEL = models.slice(0, 3);
   D.models = models;
   buildHorizons();
   buildChips();
   buildBand();
-  $("note").textContent = info.live
-    ? "This cell was never used to train any method, including the live model (it is one of its calibration cells)."
-    : "The live model is hidden here because this cell was part of its training data; every benchmark method shown is held out (leave-one-cell-out / official test split).";
+  $("note").textContent = MODE === "field"
+    ? "Field setting: no model sees any SOH or capacity history, only BMS-measurable charge signals and the cycle count (ADR-0018). Every method shown is held out (leave-one-cell-out / official test split). The deployed field model is not shown yet."
+    : info.live
+      ? "This cell was never used to train any method, including the live model (it is one of its calibration cells)."
+      : "The live model is hidden here because this cell was part of its training data; every benchmark method shown is held out (leave-one-cell-out / official test split).";
   draw();
-  if (info.live && sessF) computeLive(D);
-  else $("status").textContent = "";
+  if (MODE === "lab" && info.live && sessF) computeLive(D);
+  else if (MODE === "field" && liveOn(info)) {
+    Promise.resolve(LIVE_FIELD.compute(D))
+      .then((L) => { if (L && D?.name === name) { D.live = L; buildHorizons(); draw(); } })
+      .catch((e) => console.error("field live", e));
+    $("status").textContent = "";
+  } else $("status").textContent = "";
 }
 
 /** Live model predictions at every origin (in the browser, chunked). */
@@ -120,7 +163,7 @@ function horizonsOf(m) {
   return D.cmp.models[m]?.forecast ? D.cmp.h : [];
 }
 function buildHorizons() {
-  const all = [...new Set([...D.cmp.h, ...(D.info.live ? meta?.tasks.forecast.horizons ?? [] : [])])].sort((a, b) => a - b);
+  const all = [...new Set([...D.cmp.h, ...(MODE === "lab" && D.info.live ? meta?.tasks.forecast.horizons ?? [] : [])])].sort((a, b) => a - b);
   if (!all.includes(H)) H = all.includes(50) ? 50 : all[0];
   $("hz").innerHTML = all.map((h) => `<button aria-pressed="${h === H}" data-h="${h}">h = ${h}</button>`).join("");
   for (const b of $("hz").querySelectorAll("button")) {
@@ -131,7 +174,7 @@ function buildChips() {
   $("chips").innerHTML = D.models.map((m) => {
     const has = horizonsOf(m).includes(H) || (m === LIVE && !D.live);
     return `<label class="chip${has ? "" : " off"}" title="${has ? "" : `no forecast at h = ${H}`}"><input type="checkbox" data-m="${m}" ${SEL.includes(m) ? "checked" : ""} ${has ? "" : "disabled"}>` +
-      `<span class="sw" style="background:${color(m)}"></span>${label(m)}</label>`;
+      `<span class="sw" style="background:${color(m)}"></span>${label(m)}${has ? badge(m) : ""}</label>`;
   }).join("");
   for (const i of $("chips").querySelectorAll("input")) {
     i.addEventListener("change", () => {
@@ -186,6 +229,21 @@ function metrics(m) {
   }
   return { rmse: n ? Math.sqrt(se / n) : null, bias: n ? bias / n : null, cov: ncov ? cov / ncov : null, rul: rn ? ra / rn : null, n };
 }
+/** Interval informativeness at horizon H (ADR-0019): per-target usefulness mask, useful share and coverage. */
+function inform(m) {
+  const t = track(m);
+  if (!t || !t.lo) return null;
+  const useful = t.x.map((_, i) => (t.lo[i] == null || t.hi[i] == null || t.y[i] == null ? null : t.hi[i] - t.lo[i] < USEFUL_FRAC * Math.max(t.y[i] - SOH_EOL, MIN_DIST)));
+  const ok = useful.filter((u) => u != null);
+  return { t, useful, share: ok.length ? ok.filter(Boolean).length / ok.length : null, cov: metrics(m).cov };
+}
+function badge(m) {
+  const i = inform(m);
+  if (!i || i.share == null) return "";
+  const cls = i.share >= 0.5 ? "ok" : "bad";
+  const tip = `Share of origins whose 90% interval is useful (width < 50% of the predicted distance to 80% SOH, ADR-0019), and empirical coverage at h = ${H}`;
+  return `<span class="badge ${cls}" title="${tip}">${i.share < 0.5 ? "uninformative: " : ""}useful ${Math.round(i.share * 100)}%${i.cov == null ? "" : ` · cov ${Math.round(i.cov * 100)}%`}</span>`;
+}
 function rolling(x, y, w = 11) {
   const out = [];
   for (let i = 0; i < y.length; i++) {
@@ -225,12 +283,18 @@ function draw() {
   // SOH chart
   const tr = [];
   if (BAND && SEL.includes(BAND)) {
-    const t = track(BAND);
-    if (t && t.lo) {
-      const col = color(BAND);
-      tr.push({ x: t.x, y: t.hi.map((v) => (v == null ? null : v * 100)), mode: "lines", line: { width: 0 }, hoverinfo: "skip", showlegend: false });
-      tr.push({ x: t.x, y: t.lo.map((v) => (v == null ? null : v * 100)), mode: "lines", line: { width: 0 }, fill: "tonexty",
-        fillcolor: rgba(col.startsWith("#") ? col : "#888888", 0.18), name: `90% interval: ${label(BAND)}`, hoverinfo: "skip" });
+    const inf = inform(BAND);
+    if (inf) {
+      const { t, useful } = inf, col = color(BAND), base = col.startsWith("#") ? col : "#888888";
+      const pct = (arr, keep) => arr.map((v, i) => (v == null || !keep(useful[i]) ? null : v * 100));
+      const seg = (keep, fill, name, line, extra = {}) => {
+        tr.push({ x: t.x, y: pct(t.hi, keep), mode: "lines", line: { width: 0, ...line }, hoverinfo: "skip", showlegend: false, connectgaps: false });
+        tr.push({ x: t.x, y: pct(t.lo, keep), mode: "lines", line: { width: 0, ...line }, fill: "tonexty", fillcolor: fill, name, hoverinfo: "skip", connectgaps: false, ...extra });
+      };
+      seg((u) => u === true, rgba(base, 0.22), `90% interval, useful: ${label(BAND)}`, {});
+      // uninformative stretches: dimmed, hatched where supported, dotted outline
+      seg((u) => u === false, rgba(base, 0.07), `90% interval, uninformative (> 50% of distance to 80%): ${label(BAND)}`,
+        { width: 1, dash: "dot", color: rgba(base, 0.5) }, { fillpattern: { shape: "/", size: 6, solidity: 0.25, fgcolor: rgba(base, 0.5), bgcolor: "rgba(0,0,0,0)" } });
     }
   }
   tr.push({ x: c, y: D.soh.map((v) => v * 100), mode: "lines", name: "measured SOH", line: { color: rgba(css("--series-4").startsWith("#") ? css("--series-4") : "#eda100", 0.9), width: 4 }, opacity: 0.55,
@@ -269,11 +333,11 @@ function draw() {
     yaxis: { title: { text: `|error| at h = ${H} (pp SOH)` }, rangemode: "tozero" } }), CFG);
 
   // table
-  const rows = SEL.map((m) => ({ m, ...metrics(m) })).filter((r) => r.n || r.rul != null).sort((a, b) => (a.rmse ?? 1e9) - (b.rmse ?? 1e9));
+  const rows = SEL.map((m) => ({ m, ...metrics(m), useful: inform(m)?.share ?? null })).filter((r) => r.n || r.rul != null).sort((a, b) => (a.rmse ?? 1e9) - (b.rmse ?? 1e9));
   const f = (v, d, suf = "") => (v == null ? "–" : `${v.toFixed(d)}${suf}`);
-  $("tab").innerHTML = "<tr><th>Method</th><th>RMSE (% SOH)</th><th>Bias</th><th>90% coverage</th><th>RUL MAE (cycles)</th><th>Targets</th></tr>" +
+  $("tab").innerHTML = "<tr><th>Method</th><th>RMSE (% SOH)</th><th>Bias</th><th>90% coverage</th><th>Useful intervals</th><th>RUL MAE (cycles)</th><th>Targets</th></tr>" +
     rows.map((r) => `<tr><td><span class="sw2" style="background:${color(r.m)}"></span>${label(r.m)}</td><td>${f(r.rmse, 2)}</td><td>${r.bias == null ? "–" : (r.bias >= 0 ? "+" : "") + r.bias.toFixed(2)}</td>` +
-      `<td>${r.cov == null ? "–" : Math.round(r.cov * 100) + "%"}</td><td>${f(r.rul, 0)}</td><td>${r.n}</td></tr>`).join("");
+      `<td>${r.cov == null ? "–" : Math.round(r.cov * 100) + "%"}</td><td>${r.useful == null ? "–" : Math.round(r.useful * 100) + "%"}</td><td>${f(r.rul, 0)}</td><td>${r.n}</td></tr>`).join("");
 
   // RUL chart
   const rr = [];

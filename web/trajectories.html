@@ -8,14 +8,14 @@
 <style>
 :root{
   --bg:#fbfbfa;--surface-2:#ffffff;--text-primary:#0b0b0b;--text-secondary:#52514e;--grid:#e4e3df;--line:#e4e3df;--accent:#2a78d6;
-  --series-1:#2a78d6;--series-2:#eb6834;--series-3:#1baf7a;--series-4:#eda100;--series-5:#e87ba4;--series-6:#008300;--series-7:#6250d6;--series-8:#e34948;--other:#9b9a94;
+  --series-1:#2a78d6;--series-2:#eb6834;--series-3:#1baf7a;--series-4:#eda100;--series-5:#e87ba4;--series-6:#008300;--series-7:#6250d6;--series-8:#e34948;--other:#9b9a94;--warn-bg:#fff4e0;--warn-ink:#7a4a00;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#141413;--surface-2:#222220;--text-primary:#f0efec;--text-secondary:#c3c2b7;--grid:#34332f;--line:#34332f;--accent:#3987e5;
-  --series-1:#3987e5;--series-2:#d95926;--series-3:#199e70;--series-4:#c98500;--series-5:#d55181;--series-6:#008300;--series-7:#9085e9;--series-8:#e66767;--other:#7a7974;}}
+  --series-1:#3987e5;--series-2:#d95926;--series-3:#199e70;--series-4:#c98500;--series-5:#d55181;--series-6:#008300;--series-7:#9085e9;--series-8:#e66767;--other:#7a7974;--warn-bg:#3a2c12;--warn-ink:#f3cf8a;}}
 :root[data-theme="dark"]{
   --bg:#141413;--surface-2:#222220;--text-primary:#f0efec;--text-secondary:#c3c2b7;--grid:#34332f;--line:#34332f;--accent:#3987e5;
-  --series-1:#3987e5;--series-2:#d95926;--series-3:#199e70;--series-4:#c98500;--series-5:#d55181;--series-6:#008300;--series-7:#9085e9;--series-8:#e66767;--other:#7a7974;}
+  --series-1:#3987e5;--series-2:#d95926;--series-3:#199e70;--series-4:#c98500;--series-5:#d55181;--series-6:#008300;--series-7:#9085e9;--series-8:#e66767;--other:#7a7974;--warn-bg:#3a2c12;--warn-ink:#f3cf8a;}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text-primary);font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
 header.top{border-bottom:1px solid var(--line)}
@@ -50,6 +50,8 @@ th:first-child,td:first-child{text-align:left}
 h3{font-size:1rem;margin:0 0 4px}
 .sw2{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle}
 button.theme{font:inherit;font-size:.82rem;background:none;border:1px solid var(--line);color:var(--text-secondary);border-radius:6px;padding:3px 10px;cursor:pointer}
+.badge{font-size:.74rem;border-radius:999px;padding:0 7px;margin-left:2px;font-variant-numeric:tabular-nums;border:1px solid var(--line);color:var(--text-secondary)}
+.badge.bad{border-style:dashed;color:var(--warn-ink);background:var(--warn-bg)}
 .status{font-size:.84rem;color:var(--text-secondary)}
 </style>
 </head>
@@ -62,10 +64,11 @@ button.theme{font:inherit;font-size:.82rem;background:none;border:1px solid var(
 </div></header>
 <main>
   <h1>Every method, over the whole life of a cell</h1>
-  <p class="lede">Pick a cell and <b>one</b> forecast horizon h. Each method's curve is made of its forecasts issued h cycles earlier, drawn at the cycle they predict, so the whole life is covered by forecasts of the same length. All benchmarked methods are shown with their genuine held-out predictions: the model never trained on this cell. Toggle methods on and off to compare.</p>
+  <p class="lede">Pick a cell and <b>one</b> forecast horizon h. Each method's curve is made of its forecasts issued h cycles earlier, drawn at the cycle they predict, so the whole life is covered by forecasts of the same length. All benchmarked methods are shown with their genuine held-out predictions: the model never trained on this cell. Toggle methods on and off to compare. <b>Lab</b> models see the measured capacity history; <b>Field</b> models see only what a battery management system can measure (no SOH or capacity input). The badge on each method is the share of forecasts whose 90% interval is <i>useful</i> (narrower than half the predicted distance to 80% SOH) and its empirical coverage; stretches where the interval is uninformative are drawn dimmed and hatched.</p>
 
   <div class="panel">
     <div class="row">
+      <div><div class="small" style="margin:0 0 4px">Setting</div><div class="seg" id="mode"><button data-mode="lab" aria-pressed="true" title="Models see the measured capacity history">Lab</button><button data-mode="field" aria-pressed="false" title="No SOH or capacity history: BMS-measurable signals and cycle count only">Field</button></div></div>
       <label class="f">Cell <select id="cell"></select></label>
       <div><div class="small" style="margin:0 0 4px">Forecast horizon (cycles ahead)</div><div class="seg" id="hz"></div></div>
       <label class="f">90% interval band <select id="band"><option value="">none</option></select></label>
