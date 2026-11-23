@@ -30,7 +30,7 @@
 - **Intervals:** per-horizon CQR (α = 0.1) from the sub-models' inner-validation predictions, the same rule as `battery-rul calibrate`. Calibration therefore never sees a demo cell.
 - **Input contract:** CSV with `cycle_idx` plus the protocol's raw field signals. The required columns are the model's channels before derivation. Optional `charge_time_s` is used only by the charge-pause rule; it is never a model input. The ADR-0018 causal input rules (physical ranges, charge pause, robust z) run on the upload exactly as in training. Label rules cannot run, because there is no capacity.
 - **OOD guard:**
-  - Mahalanobis distance of the latest cycle's scaled channel vector against the training cycles (threshold: training 99th percentile).
+  - Distance of the latest cycle's scaled channel vector from the training cycles (threshold: training 99th percentile). The covariance form (diagonal, Ledoit-Wolf or full) is chosen per protocol on training cells only (Evidence).
   - A flag for missing or all-empty channels and for histories shorter than the lookback.
   - The page states the measured coverage under batch shift (Toyota test2 0.66) and the informativeness of each interval (useful = width < 50 % of the distance to 80 % SOH; ADR-0019).
 - **Artifacts:**
@@ -40,7 +40,18 @@
 
 ## Evidence
 - ADR-0020 Stage 3 outcome and ADR-0021: the accuracy and interval tables cited above.
-- The deployed field models reproduce the `field_final` seed-0 held-out metrics for their demo cells, up to MPS nondeterminism. This check is reported by `train_deploy_field.py`.
+- **Reproduction (2026-11-23):** the deployed models reproduce the `field_final` seed-0 held-out metrics to 4 decimals for every protocol and task, e.g. NASA F-A rmse 4.8743, CALCE F-B rmse_h50 5.2642, Toyota F-A test1/test2 1.1148/1.6294, Toyota F-C test2 170.84 cycles (`train_deploy_field.py` prints both).
+- **Serving = training path:** `FieldPredictor` on an uploaded B0018 log returns the same predictions as the training-path windows at the last origin (F-A 0.772860, F-B h50 0.593421). Unit tests: `tests/unit/test_serve_field.py`.
+- **OOD guard** (`scripts/field_ood_check.py`, `reports/tables/field_ood_check.md`). The distance is chosen on training cells only, as the variant whose inner-fold false-alarm rate is closest to 1 %:
+
+  | Protocol | Chosen | Inner false alarms | Held-out flag rate |
+  |---|---|---|---|
+  | CALCE | diagonal | 1.0 % | CS2_38 0.6 % |
+  | Toyota | diagonal | 1.4 % | test1 0.8 %, test2 5.9 % |
+  | NASA | Ledoit-Wolf | 9.9 % | B0018 92 % |
+
+  - **The guard does not detect the Toyota batch shift reliably** (5.9 % of test2 cycles flagged, while coverage there is 0.66). So the page shows a fixed warning about protocol/batch shift and does not rely on the guard alone.
+  - **On NASA the guard cannot be calibrated** with 3 training cells (every variant over-alarms). B0018, an independent rig, is flagged almost always. That is stated, not hidden.
 
 ## Consequences
 - Each field model is valid only for its protocol. The UI says so, and the OOD guard flags mismatches.

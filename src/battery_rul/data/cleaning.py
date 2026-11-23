@@ -157,18 +157,32 @@ def clean_cycles(
     cycles: pd.DataFrame, input_cols: Sequence[str] = ROBUST_COLS
 ) -> tuple[pd.DataFrame, CleaningReport]:
     """Apply ADR-0018: drop label-outlier cycles; set input outliers to NaN (causal rules)."""
-    rep = CleaningReport(n_rows_in=len(cycles))
     lab = label_outliers(cycles)
+    out, counts = clean_inputs(cycles, input_cols)
+    rep = CleaningReport(n_rows_in=len(cycles), input_counts=counts)
     rep.label_counts = {k: int(lab[k].sum()) for k in lab.columns}
+    out = out[~lab["any"].to_numpy()].reset_index(drop=True)
+    rep.n_rows_out = len(out)
+    return out, rep
+
+
+def clean_inputs(
+    cycles: pd.DataFrame, input_cols: Sequence[str] = ROBUST_COLS
+) -> tuple[pd.DataFrame, dict[str, int]]:
+    """The causal input rules of ADR-0018 only (no capacity needed; used when serving).
+
+    Returns a copy with input outliers set to NaN (rows and index unchanged) and the counts.
+    """
+    counts: dict[str, int] = {}
     out = cycles.copy()
     for c, (lo, hi) in PHYSICAL_RANGES.items():
         if c in out:
             bad = (out[c] < lo) | (out[c] > hi)
-            rep.input_counts[f"range:{c}"] = int(bad.sum())
+            counts[f"range:{c}"] = int(bad.sum())
             out.loc[bad, c] = np.nan
     masks = input_outliers(out, input_cols)
     pause = masks.pop("charge_pause")
-    rep.input_counts["charge_pause"] = int(pause.sum())
+    counts["charge_pause"] = int(pause.sum())
     dur_cols = [
         c
         for c in out.columns
@@ -178,8 +192,6 @@ def clean_cycles(
     out.loc[pause, dur_cols] = np.nan
     for c, m in masks.items():
         m = m & ~pause  # already masked
-        rep.input_counts[c] = int(m.sum())
+        counts[c] = int(m.sum())
         out.loc[m, c] = np.nan
-    out = out[~lab["any"]].reset_index(drop=True)
-    rep.n_rows_out = len(out)
-    return out, rep
+    return out, counts

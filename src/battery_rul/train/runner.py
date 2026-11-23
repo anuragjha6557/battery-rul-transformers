@@ -238,6 +238,7 @@ class FoldData:
     train: SampleSet
     tests: dict[tuple[str, str], SampleSet]  # (split_tag, origin policy) -> samples
     y_smooth: dict[tuple[str, str], tuple[np.ndarray, np.ndarray]]  # -> (values, valid mask)
+    prepared: PreparedCycles | None = None  # the fold's cleaned, train-scaled cycles (deploy)
 
 
 def _is_no_samples(e: ValueError) -> bool:
@@ -298,7 +299,7 @@ def fold_data(
                 tests[(tag, policy)] = ss
                 if task == "forecast":
                     sm[(tag, policy)] = _smooth_targets(ctx, ss)
-        return FoldData(train, tests, sm)
+        return FoldData(train, tests, sm, prepared)
 
     key = (
         *base,
