@@ -225,9 +225,29 @@ def prepare_cycles(
     channels = tuple(c for c in candidates if df.loc[train_rows, c].notna().any())
     df[list(channels)] = df.groupby("cell_id", sort=False)[list(channels)].ffill()
     scaler = FoldScaler().fit(df, train_cells, list(channels))
+    return _scaled(df, channels, scaler)
+
+
+def _scaled(df: pd.DataFrame, channels: tuple[str, ...], scaler: FoldScaler) -> PreparedCycles:
     scaled = scaler.transform(df)
     scaled[list(channels)] = scaled[list(channels)].clip(-CLIP_Z, CLIP_Z).fillna(0.0)
     return PreparedCycles(cycles=scaled, channels=channels, scaler=scaler)
+
+
+def apply_prepared(
+    cycles: pd.DataFrame, channels: tuple[str, ...], scaler: FoldScaler
+) -> PreparedCycles:
+    """Serving: the steps of :func:`prepare_cycles` with a scaler fitted on training cells.
+
+    Derivation, per-cell forward fill, standardisation, clipping and zero-fill are identical;
+    channels absent from ``cycles`` become all-missing (zero after scaling, as in training).
+    """
+    df = _derive(cycles)
+    for c in channels:
+        if c not in df.columns:
+            df[c] = np.nan
+    df[list(channels)] = df.groupby("cell_id", sort=False)[list(channels)].ffill()
+    return _scaled(df, channels, scaler)
 
 
 def _windows(values: np.ndarray, lookback: int) -> tuple[np.ndarray, np.ndarray]:

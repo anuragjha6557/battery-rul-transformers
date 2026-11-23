@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import warnings
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 
 import numpy as np
 import pandas as pd
@@ -62,6 +62,20 @@ class FoldScaler:
         self.fitted_cells_ = cells
         self.columns_ = cols
         return self
+
+    @classmethod
+    def from_stats(cls, mean: Mapping[str, float], scale: Mapping[str, float]) -> FoldScaler:
+        """Rebuild a fitted scaler from saved statistics (serving); columns in ``mean`` order."""
+        if set(mean) != set(scale):
+            raise ValueError("mean and scale must have the same columns")
+        if any(not np.isfinite(v) or v <= 0 for v in scale.values()):
+            raise ValueError("scale values must be finite and positive")
+        out = cls()
+        cols = tuple(mean)
+        out.mean_ = pd.Series([float(mean[c]) for c in cols], index=list(cols), dtype=np.float64)
+        out.scale_ = pd.Series([float(scale[c]) for c in cols], index=list(cols), dtype=np.float64)
+        out.columns_ = cols
+        return out
 
     def transform(self, df: pd.DataFrame) -> pd.DataFrame:
         """Return a copy of ``df`` with the fitted columns standardised (NaN preserved)."""

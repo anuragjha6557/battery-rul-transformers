@@ -129,6 +129,10 @@ def save_pretrained(
             "tab_mu": np.atleast_1d(model._tab_mu).tolist(),
             "tab_sd": np.atleast_1d(model._tab_sd).tolist(),
             "rul_scale": float(model._rul_scale),
+            # field setting: per-horizon mean training target (absent in older checkpoints)
+            "field": bool(getattr(model, "_field", False)),
+            "y_offset": np.atleast_1d(getattr(model, "_y_offset", np.zeros(1))).tolist(),
+            "names": [list(n) for n in getattr(model, "_names", ((), ()))],
             "state_dict": {k: v.detach().cpu() for k, v in model.module.state_dict().items()},
             "meta": meta,
         },
@@ -148,6 +152,10 @@ def load_pretrained(path: Path, device: str = "auto") -> NeuralModel:
     model._tab_sd = np.asarray(ck["tab_sd"], dtype=np.float64)
     model._rul_scale = float(ck["rul_scale"])
     d = ck["dims"]
+    model._field = bool(ck.get("field", False))
+    model._y_offset = np.asarray(ck.get("y_offset", np.zeros(d["n_h"])), dtype=np.float64)
+    names = ck.get("names") or [[], []]
+    model._names = (tuple(names[0]), tuple(names[1]))
     model.module = model.build_module(
         d["n_channels"], d["n_tab"], d["lookback"], d["n_h"], d["n_q"]
     ).to(model.device)
