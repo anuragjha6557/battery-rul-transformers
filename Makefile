@@ -2,7 +2,7 @@ UV ?= $(HOME)/.local/bin/uv
 export OMP_NUM_THREADS ?= 2
 export PYTORCH_ENABLE_MPS_FALLBACK = 1
 
-.PHONY: help env lint format typecheck test test-all cov data bench mlflow app clean
+.PHONY: help env lint format typecheck test test-web test-all cov data bench mlflow app clean
 
 help:  ## Show targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-12s %s\n", $$1, $$2}'
@@ -25,6 +25,11 @@ typecheck:  ## mypy on src/
 test:  ## Fast unit tests (CI-identical). LightGBM tests run in a second process (OpenMP isolation)
 	$(UV) run pytest
 	$(UV) run pytest -o addopts="-ra --strict-markers -m 'not data and not slow'" tests/lgbm
+	$(MAKE) test-web
+
+test-web:  ## Browser-demo parity tests (JS ports vs Python vectors; needs node)
+	node tests/web/test_core.mjs
+	node tests/web/test_field.mjs
 
 test-all:  ## All tests incl. real-data and slow (needs data/raw)
 	$(UV) run pytest -m ""
@@ -51,8 +56,9 @@ app:  ## Run the Gradio demo locally
 
 web:  ## Export ONNX and serve the static browser demo on http://localhost:8000
 	$(UV) run python scripts/export_onnx.py
-	node tests/web/test_core.mjs
+	$(MAKE) test-web
 	rm -rf artifacts/site && mkdir -p artifacts/site && cp web/* artifacts/web/*.onnx artifacts/web/serve_meta.json artifacts/site/ && cp -r app/examples artifacts/site/
+	if [ -d artifacts/web/field ]; then cp -r artifacts/web/field artifacts/site/field; fi
 	cd artifacts/site && python3 -m http.server 8000
 
 clean:  ## Remove caches (keeps data and mlruns)
