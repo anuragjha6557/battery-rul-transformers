@@ -230,7 +230,7 @@ function interval(t, q, Q, j, key) {
   return [q[j * Q + med], lo, hi];
 }
 
-/** Mahalanobis distance of the latest scaled channel vector + the same flags as FieldPredictor.ood. */
+/** Distance (stored precision; diagonal, Ledoit-Wolf or full per protocol) of the latest scaled channel vector + the same flags as FieldPredictor.ood. */
 export function ood(meta, scaledLast, frame) {
   const o = meta.ood;
   const d = scaledLast.map((v, i) => v - o.mean[i]);
@@ -240,7 +240,7 @@ export function ood(meta, scaledLast, frame) {
   const flags = [];
   if (dist > o.threshold) {
     flags.push(
-      `latest cycle's signals are far from the training cycles (Mahalanobis ${dist.toFixed(1)} > ${o.threshold.toFixed(1)}, ` +
+      `latest cycle's signals are far from the training cycles (distance ${dist.toFixed(1)} > ${o.threshold.toFixed(1)}, ` +
         `the training 99th percentile); the intervals assume a cell like the ${meta.protocol} training cells`,
     );
   }

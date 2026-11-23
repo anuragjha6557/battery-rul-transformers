@@ -105,9 +105,9 @@ export function render(d) {
     { xTitle: "Δ SOH RMSE, field_curve − field (% SOH; left = curve helps)" });
   // 4b lookback: L128 - L32
   const lbm = ["itransformer", "transformer", "lstm"];
-  dotPanels("field-lookback-soh", conds.slice(1).map((c) => ({ title: `${c}: SOH estimation`, rows: lbm.map((m) => d.lookback.find((v) => v.task === "soh" && v.model === m && v.cond === c)).filter(Boolean).map((v) => ({ ...v, y: lab(v.model), color: color(v.model) })) })),
+  dotPanels("field-lookback-soh", conds.slice(1).map((c) => ({ title: `F-A · ${c.replace("Toyota test ", "Toyota t")}`, rows: lbm.map((m) => d.lookback.find((v) => v.task === "soh" && v.model === m && v.cond === c)).filter(Boolean).map((v) => ({ ...v, y: lab(v.model), color: color(v.model) })) })),
     { xTitle: "Δ RMSE, L = 128 − L = 32 (% SOH; left = longer is better)" });
-  dotPanels("field-lookback-fc", conds.slice(1).map((c) => ({ title: `${c}: forecast h = 50`, rows: lbm.map((m) => d.lookback.find((v) => v.task === "forecast" && v.model === m && v.cond === c)).filter(Boolean).map((v) => ({ ...v, y: lab(v.model), color: color(v.model) })) })),
+  dotPanels("field-lookback-fc", conds.slice(1).map((c) => ({ title: `F-B h50 · ${c.replace("Toyota test ", "Toyota t")}`, rows: lbm.map((m) => d.lookback.find((v) => v.task === "forecast" && v.model === m && v.cond === c)).filter(Boolean).map((v) => ({ ...v, y: lab(v.model), color: color(v.model) })) })),
     { xTitle: "Δ RMSE h = 50, L = 128 − L = 32 (% SOH)" });
   // 4c regeneration token: error reduction at regeneration targets, h = 1
   plot("field-regen", () => {

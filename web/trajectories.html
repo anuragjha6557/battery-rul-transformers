@@ -83,7 +83,7 @@ button.theme{font:inherit;font-size:.82rem;background:none;border:1px solid var(
   <div class="panel"><h3>Forecast error over life</h3><div class="chart" id="c-err"></div>
     <p class="small">Absolute error |forecast − measured| at each target cycle, smoothed with an 11-cycle rolling mean so methods are comparable at a glance (hover shows the smoothed value).</p></div>
   <div class="panel scroll"><h3 id="t-tab">Ranking at this horizon</h3><table id="tab"></table>
-    <p class="small">RMSE and bias over every target cycle of this cell at the chosen horizon; interval coverage = share of measured values inside the method's calibrated 90% interval. RUL MAE is over every prediction point before end of life. The live model is trained on all three datasets at once; on NASA its RUL reacts strongly to each regeneration jump, while the per-dataset benchmark models are steadier there.</p></div>
+    <p class="small">RMSE and bias over every target cycle of this cell at the chosen horizon; interval coverage = share of measured values inside the method's calibrated 90% interval. RUL MAE is over every prediction point before end of life. In lab mode the live model is trained on all three datasets at once; on NASA its RUL reacts strongly to each regeneration jump, while the per-dataset benchmark models are steadier there.</p></div>
   <div class="panel"><h3>Remaining-life prediction over life</h3><div class="chart" id="c-rul"></div>
     <p class="small">Predicted RUL at every point in the cell's life against the true remaining life (red dashed) and a ±20% cone. RUL does not depend on the forecast horizon.</p></div>
 </main>

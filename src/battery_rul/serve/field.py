@@ -220,7 +220,7 @@ class FieldPredictor:
         flags: list[str] = []
         if dist > self._ood_thr:
             flags.append(
-                f"latest cycle's signals are far from the training cycles (Mahalanobis "
+                f"latest cycle's signals are far from the training cycles (distance "
                 f"{dist:.1f} > {self._ood_thr:.1f}, the training 99th percentile); the "
                 f"intervals assume a cell like the {self.protocol} training cells"
             )

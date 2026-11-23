@@ -276,7 +276,7 @@ table.heat td.best{font-weight:700;text-decoration:underline}
 
 <section id="deploy">
   <h2>8 · Try it</h2>
-  <p>The served model is the single-channel iTransformer-v2, so it needs only <code>cycle_idx, capacity_ah</code>. It is trained on all three datasets and calibrated on cells it never saw. It runs entirely in your browser via ONNX Runtime Web, so no data leaves the page. An out-of-distribution check warns when intervals should not be trusted.</p>
+  <p><b>Lab mode</b> serves the single-channel iTransformer-v2, so it needs only <code>cycle_idx, capacity_ah</code>. It is trained on all three datasets and calibrated on cells it never saw. <b>Field mode</b> serves one field iTransformer per charging protocol (NASA, CALCE, Toyota; ADR-0022): you upload the BMS signals of that protocol, never capacity, and get the current SOH estimate, a forecast and RUL with CQR intervals marked informative or not. Both run entirely in your browser via ONNX Runtime Web, so no data leaves the page. An out-of-distribution check warns when intervals should not be trusted; in field mode it is weak under batch shift, and the page says so.</p>
   <a class="cta" href="index.html">Open the live demo</a>
   <a class="cta alt" href="trajectories.html">Whole-life method comparison</a>
   <a class="cta alt" href="https://github.com/anuragjha6557/battery-rul-transformers">Code, ADRs and full tables</a>
