@@ -25,3 +25,4 @@ Format and rules: [ADR-0001](0001-record-architecture-decisions.md). Experiment-
 | [0019](0019-adaptive-intervals.md) | Adaptive conformal intervals (post hoc) | Accepted: rejected; CQR kept + informativeness |
 | [0020](0020-field-benchmark.md) | Field-setting benchmark (no SOH history) | Accepted: H1 chemistry-conditional; H2, H3 not supported |
 | [0021](0021-itransformer-field-verdict.md) | iTransformer in the field setting (verdict) | Accepted: negative (borderline stated); most shift-robust |
+| [0022](0022-field-deployment.md) | Field-mode deployment (per-protocol iTransformer) | Accepted |
