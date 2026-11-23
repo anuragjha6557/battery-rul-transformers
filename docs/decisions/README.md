@@ -23,4 +23,5 @@ Format and rules: [ADR-0001](0001-record-architecture-decisions.md). Experiment-
 | [0017](0017-calce-artifact-cycles.md) | CALCE CV-skip cycles as invalid measurements | Accepted: not default; artifact-free scoring added |
 | [0018](0018-outlier-policy-and-field-inputs.md) | Outlier policy; field-setting inputs and models | Accepted |
 | [0019](0019-adaptive-intervals.md) | Adaptive conformal intervals (post hoc) | Accepted: rejected; CQR kept + informativeness |
-| [0020](0020-field-benchmark.md) | Field-setting benchmark (no SOH history) | Proposed (pre-registered) |
+| [0020](0020-field-benchmark.md) | Field-setting benchmark (no SOH history) | Accepted: H1 chemistry-conditional; H2, H3 not supported |
+| [0021](0021-itransformer-field-verdict.md) | iTransformer in the field setting (verdict) | Accepted: negative (borderline stated); most shift-robust |

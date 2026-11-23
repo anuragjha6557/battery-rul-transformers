@@ -1,9 +1,15 @@
 # Project status
 
-_Last updated: 2026-11-17 (Opus 5.5 lead)_
+_Last updated: 2026-11-23 (Opus 5.5 lead)_
 
 ## State
-- **Phase 2 started (2026-11-18): field-realistic study** — no SOH history at prediction time; see `docs/PLAN_PHASE2.md` (owner decisions: field signals + cycle count; re-extract Toyota charge-side signals). Stage 0 done (ADR-0018 outlier policy + field inputs, ADR-0019 intervals, `reports/eda_field.md`); **owner gate before Stage 1**.
+- **Phase 2 (field setting, `docs/PLAN_PHASE2.md`): Stages 0–3 complete (2026-11-23); Stage 4 (deliverables) next.**
+  - Stage 0: ADR-0018 (outliers, field inputs), ADR-0019 (intervals), `reports/eda_field.md`.
+  - Stage 1–3: ADR-0020. `field_screen` 378 runs, `field_lookback` 360, `field_final` 990, `field_regen` 200; 0 failures.
+  - Field signals beat age-only on Toyota and CALCE; on NASA forecasting no model does reliably.
+  - Many variates help iTransformer on CALCE only (H1 chemistry-conditional); long lookbacks do not help (H2 not supported); the rest-schedule token does not forecast regeneration (H3 not supported, −8.9 % vs bar +26 %).
+  - **ADR-0021 verdict: negative** (borderline: mixed if CI and Holm p must both hold). Mean rank LSTM 2.25, iTransformer 2.33, LightGBM 3.08. iTransformer is the most accurate under the Toyota test2 batch shift and the best NASA RUL model, but its intervals under-cover under shift (0.66).
+  - Intervals: informative on Toyota test1 (80–86 % useful at h50); not on NASA/CALCE (≤ 10 %).
 - **Phases 0–8 complete.** Live demo: https://huggingface.co/spaces/anurag6557/battery-rul-itransformer-v2. It is a static in-browser Space (ADR-0015 amendment 1) because Gradio hosting needs HF PRO.
 - **Phase 4/5 (ADR-0008):**
   - Benchmark: 1 620 runs, 0 failures, plus `benchmark_local` (72 runs). Tuned with 50 Optuna trials per (model, task) on Toyota (ADR-0006, amendments 1–3).
@@ -32,6 +38,7 @@ _Last updated: 2026-11-17 (Opus 5.5 lead)_
 8. **Feature-availability rule (enforce in `tasks/` + leakage tests):** per-cycle quantities measured during discharge k (`discharge_time_s`, `discharge_energy_wh`, `discharge_temp_max_c`, discharge curves) are ≈ the target `capacity_k` itself. For Task A (estimate SOH_k) only charge-phase features of cycle k (+ history < k) are allowed; for Tasks B/C anything at cycles ≤ T_p. CALCE `ir_ohm` was changed in review to use the charge window only for this reason (NASA `ir_ohm` already uses the latest EIS *before* the charge).
 
 ## Next actions
+0. **Phase 2 Stage 4:** showcase field section, dashboards field mode with informativeness badges, field-model deploy decision (shift robustness + OOD guard), README and model card.
 1. Add the `HF_TOKEN` repository secret on GitHub so `deploy-space.yml` can republish on `v*` tags (optional).
 2. **Phase 9:** MODEL_CARD.md, `docs/interview_notes.md`, CONTRIBUTING, architecture diagram.
 3. **Owner reminder:** re-enable sleep with `sudo pmset -a disablesleep 0`.

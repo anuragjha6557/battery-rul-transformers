@@ -1,6 +1,6 @@
 # ADR-0020: Field-setting benchmark: SOH estimation, forecasting, RUL without SOH history (pre-registered)
 
-- **Status:** Stage 1 decided 2026-11-21 (Stages 2–3 to be registered before their runs)
+- **Status:** Accepted, all stages complete (2026-11-23). H1 (variates) chemistry-conditional; H2 (lookback) and H3 (regeneration token) not supported. Verdict in ADR-0021.
 
 ## Stage 1: field SOH estimation screen
 - **Design:**
@@ -136,7 +136,7 @@ Paired Δ RMSE (L128 − L32), % SOH; Toyota 95 % CI, CALCE k/4. Tables: `report
   - Overall h = 10 / h = 50 RMSE must not worsen (CI or k/4).
 - **Size:** 2 datasets × 4 units × 5 seeds × 5 arms = 200 runs. They run after the main grid, from `main` once the token code is merged (no merge while a sweep runs).
 
-### Stage 3 outcome: main grid (2026-11-22, 810 runs, 0 failed; PatchTST pending)
+### Stage 3 outcome: main grid (2026-11-22, 810 runs + 180 PatchTST runs, 0 failed)
 Tables: `reports/tables/field_final.md`, paired `field_final_paired.md` (`scripts/field_stage3_pairs.py`), intervals `field_final_intervals_summary.csv`.
 
 Headline (RMSE % SOH for F-A and F-B h50, MAE cycles for F-C; best learned model in bold):
@@ -162,10 +162,30 @@ Headline (RMSE % SOH for F-A and F-B h50, MAE cycles for F-C; best learned model
   - NASA F-C: best, 4/4 cells against every competitor.
   - Toyota test1: beaten significantly on F-A by the Transformer (+0.15, p = 0.001) and on F-B by LightGBM, LSTM and Transformer (+0.22 to +0.33, p ≤ 0.004). F-C: no significant difference.
   - CALCE F-A/F-B: behind LSTM (0/4 and 1/4 cells).
-- **Verdict rule (preliminary, before PatchTST):** mean rank among learned models over the 12 headline conditions: LSTM 2.17, iTransformer 2.33, LightGBM 2.92, Transformer 3.50, ElasticNet 4.08. Condition 1 fails. Competitors beat iTransformer significantly on Toyota test1 in 2 of 3 tasks: condition 2 fails. Unless PatchTST changes the ranks, ADR-0021 is **negative**, with the qualifier that iTransformer is the most accurate model under the Toyota batch shift.
+- **PatchTST** (added after its Stage 2 selection): Toyota test1 1.64 / 1.70 / 99.5, test2 2.68 / 2.78 / 245; CALCE 8.19 / 8.27 / 98.4 (worse than age-only on all three tasks); NASA 6.26 / 6.16 / 17.8. iTransformer beats it on Toyota test1 in every task (Holm p ≤ 1e-5). This is consistent with (not a test of) channel independence being unable to use the cross-variate structure of the field inputs (Stage 1).
+- **Verdict rule (final):** mean rank among the six learned models over the 12 headline conditions: LSTM 2.25, iTransformer 2.33, LightGBM 3.08, Transformer 3.75, ElasticNet 4.50, PatchTST 5.08. Condition 1 fails. Condition 2 and the resulting verdict: see ADR-0021.
 - **Intervals (per-horizon CQR, h50, α = 0.1):**
   - Toyota test1: coverage 0.92–0.96, width 2.8–4.8 % SOH, useful share 80–86 %.
   - Toyota test2: neural models under-cover (0.59–0.71; iTransformer 0.66) because the shift is not in the calibration cells; LightGBM keeps 0.87. Accuracy and calibration under shift diverge.
   - CALCE: coverage 0.89–0.94, width 8–31 % SOH, useful share ≤ 10 %. NASA: coverage 0.81–0.90, width 27–34 %, useful share ≈ 0.
   - RUL (log-space CQR vs additive changes little): Toyota test1 coverage 0.94–0.98 at 340–520 cycles width; NASA/CALCE and Toyota test2 under-cover (0.64–0.89).
   - So the field setting does not make NASA/CALCE intervals informative; the 4-cell datasets stay a caveat (ADR-0019).
+
+### Stage 3 outcome: regeneration arm (2026-11-22, 200 runs, 0 failed)
+Table: `reports/tables/field_regen_events.md` (`scripts/field_regen_score.py`). Reduction = 1 − RMSE(arm) / RMSE(same model in `field_final`), pooled over cells and seeds at regeneration targets (rest > 6 h); positive = better.
+
+| NASA, h = 1 at regeneration targets (70) | reduction | k/4 | overall h = 1 / h = 50 |
+|---|---|---|---|
+| iTransformer + token | −8.9 % | 3/4 | −12.1 % / −8.6 % (0/4) |
+| iTransformer + tab | +4.3 % | 2/4 | −12.6 % / −9.8 % (0/4) |
+| Transformer + tab | +16.6 % | 3/4 | −1.6 % / +18.0 % |
+| LightGBM + tab | +12.4 % | 2/4 | −6.1 % / +2.0 % |
+| LSTM + tab | −21.1 % | 1/4 | +8.4 % / −16.6 % |
+
+- **H3: not supported.** The token arm does not reduce NASA h = 1 error at regeneration targets (−8.9 %, pre-registered bar +26 %), and is below the best tab competitor (Transformer, +16.6 %).
+- **No model reaches the ADR-0016 lab gain (26 %).** Field-setting gains at regeneration targets are small and inconsistent across cells and horizons (e.g. LightGBM +25 % at h = 10 on NASA, 4/4; LSTM −21 % at h = 1 but +17 % at h = 10). With 70 pooled targets (≈ 3–4 events per cell and seed), these estimates are noisy.
+- **Interpretation (not tested):** without SOH history the forecast error at a target (4–10 % SOH RMSE on NASA) is larger than the regeneration jump itself (1–4 % SOH, EDA §4), so knowing the rest schedule cannot show through. ADR-0016 found the gain with SOH history, where the level is known and the jump is the main error.
+- **Secondary:**
+  - token vs tab for iTransformer: worse at NASA h = 1 (4.93 vs 4.33 % SOH), better at h = 10 (5.16 vs 5.57) and better overall on CALCE (h = 1 4.00 vs 4.35).
+  - Adding any rest-schedule input worsens iTransformer's overall forecast on both datasets (NASA 0/4 cells, CALCE 0–2/4); it fails the "must not worsen" condition. LSTM + tab improves CALCE at every horizon (h = 50 +17 %, 4/4).
+- **Consequence:** the field forecaster does not predict regeneration. The demo and README state that regeneration is visible in field signals when it happens (EDA §4) but is not forecastable at this error level.
