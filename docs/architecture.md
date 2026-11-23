@@ -57,7 +57,7 @@ flowchart TD
 | `train/` | `config.py` Hydra schema; `runner.py` experiments and MLflow; `tune.py` Optuna; `transfer.py` Toyota pre-training |
 | `eval/` | `metrics.py`, `stats.py`, `report.py` |
 | `uq/` | `conformal.py` CQR; `calibrate.py` post-hoc calibration; `ensemble.py`; `metrics_uq.py` coverage, width, useful share |
-| `serve/` | `predictor.py` lab serving path (CPU only, validation, CQR, OOD); the field predictor of ADR-0022 sits alongside |
+| `serve/` | `predictor.py` lab serving path (CPU only, validation, CQR, OOD); `field.py` field-mode serving (ADR-0022: same cleaning, scaling and windowing code as training) |
 | `cli.py`, `utils.py` | `battery-rul` command line; seeding, device selection, paths |
 
 Outside the package: `configs/` (Hydra experiment, model, tuned), `scripts/` (tables, figures, deploy, ONNX export, Hub upload), `web/` (browser demo and showcase), `app/` (local Gradio app), `reports/` (generated tables and figures, field EDA), `tests/` (synthetic-data unit tests; `tests/lgbm` runs separately).

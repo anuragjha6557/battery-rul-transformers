@@ -17,7 +17,7 @@ Code, benchmark and decisions: https://github.com/anuragjha6557/battery-rul-tran
 - **Architecture:** iTransformer, using the exact `field_final` unit recipe at seed 0, with the same tuned parameters, causal cleaning ([ADR-0018](docs/decisions/0018-outlier-policy-and-field-inputs.md)) and training-cell scaler as the benchmark. One model per task (SOH, forecast, RUL).
 - **Cross-fit ensemble:** the inner-fold sub-models (3 for NASA, 3 for CALCE, 5 for Toyota) are averaged and exported as one ONNX graph per task.
 - **Intervals:** per-horizon CQR (alpha = 0.1) computed from the sub-models' inner-validation predictions, so calibration never sees a demo cell.
-- **OOD guard:** Mahalanobis distance of the latest cycle's scaled channel vector against the training cycles (threshold: training 99th percentile), plus flags for missing channels and for histories shorter than the lookback.
+- **OOD guard:** distance of the latest cycle's scaled channel vector from the training cycles (threshold: training 99th percentile; diagonal or Ledoit-Wolf covariance, chosen on training cells only), plus flags for missing channels and for histories shorter than the lookback. It is weak: about 6 % of Toyota test2 cycles are flagged, and on NASA it cannot be calibrated with 3 training cells (B0018 is flagged almost always). See `reports/tables/field_ood_check.md`.
 - **Configuration:**
 
   | Protocol | Trained on | Held out (demo) | Feature set | Lookback F-A / F-B / F-C |
@@ -76,7 +76,7 @@ All numbers are mean over 5 seeds on held-out cells. NASA and CALCE use leave-on
   | Toyota test1 | 0.923 | 4.30 | 0.813 |
   | Toyota test2 | **0.661** | 4.12 | 0.866 |
 
-- **Under distribution shift the intervals fail.** On Toyota test2 (a batch with a different rest, CV time and temperature) field coverage is 0.66, against 0.87 for LightGBM. Conformal coverage assumes exchangeable calibration and test cells; the shift is not in the calibration cells. The demo states this and shows the OOD flag.
+- **Under distribution shift the intervals fail.** On Toyota test2 (a batch with a different rest, CV time and temperature) field coverage is 0.66, against 0.87 for LightGBM. Conformal coverage assumes exchangeable calibration and test cells; the shift is not in the calibration cells. The demo states this permanently; the OOD guard catches only about 6 % of these cycles.
 - **On NASA and CALCE the field intervals are uninformative:** coverage is acceptable but the bands are too wide to act on. The demo marks them. Intervals are informative only on Toyota test1.
 - Adaptive calibration did not narrow intervals (ADR-0019); narrowing has to come from better predictions.
 

@@ -34,7 +34,7 @@ I rebuilt my own ITEC 2024 paper as a leakage-free benchmark on NASA, CALCE and 
 - Conformal assumes exchangeability. Toyota test2 is a different batch (rest at 80 % SOC of 10 s instead of 61 s, CV time 348 s instead of 716 s; `reports/eda_field.md` §5), so the guarantee does not hold: field iTransformer covers 0.66 at h = 50 there.
 - Accuracy and calibration under shift diverge: iTransformer is the most accurate on test2, LightGBM keeps 0.87 coverage.
 - Coverage is also not usefulness. On NASA, intervals reach about 90 % coverage with a useful share near zero. So every interval table reports the useful share ([ADR-0019](decisions/0019-adaptive-intervals.md)). I tried adaptive (Mondrian, scaled) calibration; it did not narrow intervals without losing coverage.
-- The demo says this on the page and raises an OOD flag.
+- The demo says this on the page. Its OOD guard is weak: it flags only about 6 % of the shifted cycles, so the warning is fixed, not data-driven.
 
 ## 6. The lab to field gap
 - Lab (SOH history): SOH RMSE 0.66 / 0.70 / 0.11 / 0.02 %SOH (CALCE, NASA, Toyota test1, test2; the lab reference quoted in ADR-0020). Field (iTransformer): 3.28 / 4.59 / 1.06 / 1.55.
